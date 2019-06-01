@@ -9,7 +9,7 @@ from app.main import create_app, db
 
 from app import blueprint
 
-app = create_app(os.environ.get('APP_ENV', 'dev'))
+app = create_app(os.getenv('APP_ENV') or 'dev')
 app.register_blueprint(blueprint)
 
 app.app_context().push()
