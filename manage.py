@@ -1,4 +1,6 @@
 import os
+import sys
+
 import unittest
 
 from flask_migrate import Migrate, MigrateCommand
@@ -9,7 +11,11 @@ from app.main import create_app, db
 
 from app import blueprint
 
-app = create_app(os.environ.get('APP_ENV', 'dev'))
+current_env = os.environ.get('APP_ENV', 'dev')
+print (current_env)
+sys.stdout.flush()
+
+app = create_app(current_env)
 app.register_blueprint(blueprint)
 
 app.app_context().push()
