@@ -1,0 +1,37 @@
+{
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "APP_ENV": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "Standard-1X"
+    },
+    "upgrade": {
+      "quantity": 1,
+      "size": "Standard-1X"
+    },
+    "migrate": {
+      "quantity": 1,
+      "size": "Standard-1X"
+    },
+    "init": {
+      "quantity": 1,
+      "size": "Standard-1X"
+    }
+  },
+  "name": "IoT-RESTful-Webservice",
+  "scripts": {
+  },
+  "stack": "heroku-18"
+}
