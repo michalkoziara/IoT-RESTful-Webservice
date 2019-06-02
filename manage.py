@@ -1,5 +1,5 @@
 import os
-import sys
+import logging
 
 import unittest
 
@@ -12,8 +12,9 @@ from app.main import create_app, db
 from app import blueprint
 
 current_env = os.environ.get('APP_ENV', 'dev')
-print (current_env)
-sys.stdout.flush()
+
+logger = logging.getLogger(__file__)
+logger.warn(current_env)
 
 app = create_app(current_env)
 app.register_blueprint(blueprint)
