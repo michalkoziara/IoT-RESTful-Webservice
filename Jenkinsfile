@@ -28,7 +28,7 @@ pipeline {
 
             steps {
                 echo 'Deploying..'
-                sh "git push -f heroku HEAD:master"
+                sh "git push -f https://git.heroku.com/iot-restful-webservice-prod.git HEAD:master"
             }
         }
     }
