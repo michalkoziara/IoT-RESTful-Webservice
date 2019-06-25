@@ -22,14 +22,13 @@ pipeline {
             }
         }
         stage('Deploy') {
+            when {
+                branch 'dev'
+            }
+
             steps {
-                when {
-                    branch 'dev'
-                }
-                steps {
-                    echo 'Deploying..'
-                    sh "git push -f heroku master"
-                }
+                echo 'Deploying..'
+                sh "git push -f heroku master"
             }
         }
     }
