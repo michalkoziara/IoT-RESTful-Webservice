@@ -28,7 +28,7 @@ pipeline {
 
             steps {
                 echo 'Deploying..'
-                sh "git push -f heroku master"
+                sh "git push -f heroku HEAD:master"
             }
         }
     }
