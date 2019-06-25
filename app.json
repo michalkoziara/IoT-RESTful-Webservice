@@ -15,19 +15,19 @@
   "formation": {
     "web": {
       "quantity": 1,
-      "size": "Standard-1X"
+      "size": "free"
     },
     "upgrade": {
       "quantity": 1,
-      "size": "Standard-1X"
+      "size": "free"
     },
     "migrate": {
       "quantity": 1,
-      "size": "Standard-1X"
+      "size": "free"
     },
     "init": {
       "quantity": 1,
-      "size": "Standard-1X"
+      "size": "free"
     }
   },
   "name": "IoT-RESTful-Webservice",

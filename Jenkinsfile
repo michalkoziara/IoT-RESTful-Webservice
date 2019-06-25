@@ -1,13 +1,13 @@
 pipeline {
     agent any
 
-    environment {
+    // environment {
 
-    }
+    // }
 
-    options {
-        //timeout(10)
-    }
+    // options {
+    //     timeout(10)
+    // }
 
     stages {
         stage('Checkout') {
@@ -28,7 +28,7 @@ pipeline {
                 }
                 steps {
                     echo 'Deploying..'
-                    sh "git push heroku master"
+                    sh "git push -f heroku master"
                 }
             }
         }
