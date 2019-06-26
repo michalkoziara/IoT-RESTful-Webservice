@@ -1,14 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-
-    }
-
-    options {
-        //timeout(10)
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -21,15 +13,24 @@ pipeline {
                 echo 'Testing..'
             }
         }
-        stage('Deploy') {
+        stage('Deploy to dev') {
+            when {
+                branch 'dev'
+            }
+
             steps {
-                when {
-                    branch 'dev'
-                }
-                steps {
-                    echo 'Deploying..'
-                    sh "git push heroku master"
-                }
+                echo 'Deploying to development instance..'
+                sh "git push -f git@heroku.com:iot-restful-webservice-dev.git HEAD:master"
+            }
+        }
+        stage('Deploy to prod') {
+            when {
+                branch 'master'
+            }
+
+            steps {
+                echo 'Deploying to production instance..'
+                sh "git push -f git@heroku.com:iot-restful-webservice-prod.git HEAD:master"
             }
         }
     }
