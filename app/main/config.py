@@ -1,5 +1,4 @@
 import os
-import yaml
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -9,13 +8,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     ENV = 'development'
-    config = yaml.safe_load(open("./config.yml"))
-    # uncomment the line below to use postgres
-    SQLALCHEMY_DATABASE_URI = ('postgresql+psycopg2://'
-                       + config['DB_USER'] + ':'
-                       + config['DB_PASSWORD'] + '@localhost/'
-                       + config['DB_NAME']
-                       )
+
     DEBUG = True
     #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'flask_boilerplate_main.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
