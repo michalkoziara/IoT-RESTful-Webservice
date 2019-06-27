@@ -1,5 +1,6 @@
-# Config Dev
-config.yml
+# Flask DB Boilerplate
+app/main/flask_boilerplate_test.db
+app/main/flask_boilerplate_main.db
 
 # Visual Studio Code
 .vscode
