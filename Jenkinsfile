@@ -22,7 +22,7 @@ pipeline {
                 chmod 754 env/bin/activate
                 . env/bin/activate
                 which pip
-                python3 -m pip -vv install -r requirements.txt
+                python3 -m pip install -r requirements.txt
                 """
             }
         }
@@ -31,9 +31,7 @@ pipeline {
                 echo 'Testing..'
                 sh """
                 . env/bin/activate
-                which pip
-                python3 -m coverage run --source app/main manage.py test
-                python3 -m coverage xml
+                python3 -m coverage run --branch --source=app/main --module pytest -rxs -v --junitxml=coverage.xml
                 """
             }
             post {
@@ -41,7 +39,6 @@ pipeline {
                     withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
                         sh """
                         . env/bin/activate
-                        which pip
                         export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
                         python-codacy-coverage -r coverage.xml
                         """
