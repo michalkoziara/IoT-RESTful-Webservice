@@ -17,22 +17,32 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh "python3 -m venv env"
-                sh "chmod 754 env/bin/activate"
-                sh ". env/bin/activate"
-                sh "which pip"
-                sh "python3 -m pip -vv install -r requirements.txt"
+                sh """
+                python3 -m venv env
+                chmod 754 env/bin/activate
+                . env/bin/activate
+                which pip
+                python3 -m pip -vv install -r requirements.txt
+                """
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing..'
-                sh "python3 -m coverage run --source app/main manage.py test"
-                sh "python3 -m coverage xml"
+                sh """
+                . env/bin/activate
+                which pip
+                python3 -m coverage run --source app/main manage.py test
+                python3 -m coverage xml
+                """
             }
             post {
                 always {
-                    sh "python3 -m python-codacy-coverage -r coverage.xml"
+                    sh """
+                    . env/bin/activate
+                    which pip
+                    python3 -m python-codacy-coverage -r coverage.xml
+                    """
                     junit allowEmptyResults: true, testResults: 'coverage.xml'
                 }
             }
