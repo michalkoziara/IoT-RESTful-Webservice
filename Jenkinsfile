@@ -23,7 +23,6 @@ pipeline {
                 . env/bin/activate
                 which pip
                 python3 -m pip -vv install -r requirements.txt
-                export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
                 """
             }
         }
@@ -43,6 +42,7 @@ pipeline {
                         sh """
                         . env/bin/activate
                         which pip
+                        export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
                         python-codacy-coverage -r coverage.xml
                         """
                     }
