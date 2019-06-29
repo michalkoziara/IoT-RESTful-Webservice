@@ -1,4 +1,3 @@
-def codacy_project_token
 pipeline {
     agent any
     
@@ -7,12 +6,15 @@ pipeline {
         skipStagesAfterUnstable()
     }
 
+    parameters {
+        string(name: 'codacy_project_token', defaultValue: credentials('codacy-project-token'))
+    }
+    
     stages {
         stage('Checkout') {
             steps {
                 cleanWs()
                 checkout scm
-                codacy_project_token = env.CODACY_PROJECT_TOKEN
                 echo 'Checkout..'
             }
         }
@@ -25,7 +27,7 @@ pipeline {
                 . env/bin/activate
                 which pip
                 python3 -m pip -vv install -r requirements.txt
-                export CODACY_PROJECT_TOKEN=$codacy_project_token
+                export CODACY_PROJECT_TOKEN=${params.codacy_project_token}
                 """
             }
         }
