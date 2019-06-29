@@ -31,11 +31,13 @@ pipeline {
                 echo 'Testing..'
                 sh """
                 . env/bin/activate
-                python3 -m coverage run --branch --source=app/main --module pytest -rxs -v --junitxml=unit_test_report.xml
                 python3 -m coverage xml
+                python3 -m coverage run --branch --source=app/main --module pytest -rxs -v --junitxml=unit_test_report.xml
                 """
             }
             post {
+                junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
+
                 always {
                     withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
                         sh """
@@ -44,8 +46,6 @@ pipeline {
                         python-codacy-coverage -r coverage.xml
                         """
                     }
-                
-                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
                 }
             }
         }

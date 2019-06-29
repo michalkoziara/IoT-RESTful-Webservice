@@ -56,7 +56,7 @@ class TestUserBlueprint(BaseTestCase):
             self.assertEqual(user_response.status_code, 201)
 
             response_data = json.loads(user_response.data.decode())
-            self.assertEqual(response_data['status'], 'test')
+            self.assertEqual(response_data['status'], 'fefe')
             self.assertEqual(
                 response_data['message'], 'Successfully registered.')
 
