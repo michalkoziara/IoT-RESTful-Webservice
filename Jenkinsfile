@@ -1,16 +1,39 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout()
+        skipStagesAfterUnstable()
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checkout..'
+                cleanWs()
                 checkout scm
+                echo 'Checkout..'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Building..'
+                sh "mkdir env"
+                sh "virtualenv env"
+                sh "source env/bin/activate"
+                sh "pip install -r requirements.txt"
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing..'
+                sh "coverage run --source app/main manage.py test"
+                sh "coverage xml"
+                post {
+                    always {
+                        sh "python-codacy-coverage -r coverage.xml"
+                        junit 'coverage.xml'
+                    }
+                }
             }
         }
         stage('Deploy to dev') {
