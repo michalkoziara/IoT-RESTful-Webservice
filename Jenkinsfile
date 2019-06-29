@@ -19,7 +19,7 @@ pipeline {
                 echo 'Building..'
                 sh "mkdir env"
                 sh "virtualenv env"
-                sh "source env/bin/activate"
+                sh ". env/bin/activate"
                 sh "pip install -r requirements.txt"
             }
         }
