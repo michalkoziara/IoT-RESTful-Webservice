@@ -17,8 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh "mkdir env"
-                sh "virtualenv -p python3 env"
+                sh "python3 -m venv env"
                 sh ". env/bin/activate"
                 sh "python3 -m pip install -r requirements.txt"
             }
