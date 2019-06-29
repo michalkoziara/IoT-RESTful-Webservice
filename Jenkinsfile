@@ -1,6 +1,7 @@
+def codacy_project_token
 pipeline {
     agent any
-
+    
     options {
         skipDefaultCheckout()
         skipStagesAfterUnstable()
@@ -11,6 +12,7 @@ pipeline {
             steps {
                 cleanWs()
                 checkout scm
+                codacy_project_token = env.CODACY_PROJECT_TOKEN
                 echo 'Checkout..'
             }
         }
@@ -23,6 +25,7 @@ pipeline {
                 . env/bin/activate
                 which pip
                 python3 -m pip -vv install -r requirements.txt
+                export CODACY_PROJECT_TOKEN=$codacy_project_token
                 """
             }
         }
@@ -41,7 +44,7 @@ pipeline {
                     sh """
                     . env/bin/activate
                     which pip
-                    python3 -m python-codacy-coverage -r coverage.xml
+                    python-codacy-coverage -r coverage.xml
                     """
                     junit allowEmptyResults: true, testResults: 'coverage.xml'
                 }
