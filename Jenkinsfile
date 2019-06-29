@@ -16,17 +16,15 @@ pipeline {
         }
         stage('Build') {
             steps {
-                withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
-                    echo 'Building..'
-                    sh """
-                    python3 -m venv env
-                    chmod 754 env/bin/activate
-                    . env/bin/activate
-                    which pip
-                    python3 -m pip -vv install -r requirements.txt
-                    export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
-                    """
-                }
+                echo 'Building..'
+                sh """
+                python3 -m venv env
+                chmod 754 env/bin/activate
+                . env/bin/activate
+                which pip
+                python3 -m pip -vv install -r requirements.txt
+                export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
+                """
             }
         }
         stage('Test') {
@@ -41,11 +39,14 @@ pipeline {
             }
             post {
                 always {
-                    sh """
-                    . env/bin/activate
-                    which pip
-                    python-codacy-coverage -r coverage.xml
-                    """
+                    withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
+                        sh """
+                        . env/bin/activate
+                        which pip
+                        python-codacy-coverage -r coverage.xml
+                        """
+                    }
+                
                     junit allowEmptyResults: true, testResults: 'coverage.xml'
                 }
             }
