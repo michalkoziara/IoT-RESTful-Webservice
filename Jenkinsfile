@@ -26,11 +26,11 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
-                sh "coverage run --source app/main manage.py test"
-                sh "coverage xml"
+                sh "python3 -m coverage run --source app/main manage.py test"
+                sh "python3 -m coverage xml"
                 post {
                     always {
-                        sh "python-codacy-coverage -r coverage.xml"
+                        sh "python3 -m python-codacy-coverage -r coverage.xml"
                         junit 'coverage.xml'
                     }
                 }
