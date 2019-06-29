@@ -31,7 +31,8 @@ pipeline {
                 echo 'Testing..'
                 sh """
                 . env/bin/activate
-                python3 -m coverage run --branch --source=app/main --module pytest -rxs -v --junitxml=coverage.xml
+                python3 -m coverage run --branch --source=app/main --module pytest -rxs -v --junitxml=unit_test_report.xml
+                python3 -m coverage xml
                 """
             }
             post {
@@ -44,7 +45,7 @@ pipeline {
                         """
                     }
                 
-                    junit allowEmptyResults: true, testResults: 'coverage.xml'
+                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
                 }
             }
         }
