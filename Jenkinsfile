@@ -28,11 +28,11 @@ pipeline {
                 echo 'Testing..'
                 sh "python3 -m coverage run --source app/main manage.py test"
                 sh "python3 -m coverage xml"
-                post {
-                    always {
-                        sh "python3 -m python-codacy-coverage -r coverage.xml"
-                        junit 'coverage.xml'
-                    }
+            }
+            post {
+                always {
+                    sh "python3 -m python-codacy-coverage -r coverage.xml"
+                    junit allowEmptyResults: true, testResults: 'coverage.xml'
                 }
             }
         }
