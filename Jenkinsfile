@@ -20,7 +20,7 @@ pipeline {
                 sh "mkdir env"
                 sh "virtualenv env"
                 sh ". env/bin/activate"
-                sh "pip install -r requirements.txt"
+                sh "python -m pip install -r requirements.txt"
             }
         }
         stage('Test') {
