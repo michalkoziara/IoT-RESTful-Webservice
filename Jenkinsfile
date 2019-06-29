@@ -19,7 +19,8 @@ pipeline {
                 echo 'Building..'
                 sh "python3 -m venv env"
                 sh ". env/bin/activate"
-                sh "python3 -m pip install -r requirements.txt"
+                sh "which pip"
+                sh "python3 -mvv pip -vv install -r requirements.txt"
             }
         }
         stage('Test') {
