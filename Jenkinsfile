@@ -6,10 +6,6 @@ pipeline {
         skipStagesAfterUnstable()
     }
 
-    parameters {
-        string(name: 'codacy_project_token', defaultValue: credentials('codacy-project-token'))
-    }
-    
     stages {
         stage('Checkout') {
             steps {
@@ -20,15 +16,17 @@ pipeline {
         }
         stage('Build') {
             steps {
-                echo 'Building..'
-                sh """
-                python3 -m venv env
-                chmod 754 env/bin/activate
-                . env/bin/activate
-                which pip
-                python3 -m pip -vv install -r requirements.txt
-                export CODACY_PROJECT_TOKEN=${params.codacy_project_token}
-                """
+                withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
+                    echo 'Building..'
+                    sh """
+                    python3 -m venv env
+                    chmod 754 env/bin/activate
+                    . env/bin/activate
+                    which pip
+                    python3 -m pip -vv install -r requirements.txt
+                    export CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN
+                    """
+                }
             }
         }
         stage('Test') {
