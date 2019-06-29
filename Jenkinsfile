@@ -36,9 +36,9 @@ pipeline {
                 """
             }
             post {
-                junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
-
                 always {
+                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
+
                     withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
                         sh """
                         . env/bin/activate
