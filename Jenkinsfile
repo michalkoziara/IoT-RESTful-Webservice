@@ -18,9 +18,10 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh "python3 -m venv env"
+                sh "chmod 754 env/bin/activate"
                 sh ". env/bin/activate"
                 sh "which pip"
-                sh "python3 -mvv pip -vv install -r requirements.txt"
+                sh "python3 -m pip -vv install -r requirements.txt"
             }
         }
         stage('Test') {
