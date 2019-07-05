@@ -11,7 +11,7 @@ if (os.environ.get('APP_ENV', 'dev') == 'prod'):
     @property
     def specs_url(self):
         return url_for(self.endpoint('specs'), _external=True, _scheme='https')
-    
+
     Api.specs_url = specs_url
 
 api = Api(blueprint,
