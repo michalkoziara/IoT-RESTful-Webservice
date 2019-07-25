@@ -1,20 +1,21 @@
 import os
 
 from flask_restplus import Api, Namespace, Resource, fields
-from flask import Blueprint
+from flask import Blueprint, url_for
 
 from .main.controller.user_controller import api as user_ns
 
 blueprint = Blueprint('api', __name__)
 
-if (os.environ.get('APP_ENV', 'dev') == 'prod'):
+class MyApi(Api):
     @property
     def specs_url(self):
-        return url_for(self.endpoint('specs'), _external=True, _scheme='https')
+        """Monkey patch for HTTPS"""
+        scheme = 'https' if os.environ.get('APP_ENV', 'dev') == 'prod' else 'http'
+        return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
 
-    Api.specs_url = specs_url
-
-api = Api(blueprint,
+api = MyApi(blueprint,
+          doc='/doc/',
           title='API',
           version='0.1',
           description='a web service API'
