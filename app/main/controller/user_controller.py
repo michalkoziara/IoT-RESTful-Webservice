@@ -1,39 +1,46 @@
-from flask import request
-from flask_restplus import Resource
+import json
 
-from ..util.dto import UserDto
-from ..service.user_service import save_new_user, get_all_users, get_a_user
+from flask import Response, request, jsonify
 
-api = UserDto.api
-_user = UserDto.user
+from ..util.user_schema import UserSchema
+from ..service.user_service import save_new_user, get_all_users, get_user_by_public_id
+from ... import api
 
-@api.route('/')
-class UserList(Resource):
-    @api.doc('list_of_registered_users')
-    @api.marshal_list_with(_user, envelope='data')
-    def get(self):
-        """List all registered users"""
-        return get_all_users()
+@api.route('/user', methods = ['GET'])
+def get_user_list():
+    json_data = UserSchema().dumps(get_all_users(), many=1)
+    resp = Response(json_data, status=200, mimetype='application/json')
 
-    @api.response(201, 'User successfully created.')
-    @api.doc('create a new user')
-    @api.expect(_user, validate=True)
-    def post(self):
-        """Creates a new User """
-        data = request.json
-        return save_new_user(data=data)
+    return resp
 
+@api.route('/user', methods = ['POST'])
+def create_user():
+    request_data = request.json
+    response_data, status = save_new_user(data=request_data)
+    json_data = json.dumps(response_data)
+    resp = Response(json_data, status=status, mimetype='application/json')
 
-@api.route('/<public_id>')
-@api.param('public_id', 'The User identifier')
-@api.response(404, 'User not found.')
-class User(Resource):
-    @api.doc('get a user')
-    @api.marshal_with(_user)
-    def get(self, public_id):
-        """get a user given its identifier"""
-        user = get_a_user(public_id)
-        if not user:
-            api.abort(404)
-        else:
-            return user
+    return resp
+
+@api.route('/user/<public_id>', methods = ['GET'])
+def get_user(public_id):
+    user = get_user_by_public_id(public_id)
+
+    if user:
+        response_data = UserSchema().dumps(user)
+        resp = Response(response_data, status=200, mimetype='application/json')
+
+        return resp
+    else:
+        return not_found()
+
+@api.errorhandler(404)
+def not_found(error=None):
+    message = {
+            'status': 404,
+            'message': 'Not Found: ' + request.url,
+    }
+    resp = jsonify(message)
+    resp.status_code = 404
+
+    return resp

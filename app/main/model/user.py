@@ -10,7 +10,3 @@ class User(db.Model):
     admin = db.Column(db.Boolean, nullable=False, default=False)
     public_id = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(50), unique=True)
-
-    @property
-    def password(self):
-        raise AttributeError('password: write-only field')

@@ -5,16 +5,16 @@ import datetime
 
 from app.main import db
 from app.main.model.user import User
+from app.main.util.user_schema import UserSchema
 
 from app.test.base import BaseTestCase
 
-def register_user(self, email, username, password, content_type):
+def register_user(self, email, username, content_type):
     return self.client.post(
-        '/user/',
+        '/user',
         data=json.dumps(dict(
             email=email,
-            username=username,
-            password=password
+            username=username
         )),
         content_type=content_type
     )
@@ -30,11 +30,10 @@ def create_users(x):
             public_id = str(ids[i]),
             email = 'email' + str(i) + '@gmail.com',
             username = 'username' + str(i),
-            password = 'password' + str(i),
             registered_on = datetime.datetime.utcnow()
         ))
-
         db.session.add(test_users[i])
+
     db.session.commit()
 
     return ids, test_users
@@ -44,15 +43,14 @@ class TestUserBlueprint(BaseTestCase):
     def test_create_user_when_registration_successful(self):
         """ Test for successful user registration """
         with self.client:
-            # when
+            # WHEN
             user_response = register_user(self,
                                           'email0@gmail.com',
                                           'username0',
-                                          'password0',
                                           'application/json'
                                           )
 
-            # then
+            # THEN
             self.assertEqual(user_response.status_code, 201)
 
             response_data = json.loads(user_response.data.decode())
@@ -63,18 +61,17 @@ class TestUserBlueprint(BaseTestCase):
     def test_error_when_registration_failed(self):
         """ Test for failed user registration """
         with self.client:
-            # given
+            # GIVEN
             create_users(1)
 
-            # when
+            # WHEN
             user_response = register_user(self,
                                           'email0@gmail.com',
                                           'username0',
-                                          'password0',
                                           'application/json'
                                           )
 
-            # then
+            # THEN
             self.assertEqual(user_response.status_code, 409)
 
             response_data = json.loads(user_response.data.decode())
@@ -86,30 +83,30 @@ class TestUserBlueprint(BaseTestCase):
     def test_get_all_users(self):
         """ Test for listing all users """
         with self.client:
-            # given
+            # GIVEN
             ids, users = create_users(2)
 
-            # when
-            response = self.client.get('/user/')
+            # WHEN
+            response = self.client.get('/user')
             
-            # then
+            # THEN
             self.assertEqual(response.status_code, 200, 'Response code should be success')
-            response_data = json.loads(response.data.decode())
-            self.assertTrue(len(response_data['data']) == len(users), 'Number of users does not match')
-
-            responsed_users = response_data['data']
-            #for user in responsed_users
+            
+            response_data = response.data.decode()
+            print(response_data)
+            result = UserSchema().loads(response_data, many=True)
+            self.assertTrue(len(result) == len(users), 'Number of users does not match')
 
     def test_get_user_when_valid_id(self):
         """ Test for listing all users """
         with self.client:
-            # given
+            # GIVEN
             ids, test_users = create_users(2)
 
-            # when
+            # WHEN
             response = self.client.get('/user/' + str(ids[0]))
             
-            # then
+            # THEN
             self.assertEqual(response.status_code, 200, 'Response code should be success')
 
             response_data = json.loads(response.data.decode())
@@ -119,7 +116,6 @@ class TestUserBlueprint(BaseTestCase):
                 response_data['email'], test_users[0].email, 'Email does not match')
             self.assertEqual(
                 response_data['username'], test_users[0].username, 'Username does not match')
-#            self.assertTrue()
 
 if __name__ == '__main__':
     unittest.main()

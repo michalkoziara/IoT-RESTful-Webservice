@@ -5,16 +5,17 @@ import unittest
 
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
+from flask import url_for
 
 from app.main.model import user
 from app.main import create_app, db
 
-from app import blueprint
+from app import api
 
 current_env = os.environ.get('APP_ENV', 'dev')
 
 app = create_app(current_env)
-app.register_blueprint(blueprint)
+app.register_blueprint(api)
 
 app.app_context().push()
 

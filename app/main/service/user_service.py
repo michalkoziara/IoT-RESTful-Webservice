@@ -4,7 +4,6 @@ import datetime
 from app.main import db
 from app.main.model.user import User
 
-
 def save_new_user(data):
     user = User.query.filter_by(email=data['email']).first()
     if not user:
@@ -12,7 +11,6 @@ def save_new_user(data):
             public_id=str(uuid.uuid4()),
             email=data['email'],
             username=data['username'],
-            password=data['password'],
             registered_on=datetime.datetime.utcnow()
         )
         save_changes(new_user)
@@ -28,12 +26,10 @@ def save_new_user(data):
         }
         return response_object, 409
 
-
 def get_all_users():
     return User.query.all()
 
-
-def get_a_user(public_id):
+def get_user_by_public_id(public_id):
     return User.query.filter_by(public_id=public_id).first()
 
 def save_changes(data):
