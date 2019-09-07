@@ -1,7 +1,7 @@
 # IoT-RESTful-Webservice
 RESTful Webservice for IoT devices management.
 
-### CLI commands
+## CLI commands
 
 Run application  
 ``python manage.py run``

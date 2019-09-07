@@ -14,5 +14,5 @@ class UserSchema(Schema):
     username = fields.String()
 
     @post_load
-    def deserialize_user(self, data, **kwargs):
+    def deserialize_user(self, data, **kwargs):  # pylint: disable=no-self-use
         return User(**data)

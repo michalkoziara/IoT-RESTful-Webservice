@@ -1,14 +1,11 @@
 import datetime
-import json
 import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.main import db
 from app.main.model.user import User
 from app.main.service.user_service import UserService
-from app.main.util.user_schema import UserSchema
 
 
 @pytest.fixture(scope='function')
@@ -63,12 +60,11 @@ def test_get_all_users_should_return_all_users(create_users):
     service = UserService.get_instance()
     amount = 5
 
-    ids, created_users = create_users(amount)
-    assert len(created_users) == amount
+    created_users = create_users(amount)
 
     # WHEN
     with patch('flask_sqlalchemy._QueryProperty.__get__') as query_property_getter_mock:
-        query_property_getter_mock.return_value.all.return_value = created_users
+        query_property_getter_mock.return_value.all.return_value = created_users[1]
         all_users = service.get_all_users()
 
     # THEN
@@ -78,12 +74,12 @@ def test_get_all_users_should_return_all_users(create_users):
 def test_get_user_by_public_id_should_return_user_when_valid_id(create_users):
     # GIVEN
     service = UserService.get_instance()
-    id, created_user = create_users(1)
+    public_id, created_user = create_users(1)
 
     # WHEN
     with patch('flask_sqlalchemy._QueryProperty.__get__') as query_property_getter_mock:
         query_property_getter_mock.return_value.filter_by.return_value.first.return_value = created_user
-        user_by_id = service.get_user_by_public_id(id)
+        user_by_id = service.get_user_by_public_id(public_id)
 
     # THEN
     assert user_by_id == created_user

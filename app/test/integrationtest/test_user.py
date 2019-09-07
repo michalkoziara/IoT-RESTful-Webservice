@@ -1,14 +1,11 @@
 import datetime
 import json
 import uuid
-from unittest.mock import MagicMock
-from unittest.mock import patch
 
 import pytest
 
 from app.main import db
 from app.main.model.user import User
-from app.main.service.user_service import UserService
 from app.main.util.user_schema import UserSchema
 from app.test.integrationtest.base import BaseTestCase
 
@@ -93,7 +90,7 @@ class TestUserBlueprint(BaseTestCase):
         """ Test for listing all users """
         with self.client:
             # GIVEN
-            ids, users = _create_users(2)
+            users = _create_users(2)
 
             # WHEN
             response = self.client.get('/user')
@@ -104,7 +101,7 @@ class TestUserBlueprint(BaseTestCase):
 
             response_data = response.data.decode()
             result = UserSchema().loads(response_data, many=True)
-            self.assertTrue(len(result) == len(users),
+            self.assertTrue(len(result) == len(users[1]),
                             'Number of users does not match')
 
     def test_get_user_should_return_user_when_valid_id(self):

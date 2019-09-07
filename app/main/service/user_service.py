@@ -6,11 +6,13 @@ from app.main.model.user import User
 from app.main.util.user_schema import UserSchema
 
 
+# pylint: disable=no-self-use
 class UserService:
 
     _instance = None
     _db_session = db.session
 
+    @staticmethod
     def get_instance():
         if UserService._instance is None:
             UserService._instance = UserService()

@@ -1,7 +1,6 @@
 import json
 
 from flask import Response
-from flask import jsonify
 from flask import request
 
 from app import api
