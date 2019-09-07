@@ -103,7 +103,6 @@ class TestUserBlueprint(BaseTestCase):
                              'Response code should be success')
 
             response_data = response.data.decode()
-            print(response_data)
             result = UserSchema().loads(response_data, many=True)
             self.assertTrue(len(result) == len(users),
                             'Number of users does not match')
