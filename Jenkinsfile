@@ -31,7 +31,7 @@ pipeline {
                 echo 'Testing..'
                 sh """
                 . env/bin/activate
-                pytest app/test/unittest --cache-clear -rxs -v --cov=. --cov-report=xml --cov-branch --cov-config=.coveragerc --junitxml=unit_test_report.xml
+                pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-branch --cov-config=.coveragerc --junitxml=unit_test_report.xml
                 """
             }
             post {
