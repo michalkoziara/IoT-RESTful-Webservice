@@ -1,46 +1,51 @@
 import json
 
-from flask import Response, request, jsonify
+from flask import Response
+from flask import jsonify
+from flask import request
 
-from ..util.user_schema import UserSchema
-from ..service.user_service import save_new_user, get_all_users, get_user_by_public_id
-from ... import api
+from app import api
+from app.main.service.user_service import UserService
 
-@api.route('/user', methods = ['GET'])
-def get_user_list():
-    json_data = UserSchema().dumps(get_all_users(), many=1)
-    resp = Response(json_data, status=200, mimetype='application/json')
+_user_service = UserService.get_instance()
 
-    return resp
 
-@api.route('/user', methods = ['POST'])
+@api.route('/user', methods=['GET'])
+def get_users():
+    users = _user_service.get_all_users()
+    serialized_users = _user_service.serialize_users_to_json(users, True)
+
+    return Response(serialized_users,
+                    status=200,
+                    mimetype='application/json')
+
+
+@api.route('/user', methods=['POST'])
 def create_user():
-    request_data = request.json
-    response_data, status = save_new_user(data=request_data)
-    json_data = json.dumps(response_data)
-    resp = Response(json_data, status=status, mimetype='application/json')
+    user = _user_service.deserialize_users_from_dict(request.get_json())
+    state = _user_service.save_new_user(user)
+    status_response, status = _user_service.create_save_response(state)
 
-    return resp
+    return Response(json.dumps(status_response),
+                    status=status,
+                    mimetype='application/json')
 
-@api.route('/user/<public_id>', methods = ['GET'])
+
+@api.route('/user/<public_id>', methods=['GET'])
 def get_user(public_id):
-    user = get_user_by_public_id(public_id)
+    user = _user_service.get_user_by_public_id(public_id)
 
     if user:
-        response_data = UserSchema().dumps(user)
-        resp = Response(response_data, status=200, mimetype='application/json')
+        serialized_user = _user_service.serialize_users_to_json(user)
 
-        return resp
+        return Response(serialized_user,
+                        status=200,
+                        mimetype='application/json')
     else:
-        return not_found()
-
-@api.errorhandler(404)
-def not_found(error=None):
-    message = {
-            'status': 404,
-            'message': 'Not Found: ' + request.url,
-    }
-    resp = jsonify(message)
-    resp.status_code = 404
-
-    return resp
+        return Response(
+            json.dumps({
+                'status': 'Fail',
+                'message': 'User does not exist.',
+            }),
+            status=400,
+            mimetype='application/json')

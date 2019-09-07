@@ -1,4 +1,5 @@
-from .. import db
+from app.main import db
+
 
 class User(db.Model):
     """ User Model for storing user related details """
