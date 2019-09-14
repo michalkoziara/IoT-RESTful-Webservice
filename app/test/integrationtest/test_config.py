@@ -1,6 +1,6 @@
 import os
-import unittest
 
+import pytest
 from flask import current_app
 from flask_testing import TestCase
 
@@ -17,7 +17,8 @@ class TestDevelopmentConfig(TestCase):
         self.assertFalse(app.config['SECRET_KEY'] is 'my_precious')
         self.assertTrue(app.config['DEBUG'] is True)
         self.assertFalse(current_app is None)
-        
+
+
 class TestTestingConfig(TestCase):
     def create_app(self):
         app.config.from_object('app.main.config.TestingConfig')
@@ -27,7 +28,8 @@ class TestTestingConfig(TestCase):
         self.assertFalse(app.config['SECRET_KEY'] is 'my_precious')
         self.assertTrue(app.config['DEBUG'])
         self.assertTrue(
-            app.config['SQLALCHEMY_DATABASE_URI'] == 'sqlite:///' + os.path.join(basedir, 'flask_boilerplate_test.db')
+            app.config['SQLALCHEMY_DATABASE_URI'] == 'sqlite:///' +
+            os.path.join(basedir, 'flask_boilerplate_test.db')
         )
 
 
@@ -41,4 +43,4 @@ class TestProductionConfig(TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    pytest.main(['app/integrationtest/{}.py'.format(__file__)])
