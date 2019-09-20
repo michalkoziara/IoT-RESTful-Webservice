@@ -6,7 +6,7 @@ from sqlalchemy.types import Enum
 class Log(db.Model):
     """ Log Model for storing log related details """
     __tablename__ = "log"
-    
+
     _types = ('Debug', 'Error', 'Info')
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
