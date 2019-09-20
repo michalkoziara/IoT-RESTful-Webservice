@@ -1,8 +1,10 @@
+# pylint: skip-file
+
 """empty message
 
-Revision ID: e0d8bc0c5d7e
-Revises: 42050bebe771
-Create Date: 2019-09-20 12:39:00.631543
+Revision ID: da6dacc30330
+Revises: a7dd314c9ddf
+Create Date: 2019-09-20 18:29:01.864665
 
 """
 from alembic import op
@@ -10,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e0d8bc0c5d7e'
-down_revision = '42050bebe771'
+revision = 'da6dacc30330'
+down_revision = 'a7dd314c9ddf'
 branch_labels = None
 depends_on = None
 

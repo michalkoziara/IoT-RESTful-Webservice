@@ -14,7 +14,7 @@ class ExecutiveDevice(db.Model):
     positive_state = db.Column(db.String(255))
     negative_state = db.Column(db.String(255))
     device_key = db.Column(db.String(255), nullable=False, unique=True)
-    
+
     executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id'), nullable=False)
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)

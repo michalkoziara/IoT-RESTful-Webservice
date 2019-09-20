@@ -2,7 +2,7 @@ from app.main import db
 
 from sqlalchemy.types import Enum
 
-    
+
 class ExecutiveType(db.Model):
     """ ExecutiveType Model for storing executive type related details """
     __tablename__ = "executive_type"

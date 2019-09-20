@@ -16,5 +16,5 @@ class Log(db.Model):
     payload = db.Column(db.String(255))
     time = db.Column(db.Integer)
     creation_date = db.Column(db.DateTime, nullable=False)
-    
+
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)

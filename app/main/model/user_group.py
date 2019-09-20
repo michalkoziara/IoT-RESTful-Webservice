@@ -16,6 +16,6 @@ class UserGroup(db.Model):
     formulas = db.relationship('Formula', backref='user_group', lazy=True)
     sensors = db.relationship('Sensor', backref='user_group', lazy=True)
     executive_devices = db.relationship('ExecutiveDevice', backref='user_group', lazy=True)
-    
-    users = db.relationship('User', secondary=user_group_member, 
+
+    users = db.relationship('User', secondary=user_group_member,
         lazy='subquery', backref=db.backref('user_groups', lazy=True))

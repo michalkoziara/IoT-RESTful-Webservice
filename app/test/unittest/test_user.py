@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 import datetime
 import uuid
 from unittest.mock import MagicMock, patch

@@ -10,5 +10,5 @@ class Formula(db.Model):
     rule = db.Column(db.String(255), nullable=False)
 
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=False)
-    
+
     executive_devices = db.relationship('ExecutiveDevice', backref='formula', lazy=True)

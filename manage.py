@@ -1,5 +1,6 @@
+# pylint: disable=unused-import
+
 import os
-import logging
 
 import pytest
 from flask import url_for
@@ -25,23 +26,17 @@ from app.main.model.user_group import UserGroup
 from app.main.model.user_group_member import user_group_member
 
 current_env = os.environ.get('APP_ENV', 'dev')
-
 app = create_app(current_env)
 app.register_blueprint(api)
-
 app.app_context().push()
 
 manager = Manager(app)
-
 migrate = Migrate(app, db)
-
 manager.add_command('db', MigrateCommand)
-
 
 @manager.command
 def run():
     app.run()
-
 
 @manager.command
 def test():
@@ -51,14 +46,12 @@ def test():
         return 0
     return 1
 
-
 @manager.command
 def testunit():
     """Runs the unit tests."""
     if pytest.main(["app/test/unittest"]):
         return 0
     return 1
-
 
 @manager.command
 def testintegration():
@@ -67,7 +60,6 @@ def testintegration():
                     "--cache-clear"]):
         return 0
     return 1
-
 
 @manager.command
 def routes():
@@ -87,7 +79,6 @@ def routes():
 
     for line in sorted(output):
         print(line)
-
 
 if __name__ == '__main__':
     manager.run()
