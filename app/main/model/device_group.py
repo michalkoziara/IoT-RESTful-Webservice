@@ -10,6 +10,8 @@ class DeviceGroup(db.Model):
     password = db.Column(db.String(255), nullable=False)
     product_key = db.Column(db.String(255), nullable=False, unique=True)
 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
     executive_devices = db.relationship('ExecutiveDevice', backref='device_group', lazy=True)
     executive_types = db.relationship('ExecutiveType', backref='device_group', lazy=True)
     sensors = db.relationship('Sensor', backref='device_group', lazy=True)
@@ -17,4 +19,3 @@ class DeviceGroup(db.Model):
     unconfigured_devices = db.relationship('UnconfiguredDevice', backref='device_group', lazy=True)
     user_groups = db.relationship('UserGroup', backref='device_group', lazy=True)
     logs = db.relationship('Log', backref='device_group', lazy=True)
-    

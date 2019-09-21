@@ -11,3 +11,5 @@ class User(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     password = db.Column(db.String(255), nullable=False)
+
+    device_group = db.relationship('DeviceGroup', backref='user', lazy=True, uselist=False)
