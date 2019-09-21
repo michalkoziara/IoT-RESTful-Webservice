@@ -18,4 +18,4 @@ class ExecutiveType(db.Model):
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
 
     executive_devices = db.relationship('ExecutiveDevice', backref='executive_type', lazy=True)
-    enumerator_values = db.relationship('EnumeratorValue', backref='executive_type', lazy=True)
+    state_enumerators = db.relationship('StateEnumerator', backref='executive_type', lazy=True)
