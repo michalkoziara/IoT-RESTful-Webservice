@@ -18,5 +18,4 @@ class SensorType(db.Model):
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
 
     sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
-    enumerator_values = db.relationship('EnumeratorValue', backref='sensor_type', lazy=True)
-    sensor_readings = db.relationship('SensorReading', backref='sensor_type', lazy=True)
+    reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)
