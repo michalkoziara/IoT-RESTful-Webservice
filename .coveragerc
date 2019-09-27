@@ -1,11 +1,16 @@
 # .coveragerc to control coverage.py
 [run]
-omit = 
-    app/test/*
-    env/*
-    instance/*
+omit =
+    */test/*
+    */env/*
+    */instance/*
 
 [report]
+omit =
+    */test/*
+    */env/*
+    */instance/*
+fail_under = 75
 exclude_lines =
     pragma: no cover
     def __repr__

@@ -1,6 +1,7 @@
 # pylint: disable=unused-import
 
 import os
+from urllib import parse
 
 import pytest
 from flask import url_for
@@ -35,9 +36,11 @@ manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 
+
 @manager.command
 def run():
     app.run()
+
 
 @manager.command
 def test():
@@ -47,23 +50,26 @@ def test():
         return 0
     return 1
 
+
 @manager.command
-def testunit():
+def test_unit():
     """Runs the unit tests."""
     if pytest.main(["app/test/unittest"]):
         return 0
     return 1
 
+
 @manager.command
-def testintegration():
+def test_integration():
     """Runs the integration tests."""
     if pytest.main(["app/test/integrationtest",
                     "--cache-clear"]):
         return 0
     return 1
 
+
 @manager.command
-def routes():
+def get_routes():
     import urllib
     output = []
     for rule in app.url_map.iter_rules():
@@ -80,6 +86,7 @@ def routes():
 
     for line in sorted(output):
         print(line)
+
 
 if __name__ == '__main__':
     manager.run()
