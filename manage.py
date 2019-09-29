@@ -55,7 +55,6 @@ def test_integration():
 
 @manager.command
 def get_routes():
-    import urllib
     output = []
     for rule in app.url_map.iter_rules():
 
@@ -65,7 +64,7 @@ def get_routes():
 
         methods = ','.join(rule.methods)
         url = url_for(rule.endpoint, **options)
-        line = urllib.parse.unquote(
+        line = parse.unquote(
             "{:50s} {:20s} {}".format(rule.endpoint, methods, url))
         output.append(line)
 
@@ -74,7 +73,4 @@ def get_routes():
 
 
 if __name__ == '__main__':
-    if current_env == 'prod':
-        app.run()
-    else:
-        app.run(debug=True, use_debugger=False, use_reloader=False, passthrough_errors=True)
+    manager.run()
