@@ -1,3 +1,5 @@
+# pylint: disable=no-self-use
+
 from app.main import db
 from app.main.model.device_group import DeviceGroup
 

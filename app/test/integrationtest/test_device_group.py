@@ -16,7 +16,7 @@ def admin() -> [User]:
                 email='admin@gmail.com',
                 registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
                 is_admin=True,
-                password='password')
+                password='testing_possward')
     db.session.add(user)
     db.session.commit()
 
@@ -58,7 +58,7 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
     test_device_groups = create_device_groups(
         [dict(
             name=old_name,
-            password='password',
+            password='testing_possward',
             product_key=product_key,
             user_id=admin.id
         )]

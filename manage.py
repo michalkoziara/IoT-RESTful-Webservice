@@ -1,5 +1,3 @@
-# pylint: disable=unused-import
-
 import os
 from urllib import parse
 
@@ -76,4 +74,7 @@ def get_routes():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, use_debugger=False, use_reloader=False, passthrough_errors=True)
+    if current_env == 'prod':
+        app.run()
+    else:
+        app.run(debug=True, use_debugger=False, use_reloader=False, passthrough_errors=True)
