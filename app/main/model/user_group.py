@@ -18,4 +18,4 @@ class UserGroup(db.Model):
     executive_devices = db.relationship('ExecutiveDevice', backref='user_group', lazy=True)
 
     users = db.relationship('User', secondary=user_group_member,
-        lazy='subquery', backref=db.backref('user_groups', lazy=True))
+                            lazy='subquery', backref=db.backref('user_groups', lazy=True))

@@ -1,6 +1,5 @@
-# pylint: disable=unused-import
-
 import os
+from urllib import parse
 
 import pytest
 from flask import url_for
@@ -8,23 +7,10 @@ from flask_migrate import Migrate
 from flask_migrate import MigrateCommand
 from flask_script import Manager
 
+import app.main.model
 from app import api
 from app.main import create_app
 from app.main import db
-from app.main.model.device_group import DeviceGroup
-from app.main.model.executive_device import ExecutiveDevice
-from app.main.model.executive_type import ExecutiveType
-from app.main.model.formula import Formula
-from app.main.model.log import Log
-from app.main.model.reading_enumerator import ReadingEnumerator
-from app.main.model.sensor import Sensor
-from app.main.model.sensor_reading import SensorReading
-from app.main.model.sensor_type import SensorType
-from app.main.model.state_enumerator import StateEnumerator
-from app.main.model.unconfigured_device import UnconfiguredDevice
-from app.main.model.user import User
-from app.main.model.user_group import UserGroup
-from app.main.model.user_group_member import user_group_member
 
 current_env = os.environ.get('APP_ENV', 'dev')
 app = create_app(current_env)
@@ -35,9 +21,11 @@ manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 
+
 @manager.command
 def run():
     app.run()
+
 
 @manager.command
 def test():
@@ -47,24 +35,26 @@ def test():
         return 0
     return 1
 
+
 @manager.command
-def testunit():
+def test_unit():
     """Runs the unit tests."""
     if pytest.main(["app/test/unittest"]):
         return 0
     return 1
 
+
 @manager.command
-def testintegration():
+def test_integration():
     """Runs the integration tests."""
     if pytest.main(["app/test/integrationtest",
                     "--cache-clear"]):
         return 0
     return 1
 
+
 @manager.command
-def routes():
-    import urllib
+def get_routes():
     output = []
     for rule in app.url_map.iter_rules():
 
@@ -74,12 +64,13 @@ def routes():
 
         methods = ','.join(rule.methods)
         url = url_for(rule.endpoint, **options)
-        line = urllib.parse.unquote(
+        line = parse.unquote(
             "{:50s} {:20s} {}".format(rule.endpoint, methods, url))
         output.append(line)
 
     for line in sorted(output):
         print(line)
+
 
 if __name__ == '__main__':
     manager.run()
