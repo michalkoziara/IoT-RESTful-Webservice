@@ -17,13 +17,3 @@ def client():
 
     db.session.remove()
     db.drop_all()
-
-
-@pytest.fixture
-def create_app_for_test():
-    def _create_app(config):
-        app.config.from_object(config)
-
-        return app
-
-    yield _create_app

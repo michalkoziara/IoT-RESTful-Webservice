@@ -1,4 +1,3 @@
-import os
 from urllib import parse
 
 import pytest
@@ -11,14 +10,15 @@ import app.main.model
 from app import api
 from app.main import create_app
 from app.main import db
+from app.main.util.constants import Constants
 
-current_env = os.environ.get('APP_ENV', 'dev')
-app = create_app(current_env)
+
+app = create_app(Constants.CURRENT_ENV)
 app.register_blueprint(api)
 app.app_context().push()
 
 manager = Manager(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 manager.add_command('db', MigrateCommand)
 
 
