@@ -4,7 +4,6 @@ from app.main.repository.device_group_repository import DeviceGroupRepository
 class DeviceGroupService:
     _instance = None
     _device_group_repository_instance = None
-    _user_repository_instance = None
 
     @staticmethod
     def get_instance():

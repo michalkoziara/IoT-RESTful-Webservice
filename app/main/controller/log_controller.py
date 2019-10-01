@@ -7,21 +7,16 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
-from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
-from app.main.model.user import User
 
 
-_device_group_service_instance = DeviceGroupService.get_instance()
 _logger = LogService.get_instance()
 
 
-@api.route('/hubs/<product_key>', methods=['PUT'])
-def modify_device_group(product_key):
+@api.route('/hubs/<product_key>/logs', methods=['POST'])
+def create_log(product_key):
     response = None
     status = None
-    new_name = None
-    user = None
     request_dict = None
 
     if not request.is_json:
@@ -40,10 +35,7 @@ def modify_device_group(product_key):
         try:
             request_dict = request.get_json()
 
-            try:
-                user = User.query.get(request_dict['userId'])
-                new_name = request_dict['name']
-            except KeyError as e:
+            if 'type' not in request_dict or 'creationDate' not in request_dict:
                 response = dict(errorMessage='The browser (or proxy) sent a request '
                                              'that this server could not understand.')
                 status = 400
@@ -52,7 +44,6 @@ def modify_device_group(product_key):
                         type='Error',
                         creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                         errorMessage=response['errorMessage'],
-                        stackTrace=traceback.format_exc(),
                         payload=json.dumps(request_dict)
                     ),
                     product_key
@@ -71,18 +62,14 @@ def modify_device_group(product_key):
             )
 
     if status is None:
-        result = _device_group_service_instance.change_name(
-            product_key,
-            new_name,
-            user)
+        result = _logger.log_exception(request_dict, product_key)
 
         if result is True:
-            response = dict(name=new_name)
-            status = 200
+            status = 201
         else:
-            response = dict(errorMessage='The browser (or proxy) sent '
-                                         'a request with conflicting data')
-            status = 409
+            response = dict(errorMessage='The browser (or proxy) sent a request '
+                                         'that this server could not understand.')
+            status = 400
             _logger.log_exception(
                 dict(
                     type='Error',
