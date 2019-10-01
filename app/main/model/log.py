@@ -12,8 +12,8 @@ class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(Enum(*_types, name="log_type"), nullable=False)
     error_message = db.Column(db.String(255))
-    stack_trace = db.Column(db.String(255))
-    payload = db.Column(db.String(255))
+    stack_trace = db.Column(db.Text)
+    payload = db.Column(db.Text)
     time = db.Column(db.Integer)
     creation_date = db.Column(db.DateTime, nullable=False)
 
