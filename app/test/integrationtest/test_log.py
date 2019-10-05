@@ -4,8 +4,25 @@ import json
 import pytest
 
 from app.main import db
-from app.main.model.device_group import DeviceGroup
 from app.main.model.log import Log
+from app.main.model.user import User
+
+
+@pytest.fixture()
+def create_admin():
+    """ Return a sample admin """
+    def _create_admin() -> User:
+        user = User(username='test_admin',
+                    email='admin@gmail.com',
+                    registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
+                    is_admin=True,
+                    password='testing_possward')  # nosec
+        db.session.add(user)
+        db.session.commit()
+
+        return user
+
+    yield _create_admin
 
 
 @pytest.fixture()
@@ -22,29 +39,26 @@ def log_one() -> Log:
     )
 
 
-@pytest.fixture
-def create_device_groups() -> [DeviceGroup]:
-    device_groups = []
+@pytest.fixture()
+def create_log_for_device_group():
+    """ Return a sample log with id 1 """
+    def _create_log(device_group_id: str) -> Log:
+        log = Log(
+            id=1,
+            type='Error',
+            creation_date=datetime.datetime(1985, 4, 12, 23, 20, 50, 520000),
+            error_message='error message',
+            stack_trace='stack trace',
+            payload='payload',
+            time=10,
+            device_group_id=device_group_id
+        )
+        db.session.add(log)
+        db.session.commit()
 
-    def _create_device_groups(values: {}) -> [DeviceGroup]:
-        for value in values:
-            device_group = DeviceGroup(
-                name=value['name'],
-                password=value['password'],
-                product_key=value['product_key'],
-                user_id=value['user_id']
-            )
-            device_groups.append(device_group)
-            db.session.add(device_group)
+        return log
 
-        if values is not None:
-            db.session.commit()
-
-        return device_groups
-
-    yield _create_device_groups
-
-    del device_groups[:]
+    yield _create_log
 
 
 def test_create_log_should_log_when_valid_request(
@@ -139,6 +153,77 @@ def test_create_log_should_return_error_message_when_bad_request(
 
     response_data = json.loads(response.data.decode())
     assert error_message in response_data['errorMessage']
+
+
+def test_get_logs_should_return_error_message_when_bad_request(
+        client,
+        create_device_groups,
+        create_admin,
+        create_log_for_device_group):
+    product_key = 'product_key'
+    content_type = 'application/json'
+    error_message = 'The browser (or proxy) sent a request that this server could not understand.'
+
+    admin = create_admin()
+    test_device_groups = create_device_groups(
+        [dict(
+            name='name',
+            password='testing_possward',  # nosec
+            product_key=product_key,
+            user_id=admin.id
+        )]
+    )
+    test_device_group = test_device_groups[0]
+    create_log_for_device_group(test_device_group.id)
+
+    response = client.get('/api/hubs/' + 'not' + product_key + '/logs',
+                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
+                          content_type=content_type
+                          )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert error_message == response_data['errorMessage']
+
+
+def test_get_logs_should_return_logs_when_valid_request(
+        client,
+        create_device_groups,
+        create_admin,
+        create_log_for_device_group):
+    product_key = 'product_key'
+    content_type = 'application/json'
+
+    admin = create_admin()
+    test_device_groups = create_device_groups(
+        [dict(
+            name='name',
+            password='testing_possward',  # nosec
+            product_key=product_key,
+            user_id=admin.id
+        )]
+    )
+    test_device_group = test_device_groups[0]
+    log = create_log_for_device_group(test_device_group.id)
+
+    response = client.get('/api/hubs/' + product_key + '/logs',
+                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
+                          content_type=content_type
+                          )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert log.type == response_data[0]['type']
+    assert log.error_message == response_data[0]['errorMessage']
+    assert log.stack_trace == response_data[0]['stackTrace']
+    assert log.payload == response_data[0]['payload']
+    assert log.time == response_data[0]['time']
+    assert log.creation_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ') == response_data[0]['creationDate']
 
 
 if __name__ == '__main__':

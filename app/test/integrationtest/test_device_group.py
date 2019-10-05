@@ -23,31 +23,6 @@ def admin() -> [User]:
     yield user
 
 
-@pytest.fixture
-def create_device_groups() -> [DeviceGroup]:
-    device_groups = []
-
-    def _create_device_groups(values: {}) -> [DeviceGroup]:
-        for value in values:
-            device_group = DeviceGroup(
-                    name=value['name'],
-                    password=value['password'],
-                    product_key=value['product_key'],
-                    user_id=value['user_id']
-                )
-            device_groups.append(device_group)
-            db.session.add(device_group)
-
-        if values is not None:
-            db.session.commit()
-
-        return device_groups
-
-    yield _create_device_groups
-
-    del device_groups[:]
-
-
 def test_modify_device_group_should_change_device_group_name_when_valid_request(
         client,
         admin,
@@ -72,7 +47,7 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
                           data=json.dumps(
                               dict(
                                   name=new_name,
-                                  userId=admin.id)
+                                  userId=admin.id)  # TODO Replace user request with token user
                           ),
                           content_type=content_type
                           )
@@ -100,7 +75,7 @@ def test_modify_device_group_should_return_error_message_when_mimetype_is_not_js
                           data=json.dumps(
                               dict(
                                   name=new_name,
-                                  userId=admin.id)
+                                  userId=admin.id)  # TODO Replace user request with token user
                           ),
                           content_type=content_type
                           )
