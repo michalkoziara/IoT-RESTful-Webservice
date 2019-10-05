@@ -7,6 +7,7 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
+from app.main.model.user import User
 from app.main.service.log_service import LogService
 
 
@@ -79,6 +80,38 @@ def create_log(product_key: str):
                 ),
                 product_key
             )
+
+    return Response(
+        response=json.dumps(response),
+        status=status,
+        mimetype='application/json')
+
+
+@api.route('/hubs/<product_key>/logs', methods=['GET'])
+def get_logs(product_key):
+    request_dict = request.get_json()  # TODO Replace user request with token user
+    user = User.query.get(request_dict['userId'])
+
+    result, result_values = _logger.get_log_values_for_device_group(
+        product_key,
+        user)
+
+    if result is True:
+        response = result_values
+        status = 200
+    else:
+        response = dict(errorMessage='The browser (or proxy) sent a request '
+                                     'that this server could not understand.')
+        status = 400
+        _logger.log_exception(
+            dict(
+                type='Error',
+                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                errorMessage=response['errorMessage'],
+                payload=json.dumps(request_dict)
+            ),
+            product_key
+        )
 
     return Response(
         response=json.dumps(response),
