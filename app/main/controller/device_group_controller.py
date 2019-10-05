@@ -41,7 +41,7 @@ def modify_device_group(product_key: str):
             request_dict = request.get_json()
 
             try:
-                user = User.query.get(request_dict['userId'])
+                user = User.query.get(request_dict['userId'])  # TODO Replace user request with token user
                 new_name = request_dict['name']
             except KeyError as e:
                 response = dict(errorMessage='The browser (or proxy) sent a request '
