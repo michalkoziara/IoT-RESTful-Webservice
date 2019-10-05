@@ -5,24 +5,7 @@ import pytest
 
 from app.main import db
 from app.main.model.log import Log
-from app.main.model.user import User
-
-
-@pytest.fixture()
-def create_admin():
-    """ Return a sample admin """
-    def _create_admin() -> User:
-        user = User(username='test_admin',
-                    email='admin@gmail.com',
-                    registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
-                    is_admin=True,
-                    password='testing_possward')  # nosec
-        db.session.add(user)
-        db.session.commit()
-
-        return user
-
-    yield _create_admin
+from app.main.util.constants import Constants
 
 
 @pytest.fixture()
@@ -128,13 +111,13 @@ def test_create_log_should_return_error_message_when_mimetype_is_not_json(
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
-    error_message = 'The browser (or proxy) sent a request with mimetype that does not indicate JSON data'
+    error_message = Constants.RESPONSE_MESSAGE_BAD_MIMETYPE
 
     assert response_data['errorMessage'] == error_message
 
 
 @pytest.mark.parametrize("request_data, error_message", [
-    (json.dumps(dict(test='test')), 'The browser (or proxy) sent a request that this server could not understand.'),
+    (json.dumps(dict(test='test')), Constants.RESPONSE_MESSAGE_BAD_REQUEST),
     ("{/fe/", 'Failed to decode JSON object')])
 def test_create_log_should_return_error_message_when_bad_request(
         client,
@@ -162,7 +145,6 @@ def test_get_logs_should_return_error_message_when_bad_request(
         create_log_for_device_group):
     product_key = 'product_key'
     content_type = 'application/json'
-    error_message = 'The browser (or proxy) sent a request that this server could not understand.'
 
     admin = create_admin()
     test_device_groups = create_device_groups(
@@ -185,6 +167,8 @@ def test_get_logs_should_return_error_message_when_bad_request(
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
+    error_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
     assert error_message == response_data['errorMessage']
 
 

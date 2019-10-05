@@ -1,34 +1,18 @@
-import datetime
 import json
 
 import pytest
 
-from app.main import db
 from app.main.model.device_group import DeviceGroup
-from app.main.model.user import User
-
-
-@pytest.fixture()
-def admin() -> [User]:
-    """ Return a sample admin """
-
-    user = User(username='test_admin',
-                email='admin@gmail.com',
-                registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
-                is_admin=True,
-                password='testing_possward')  # nosec
-    db.session.add(user)
-    db.session.commit()
-
-    yield user
+from app.main.util.constants import Constants
 
 
 def test_modify_device_group_should_change_device_group_name_when_valid_request(
         client,
-        admin,
+        create_admin,
         create_device_groups):
     product_key = 'test_product_key'
     old_name = 'name'
+    admin = create_admin()
 
     test_device_groups = create_device_groups(
         [dict(
@@ -65,10 +49,11 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
 
 def test_modify_device_group_should_return_error_message_when_mimetype_is_not_json(
         client,
-        admin):
+        create_admin):
 
     product_key = 'test_product_key'
     new_name = 'new_name'
+    admin = create_admin()
     content_type = 'text'
 
     response = client.put('/api/hubs/' + product_key,
@@ -84,13 +69,13 @@ def test_modify_device_group_should_return_error_message_when_mimetype_is_not_js
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
-    error_message = 'The browser (or proxy) sent a request with mimetype that does not indicate JSON data'
+    error_message = Constants.RESPONSE_MESSAGE_BAD_MIMETYPE
 
     assert response_data['errorMessage'] == error_message
 
 
 @pytest.mark.parametrize("request_data, error_message", [
-    (json.dumps(dict(test='test')), 'The browser (or proxy) sent a request that this server could not understand.'),
+    (json.dumps(dict(test='test')), Constants.RESPONSE_MESSAGE_BAD_REQUEST),
     ("{/fe/", 'Failed to decode JSON object')])
 def test_modify_device_group_should_return_error_message_when_bad_request(
         client,
