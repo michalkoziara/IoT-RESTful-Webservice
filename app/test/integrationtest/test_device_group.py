@@ -27,7 +27,7 @@ def admin() -> [User]:
 def create_device_groups() -> [DeviceGroup]:
     device_groups = []
 
-    def _create_device_groups(values):
+    def _create_device_groups(values: {}) -> [DeviceGroup]:
         for value in values:
             device_group = DeviceGroup(
                     name=value['name'],

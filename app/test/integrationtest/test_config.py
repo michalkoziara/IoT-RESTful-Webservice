@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from flask import current_app
+from flask import Flask
 
 from app.main.config import DevelopmentConfig
 from app.main.config import ProductionConfig
@@ -10,7 +11,7 @@ from manage import app
 
 
 @pytest.fixture
-def create_app_for_test():
+def create_app_for_test() -> Flask:
     def _create_app(config):
         app.config.from_object(config)
 

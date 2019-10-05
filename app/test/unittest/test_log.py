@@ -29,7 +29,7 @@ def log_one() -> Log:
 def create_device_groups() -> [DeviceGroup]:
     device_groups = []
 
-    def _create_device_groups(product_keys):
+    def _create_device_groups(product_keys: [str]) -> [DeviceGroup]:
         number_of_device_groups = 1
         for product_key in product_keys:
             device_groups.append(
@@ -71,7 +71,7 @@ def test_log_exception_should_log_data_when_valid_product_key_and_data(
             save_mock.return_value = True
 
             result = log_service_instance.log_exception(log_values, test_product_key)
-            args, kwargs = save_mock.call_args_list[0]
+            args = save_mock.call_args_list[0][0]
             created_log = args[0]
 
     assert log_one.type == created_log.type

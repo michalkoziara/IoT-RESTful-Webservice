@@ -14,7 +14,7 @@ _logger = LogService.get_instance()
 
 
 @api.route('/hubs/<product_key>/logs', methods=['POST'])
-def create_log(product_key):
+def create_log(product_key: str):
     response = None
     status = None
     request_dict = None

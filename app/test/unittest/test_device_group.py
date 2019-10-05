@@ -24,7 +24,7 @@ def admin_one() -> User:
 def create_device_groups() -> [DeviceGroup]:
     device_groups = []
 
-    def _create_device_groups(product_keys):
+    def _create_device_groups(product_keys: [str]) -> [DeviceGroup]:
         number_of_device_groups = 1
         for product_key in product_keys:
             device_groups.append(

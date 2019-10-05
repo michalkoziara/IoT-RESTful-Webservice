@@ -8,21 +8,22 @@ from app.main.repository.log_repository import LogRepository
 
 class LogService:
     _instance = None
+
     _device_group_repository_instance = None
     _log_repository_instance = None
 
-    @staticmethod
-    def get_instance():
-        if LogService._instance is None:
-            LogService._instance = LogService()
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
 
-        return LogService._instance
+        return cls._instance
 
     def __init__(self):
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._log_repository_instance = LogRepository.get_instance()
 
-    def log_exception(self, log_values, product_key):
+    def log_exception(self, log_values: {}, product_key: str) -> bool:
         if Constants.LOGGER_OFF == 'True':
             return False
 

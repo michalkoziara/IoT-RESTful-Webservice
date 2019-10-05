@@ -17,7 +17,7 @@ _logger = LogService.get_instance()
 
 
 @api.route('/hubs/<product_key>', methods=['PUT'])
-def modify_device_group(product_key):
+def modify_device_group(product_key: str):
     response = None
     status = None
     new_name = None
