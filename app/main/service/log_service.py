@@ -1,7 +1,11 @@
 import datetime
+from typing import List
+from typing import Tuple
+from typing import Optional
 
 from app.main.util.constants import Constants
 from app.main.model.log import Log
+from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.log_repository import LogRepository
 
@@ -68,3 +72,37 @@ class LogService:
             log.time = log_values['time']
 
         return self._log_repository_instance.save(log)
+
+    def get_log_values_for_device_group(self, product_key: str, user: User) \
+            -> Tuple[bool, Optional[List[dict]]]:
+        if user is None or \
+                product_key is None or \
+                user.is_admin is False:
+            return False, None
+
+        user_device_group = self._device_group_repository_instance.\
+            get_device_group_by_user_id(user.id)
+
+        if user_device_group is None or \
+                user_device_group.product_key != product_key:
+            return False, None
+
+        logs = self._log_repository_instance.get_logs_by_device_group_id(user_device_group.id)
+
+        if logs is None or len(logs) == 0:
+            return False, None
+
+        log_values = []
+        for log in logs:
+            log_values.append(
+                {
+                    'type': log.type,
+                    'errorMessage': log.error_message,
+                    'stackTrace': log.stack_trace,
+                    'payload': log.payload,
+                    'time': log.time,
+                    'creationDate': log.creation_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                }
+            )
+
+        return True, log_values
