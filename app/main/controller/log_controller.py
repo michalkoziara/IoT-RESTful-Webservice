@@ -9,6 +9,7 @@ from werkzeug.exceptions import BadRequest
 from app import api
 from app.main.model.user import User
 from app.main.service.log_service import LogService
+from app.main.util.constants import Constants
 
 
 _logger = LogService.get_instance()
@@ -21,8 +22,7 @@ def create_log(product_key: str):
     request_dict = None
 
     if not request.is_json:
-        response = dict(errorMessage='The browser (or proxy) sent a request with '
-                                     'mimetype that does not indicate JSON data')
+        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
         status = 400
         _logger.log_exception(
             dict(
@@ -37,8 +37,7 @@ def create_log(product_key: str):
             request_dict = request.get_json()
 
             if 'type' not in request_dict or 'creationDate' not in request_dict:
-                response = dict(errorMessage='The browser (or proxy) sent a request '
-                                             'that this server could not understand.')
+                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
                 _logger.log_exception(
                     dict(
@@ -68,8 +67,7 @@ def create_log(product_key: str):
         if result is True:
             status = 201
         else:
-            response = dict(errorMessage='The browser (or proxy) sent a request '
-                                         'that this server could not understand.')
+            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
             status = 400
             _logger.log_exception(
                 dict(
@@ -100,8 +98,7 @@ def get_logs(product_key):
         response = result_values
         status = 200
     else:
-        response = dict(errorMessage='The browser (or proxy) sent a request '
-                                     'that this server could not understand.')
+        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
         status = 400
         _logger.log_exception(
             dict(
