@@ -1,0 +1,22 @@
+# .coveragerc to control coverage.py
+[run]
+omit =
+    */test/*
+    */env/*
+    */instance/*
+
+[report]
+omit =
+    */test/*
+    */env/*
+    */instance/*
+fail_under = 75
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:

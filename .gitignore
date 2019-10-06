@@ -1,6 +1,9 @@
 # Flask DB Boilerplate
-app/main/flask_boilerplate_test.db
-app/main/flask_boilerplate_main.db
+flask_boilerplate_test.db
+flask_boilerplate_main.db
+
+# PyCharm
+.idea
 
 # Visual Studio Code
 .vscode
@@ -53,6 +56,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+unit_test_report.xml
 
 # Translations
 *.mo
