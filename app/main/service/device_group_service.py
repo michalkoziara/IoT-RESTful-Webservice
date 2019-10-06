@@ -1,21 +1,23 @@
+from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 
 
 class DeviceGroupService:
     _instance = None
+
     _device_group_repository_instance = None
 
-    @staticmethod
-    def get_instance():
-        if DeviceGroupService._instance is None:
-            DeviceGroupService._instance = DeviceGroupService()
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
 
-        return DeviceGroupService._instance
+        return cls._instance
 
     def __init__(self):
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
 
-    def change_name(self, product_key, new_name, user):
+    def change_name(self, product_key: str, new_name: str, user: User) -> bool:
         if user is None or \
                 new_name is None or \
                 product_key is None or \

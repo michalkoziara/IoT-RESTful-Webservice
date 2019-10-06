@@ -10,6 +10,7 @@ from app import api
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
 from app.main.model.user import User
+from app.main.util.constants import Constants
 
 
 _device_group_service_instance = DeviceGroupService.get_instance()
@@ -17,7 +18,7 @@ _logger = LogService.get_instance()
 
 
 @api.route('/hubs/<product_key>', methods=['PUT'])
-def modify_device_group(product_key):
+def modify_device_group(product_key: str):
     response = None
     status = None
     new_name = None
@@ -25,8 +26,7 @@ def modify_device_group(product_key):
     request_dict = None
 
     if not request.is_json:
-        response = dict(errorMessage='The browser (or proxy) sent a request with '
-                                     'mimetype that does not indicate JSON data')
+        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
         status = 400
         _logger.log_exception(
             dict(
@@ -41,11 +41,10 @@ def modify_device_group(product_key):
             request_dict = request.get_json()
 
             try:
-                user = User.query.get(request_dict['userId'])
+                user = User.query.get(request_dict['userId'])  # TODO Replace user request with token user
                 new_name = request_dict['name']
             except KeyError as e:
-                response = dict(errorMessage='The browser (or proxy) sent a request '
-                                             'that this server could not understand.')
+                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
                 _logger.log_exception(
                     dict(
@@ -80,8 +79,7 @@ def modify_device_group(product_key):
             response = dict(name=new_name)
             status = 200
         else:
-            response = dict(errorMessage='The browser (or proxy) sent '
-                                         'a request with conflicting data')
+            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_CONFLICTING_DATA)
             status = 409
             _logger.log_exception(
                 dict(

@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 
 from app.main.model.user import User
-from app.main.model.device_group import DeviceGroup
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.repository.device_group_repository import DeviceGroupRepository
 
@@ -18,27 +17,6 @@ def user_one() -> User:
 def admin_one() -> User:
     """ Return a sample admin with id 1 """
     yield User(id=1, is_admin=True)
-
-
-@pytest.fixture
-def create_device_groups() -> [DeviceGroup]:
-    device_groups = []
-
-    def _create_device_groups(product_keys):
-        number_of_device_groups = 1
-        for product_key in product_keys:
-            device_groups.append(
-                DeviceGroup(
-                    id=number_of_device_groups,
-                    product_key=product_key)
-            )
-            number_of_device_groups += 1
-
-        return device_groups
-
-    yield _create_device_groups
-
-    del device_groups[:]
 
 
 def test_change_name_should_change_device_group_name_when_valid_product_key_for_user(
