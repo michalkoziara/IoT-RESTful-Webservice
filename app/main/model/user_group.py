@@ -8,7 +8,7 @@ class UserGroup(db.Model):
     __tablename__ = "user_group"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False, unique=True)
+    name = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
