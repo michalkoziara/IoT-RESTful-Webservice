@@ -61,7 +61,7 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
     assert response_data[0] == device_key
 
 
-def test_get_unconfigured_devices_should_not_return_device_keys_when_invalid_request(
+def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid_request(
         client,
         create_device_groups,
         user):
