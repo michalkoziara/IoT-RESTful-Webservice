@@ -1,5 +1,6 @@
 import datetime
 from typing import List
+from typing import Dict
 from typing import Tuple
 from typing import Optional
 
@@ -27,8 +28,8 @@ class LogService:
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._log_repository_instance = LogRepository.get_instance()
 
-    def log_exception(self, log_values: {}, product_key: str) -> bool:
-        if Constants.LOGGER_OFF == 'True':
+    def log_exception(self, log_values: Dict[str, str], product_key: str) -> bool:
+        if Constants.LOGGER_LEVEL_OFF == 'ALL':
             return False
 
         if product_key is None or \
@@ -37,7 +38,9 @@ class LogService:
                 'type' not in log_values or (
                 log_values['type'] != 'Debug' and
                 log_values['type'] != 'Error' and
-                log_values['type'] != 'Info'):
+                log_values['type'] != 'Info') or (
+                Constants.LOGGER_LEVEL_OFF is not None and
+                log_values['type'] in Constants.LOGGER_LEVEL_OFF):
             return False
 
         try:
@@ -45,12 +48,14 @@ class LogService:
                 log_values['creationDate'],
                 '%Y-%m-%dT%H:%M:%S.%fZ')
         except ValueError:
+            print(log_values)
             return False
 
         device_group = \
             self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
+            print(log_values)
             return False
 
         log = Log(
@@ -80,7 +85,7 @@ class LogService:
                 user.is_admin is False:
             return False, None
 
-        user_device_group = self._device_group_repository_instance.\
+        user_device_group = self._device_group_repository_instance. \
             get_device_group_by_user_id(user.id)
 
         if user_device_group is None or \
@@ -89,7 +94,7 @@ class LogService:
 
         logs = self._log_repository_instance.get_logs_by_device_group_id(user_device_group.id)
 
-        if logs is None or len(logs) == 0:
+        if logs is None:
             return False, None
 
         log_values = []

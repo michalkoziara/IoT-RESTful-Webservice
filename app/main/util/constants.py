@@ -2,7 +2,7 @@ import os
 
 
 class Constants:
-    LOGGER_OFF = os.environ.get('LOGGER_OFF')
+    LOGGER_LEVEL_OFF = os.environ.get('LOGGER_LEVEL_OFF')
 
     CURRENT_ENV = os.environ.get('APP_ENV', 'dev')
 
