@@ -179,7 +179,7 @@ def test_log_exception_should_log_data_when_logger_set_off(
         time=log_one.time
     )
 
-    with patch.object(Constants, 'LOGGER_OFF', 'True'):
+    with patch.object(Constants, 'LOGGER_LEVEL_OFF', 'ALL'):
         result = log_service_instance.log_exception(log_values, test_product_key)
 
     assert result is False
@@ -214,7 +214,7 @@ def test_get_log_values_for_device_group_should_return_log_values_when_valid_pro
     assert result_values[0]['creationDate'] == log.creation_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
-def test_get_log_values_for_device_group_should_not_return_values_when_no_logs(
+def test_get_log_values_for_device_group_should_not_return_values_when_no_log_list(
         admin_one,
         create_device_groups):
     log_service_instance = LogService.get_instance()
@@ -228,7 +228,7 @@ def test_get_log_values_for_device_group_should_not_return_values_when_no_logs(
 
         with patch.object(LogRepository, 'get_logs_by_device_group_id')\
                 as get_logs_by_device_group_id_mock:
-            get_logs_by_device_group_id_mock.return_value = []
+            get_logs_by_device_group_id_mock.return_value = None
 
             result, result_values = log_service_instance.get_log_values_for_device_group(test_product_key, admin_one)
 
