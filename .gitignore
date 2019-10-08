@@ -100,7 +100,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+webservice_venv/
 # Spyder project settings
 .spyderproject
 .spyproject
