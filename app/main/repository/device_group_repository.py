@@ -1,16 +1,15 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main import db
 from app.main.model.device_group import DeviceGroup
 from app.main.model.user_group import UserGroup
 
-from sqlalchemy import and_
-from sqlalchemy.exc import SQLAlchemyError
-
 
 class DeviceGroupRepository:
-
     _instance = None
 
     @classmethod

@@ -1,9 +1,9 @@
 # pylint: disable=no-self-use
 from typing import List
 
-from app.main.model.executive_device import ExecutiveDevice
-
 from sqlalchemy import and_
+
+from app.main.model.executive_device import ExecutiveDevice
 
 
 class ExecutiveDeviceRepository:
@@ -24,3 +24,11 @@ class ExecutiveDeviceRepository:
                 ExecutiveDevice.is_updated
             )
         ).all()
+
+    def get_executive_device_by_device_key_and_device_group_id(self, device_key: str,
+                                                               device_group_id: int) -> ExecutiveDevice:
+        return ExecutiveDevice.query.filter(and_(
+            ExecutiveDevice.device_group_id == device_group_id,
+            ExecutiveDevice.device_key == device_key
+        )
+        ).first()
