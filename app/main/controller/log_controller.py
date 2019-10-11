@@ -11,7 +11,6 @@ from app.main.model.user import User
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
 
-
 _logger = LogService.get_instance()
 
 
@@ -88,7 +87,7 @@ def create_log(product_key: str):
 @api.route('/hubs/<product_key>/logs', methods=['GET'])
 def get_logs(product_key):
     request_dict = request.get_json()  # TODO Replace user request with token user
-    user = User.query.get(request_dict['userId'])
+    user = User.query.get(int(request.headers.get('userId')))
 
     result, result_values = _logger.get_log_values_for_device_group(
         product_key,
