@@ -1,7 +1,10 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from app.main import db
 from app.main.model.unconfigured_device import UnconfiguredDevice
+
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class UnconfiguredDeviceRepository:
@@ -17,3 +20,13 @@ class UnconfiguredDeviceRepository:
 
     def get_unconfigured_devices_by_device_group_id(self, device_group_id: str) -> List[UnconfiguredDevice]:
         return UnconfiguredDevice.query.filter(UnconfiguredDevice.device_group_id == device_group_id).all()
+
+    def save(self, unconfigured_device: UnconfiguredDevice) -> bool:
+        try:
+            db.session.add(unconfigured_device)
+            db.session.commit()
+            result = True
+        except SQLAlchemyError:
+            result = False
+
+        return result
