@@ -12,7 +12,7 @@ class FormulaRepository:
 
         return cls._instance
 
-    def get_formula_by_id(self, id: str):
+    def get_formula_by_id(self, formula_id: str):
         return Formula.query.filter(
-            Formula.id == id
+            Formula.id == formula_id
         ).first()
