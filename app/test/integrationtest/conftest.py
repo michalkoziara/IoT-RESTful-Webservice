@@ -118,30 +118,6 @@ def create_user_groups() -> [UserGroup]:
 
 
 @pytest.fixture
-def create_unconfigured_devices():
-    unconfigured_devices = []
-
-    def _create_unconfigured_devices(values: List[dict]) -> List[UnconfiguredDevice]:
-        for value in values:
-            unconfigured_device = UnconfiguredDevice(
-                device_key=value['device_key'],
-                password=value['password'],
-                device_group_id=value['device_group_id']
-            )
-            unconfigured_devices.append(unconfigured_device)
-            db.session.add(unconfigured_device)
-
-        if unconfigured_devices:
-            db.session.commit()
-
-        return unconfigured_devices
-
-    yield _create_unconfigured_devices
-
-    del unconfigured_devices[:]
-
-
-@pytest.fixture
 def create_sensors():
     sensors = []
 
