@@ -1,5 +1,3 @@
-from sqlalchemy import and_
-
 from app.main.model.executive_type import ExecutiveType
 
 

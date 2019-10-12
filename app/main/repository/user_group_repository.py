@@ -2,7 +2,6 @@
 from sqlalchemy import and_
 
 from app.main.model.user_group import UserGroup
-from app.main.model.user_group_member import user_group_member
 
 
 class UserGroupRepository:

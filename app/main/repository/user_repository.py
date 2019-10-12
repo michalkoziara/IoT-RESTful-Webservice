@@ -1,7 +1,6 @@
 # pylint: disable=no-self-use
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
-from app.main.model.user_group_member import user_group_member
 
 
 class UserRepository:
