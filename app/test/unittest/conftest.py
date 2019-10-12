@@ -1,10 +1,13 @@
 import pytest
 from typing import Dict
 from typing import List
+from typing import Optional
+from typing import Union
 
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.sensor import Sensor
+from app.main.model.unconfigured_device import UnconfiguredDevice
 
 
 @pytest.fixture
@@ -89,3 +92,48 @@ def create_executive_devices():
     yield _create_executive_devices
 
     del executive_devices[:]
+
+
+@pytest.fixture
+def default_unconfigured_device_values() -> Dict[str, Optional[Union[str, int]]]:
+    return {
+        'id': 1,
+        'device_key': 'device_key',
+        'password': 'password',
+        'device_group_id': 1
+    }
+
+
+@pytest.fixture
+def create_unconfigured_device(
+        create_unconfigured_devices,
+        default_unconfigured_device_values):
+
+    def _create_unconfigured_device(values: Optional[Dict[str, str]] = None) -> UnconfiguredDevice:
+        if values is None:
+            values = default_unconfigured_device_values
+
+        return create_unconfigured_devices([values])[0]
+
+    return _create_unconfigured_device
+
+
+@pytest.fixture
+def create_unconfigured_devices():
+    unconfigured_devices = []
+
+    def _create_unconfigured_devices(values: List[Dict[str, str]]) -> List[UnconfiguredDevice]:
+        for value in values:
+            unconfigured_devices.append(
+                UnconfiguredDevice(
+                    id=value['id'],
+                    device_key=value['device_key'],
+                    password=value['password'],
+                    device_group_id=value['device_group_id']
+                )
+            )
+        return unconfigured_devices
+
+    yield _create_unconfigured_devices
+
+    del unconfigured_devices[:]
