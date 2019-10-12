@@ -157,7 +157,7 @@ def executive_type_default_values():
         'state_type': 'enum',
         'state_range_min': 0.0,
         'state_range_max': 1.0,
-        'device_group_id': 1,
+        'device_group_id': 1
     }
 
 
@@ -175,8 +175,8 @@ def create_executive_device_type(executive_type_default_values):
                                        )
         return executive_type
 
-    yield _create_executive_device_type
-    del _create_executive_device_type
+    return _create_executive_device_type
+
 
 
 @pytest.fixture
