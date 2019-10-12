@@ -1,10 +1,10 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main import db
 from app.main.model import Log
-
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class LogRepository:

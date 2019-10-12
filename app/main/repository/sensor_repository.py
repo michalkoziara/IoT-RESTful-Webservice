@@ -1,9 +1,9 @@
 # pylint: disable=no-self-use
 from typing import List
 
-from app.main.model.sensor import Sensor
-
 from sqlalchemy import and_
+
+from app.main.model.sensor import Sensor
 
 
 class SensorRepository:

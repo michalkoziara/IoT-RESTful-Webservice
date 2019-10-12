@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use
 from app.main.model.executive_type import ExecutiveType
 
 
