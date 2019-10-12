@@ -12,3 +12,4 @@ from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
 from app.main.model.user_group_member import user_group_member
+from app.main.model.formula import Formula
