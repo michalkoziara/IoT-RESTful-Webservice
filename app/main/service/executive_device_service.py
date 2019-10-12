@@ -45,12 +45,17 @@ class ExecutiveDeviceService:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         executive_device = self._executive_device_repository.get_executive_device_by_device_key_and_device_group_id(
-            device_key, device_group.id)
+            device_key,
+            device_group.id
+        )
+
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
-        user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(user_id,
-                                                                                                           device_key)
+        user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(
+            user_id,
+            device_key
+        )
         if not user_group:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
@@ -60,17 +65,18 @@ class ExecutiveDeviceService:
         executive_device_info['isUpdated'] = executive_device.is_updated
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
-        executive_device_info['positive_state'] = executive_device.positive_state
-        executive_device_info['negative_state'] = executive_device.negative_state
-        executive_device_info['device_key'] = executive_device.device_key
-        executive_device_info['deviceUserGroup'] = user_group.name
+        executive_device_info['isPositiveState'] = executive_device.positive_state
+        executive_device_info['isNegativeState'] = executive_device.negative_state
+        executive_device_info['deviceKey'] = executive_device.device_key
 
         executive_device_type = self._executive_device_type_repository.get_executive_type_by_id(
-            executive_device.executive_type_id)
+            executive_device.executive_type_id
+        )
         executive_device_info['deviceTypeName'] = executive_device_type.name
+        executive_device_info['deviceUserGroup'] = user_group.name
 
-        formula = self._formula_repository.get_formula_by_id(
-            executive_device.formula_id)
+        formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
+
         if formula:
             executive_device_info['formulaName'] = formula.name
         else:

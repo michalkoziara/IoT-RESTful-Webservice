@@ -111,7 +111,7 @@ def create_executive_device(executive_device_default_values, create_executive_de
     default_values = executive_device_default_values
 
     def _create_executive_device(values: dict = default_values):
-        return (create_executive_devices([values])[0])
+        return create_executive_devices([values])[0]
 
     return _create_executive_device
 
