@@ -57,9 +57,9 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
             as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(ExecutiveDeviceRepository, 'get_executive_devices_by_device_group_id_and_update_status') \
-                as get_executive_devices_by_device_group_id_and_update_status_mock:
-            get_executive_devices_by_device_group_id_and_update_status_mock.return_value = executive_devices
+        with patch.object(ExecutiveDeviceRepository, 'get_updated_executive_devices_by_device_group_id') \
+                as get_updated_executive_devices_by_device_group_id_mock:
+            get_updated_executive_devices_by_device_group_id_mock.return_value = executive_devices
 
             with patch.object(SensorRepository, 'get_sensors_by_device_group_id_and_update_status') \
                     as get_sensors_by_device_group_id_and_update_status_mock:
@@ -115,9 +115,9 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
             as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(ExecutiveDeviceRepository, 'get_executive_devices_by_device_group_id_and_update_status') \
-                as get_executive_devices_by_device_group_id_and_update_status_mock:
-            get_executive_devices_by_device_group_id_and_update_status_mock.return_value = []
+        with patch.object(ExecutiveDeviceRepository, 'get_updated_executive_devices_by_device_group_id') \
+                as get_updated_executive_devices_by_device_group_id_mock:
+            get_updated_executive_devices_by_device_group_id_mock.return_value = []
 
             with patch.object(SensorRepository, 'get_sensors_by_device_group_id_and_update_status') \
                     as get_sensors_by_device_group_id_and_update_status_mock:

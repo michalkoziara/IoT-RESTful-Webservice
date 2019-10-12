@@ -41,7 +41,7 @@ class HubService:
             return False, None
 
         executive_devices = \
-            self._executive_device_repository_instance.get_executive_devices_by_device_group_id_and_update_status(
+            self._executive_device_repository_instance.get_updated_executive_devices_by_device_group_id(
                 device_group.id
             )
 
