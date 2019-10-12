@@ -118,12 +118,12 @@ def test_get_executive_device_info_should_not_return_device_info_when_user_is_no
                 as get_device_group_by_product_key_mock:
             get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(UserGroupRepository,
-                          'get_user_group_by_user_id_and_executive_device_device_key')  as get_user_group_by_user_id_and_executive_device_device_key_mock:
-            get_user_group_by_user_id_and_executive_device_device_key_mock.return_value = None
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_user_id_and_executive_device_device_key')  as get_user_group_by_user_id_and_executive_device_device_key_mock:
+                get_user_group_by_user_id_and_executive_device_device_key_mock.return_value = None
 
-            result, result_values = executive_device_service_instance.get_executive_device_info(
-                executive_device.device_key, device_group.product_key, test_user_id)
+                result, result_values = executive_device_service_instance.get_executive_device_info(
+                    executive_device.device_key, device_group.product_key, test_user_id)
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
