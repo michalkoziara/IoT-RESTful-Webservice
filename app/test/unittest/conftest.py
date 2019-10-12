@@ -2,9 +2,34 @@ import pytest
 from typing import Dict
 from typing import List
 
+from app.main.model.executive_type import ExecutiveType
+from app.main.model.formula import Formula
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.sensor import Sensor
+
+
+@pytest.fixture
+def device_group_default_values():
+    return {
+        'id': 1,
+        'name': 'default device group',
+        'password': 'default password',
+        'product_key': 'default product key',
+        'user_id': 1
+    }
+
+
+@pytest.fixture
+def create_device_group(device_group_default_values):
+    default_values = device_group_default_values
+
+    def _create_device_group(values: dict = default_values):
+        device_group = DeviceGroup(id=values["id"], name=values["name"], password=values["password"],
+                                   product_key=values["product_key"], user_id=values["user_id"])
+        return device_group
+
+    return _create_device_group
 
 
 @pytest.fixture
@@ -59,6 +84,34 @@ def create_sensors():
 
 
 @pytest.fixture
+def executive_device_default_values(executive_type_default_values, device_group_default_values):
+    return {
+        'id': 1,
+        'name': 'executive_device_default_name',
+        'state': 'default state',
+        'is_updated': True,
+        'is_active': True,
+        'is_assigned': False,
+        'positive_state': None,
+        'negative_state': None,
+        'device_key': 'default executive device key',
+        'executive_type_id': executive_type_default_values['id'],
+        'device_group_id': device_group_default_values['id'],
+        'user_group_id': 1,
+        'formula_id': 1
+    }
+
+@pytest.fixture
+def create_executive_device(executive_device_default_values, create_executive_devices):
+    default_values = executive_device_default_values
+
+    def _create_executive_device(values: dict = default_values):
+        return (create_executive_devices([values]))[0]
+
+    return _create_executive_device
+
+
+@pytest.fixture
 def create_executive_devices():
     executive_devices = []
 
@@ -89,3 +142,58 @@ def create_executive_devices():
     yield _create_executive_devices
 
     del executive_devices[:]
+
+
+@pytest.fixture
+def executive_type_default_values():
+    return {
+        'id': 1,
+        'name': 'test',
+        'state_type': 'enum',
+        'state_range_min': 0.0,
+        'state_range_max': 1.0,
+        'device_group_id': 1,
+    }
+
+
+@pytest.fixture
+def create_executive_device_type(executive_type_default_values):
+    default_values = executive_type_default_values
+
+    def _create_executive_device_type(values: dict = default_values):
+        executive_type = ExecutiveType(id=values['id'],
+                                       name=values['name'],
+                                       state_type=values['state_type'],
+                                       state_range_min=values['state_range_min'],
+                                       state_range_max=values['state_range_max'],
+                                       device_group_id=values['device_group_id']
+                                       )
+        return executive_type
+
+    yield _create_executive_device_type
+    del _create_executive_device_type
+
+
+@pytest.fixture
+def formula_default_values():
+    return {
+        'id': 1,
+        'name': 'default formula name',
+        'rule': 'default rule',
+        'user_group_id': 1
+    }
+
+
+@pytest.fixture
+def create_formula(formula_default_values):
+    default_values = formula_default_values
+
+    def _create_formula(values: dict = default_values):
+        formula = Formula(id=values['id'],
+                          name=values['name'],
+                          rule=values['rule'],
+                          user_group_id=values['user_group_id'])
+
+        return formula
+
+    return _create_formula
