@@ -41,19 +41,16 @@ class ExecutiveDeviceService:
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
-        # Check if device group exists
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         executive_device = self._executive_device_repository.get_executive_device_by_device_key_and_device_group_id(
             device_key, device_group.id)
-        # Check if executive device is in that device group
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
         user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(user_id,
                                                                                                            device_key)
-        # Check if user is in the same user group as executive device
         if not user_group:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 

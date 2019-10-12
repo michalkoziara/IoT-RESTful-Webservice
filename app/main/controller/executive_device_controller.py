@@ -14,7 +14,7 @@ _executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
 
 @api.route('/hubs/<product_key>/executive-devices/<device_key>', methods=['GET'])
-def get_executive_device_info(product_key: str, device_key: str):
+def get_executive_device(product_key: str, device_key: str):
     user_id = request.headers.get('userId')
 
     result, result_values = _executive_device_service_instance.get_executive_device_info(device_key,
