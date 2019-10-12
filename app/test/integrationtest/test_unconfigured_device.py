@@ -10,7 +10,8 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
         create_device_groups,
         user,
         create_user_groups,
-        create_unconfigured_devices):
+        default_unconfigured_device_values,
+        create_unconfigured_device):
     product_key = 'product_key'
     device_key = 'device_key'
     content_type = 'application/json'
@@ -37,15 +38,12 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
             )
         ]
     )
-    create_unconfigured_devices(
-        [
-            dict(
-                device_key=device_key,
-                password='password',
-                device_group_id=test_device_group.id
-            )
-        ]
-    )
+
+    unconfigured_device_values = default_unconfigured_device_values
+    unconfigured_device_values['device_key'] = device_key
+    unconfigured_device_values['device_group_id'] = test_device_group.id
+
+    create_unconfigured_device(unconfigured_device_values)
 
     response = client.get('/api/hubs/' + product_key + '/non-configured-devices',
                           data=json.dumps({'userId': user.id}),  # TODO Replace user request with token user
