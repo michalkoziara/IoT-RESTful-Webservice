@@ -30,20 +30,14 @@ class ExecutiveDeviceService:
 
     def get_executive_device_info(self, device_key: str, product_key: str, user_id: str):
 
-        if not user_id:
-            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
-
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         if not device_key:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
-        user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(user_id,
-                                                                                                           device_key)
-        # Check if user is in the same user group as executive device
-        if not user_group:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
@@ -56,6 +50,12 @@ class ExecutiveDeviceService:
         # Check if executive device is in that device group
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(user_id,
+                                                                                                           device_key)
+        # Check if user is in the same user group as executive device
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_device_info = {}
         executive_device_info['name'] = executive_device.name
