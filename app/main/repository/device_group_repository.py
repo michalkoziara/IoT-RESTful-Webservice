@@ -25,12 +25,6 @@ class DeviceGroupRepository:
     def get_device_group_by_product_key(self, product_key: str) -> DeviceGroup:
         return DeviceGroup.query.filter(DeviceGroup.product_key == product_key).first()
 
-    def get_device_group_by_user_id_and_product_key(self, user_id: str, product_key: str) -> DeviceGroup:
-        return DeviceGroup.query.filter(and_(
-            UserGroup.user_id == user_id,
-            DeviceGroup.product_key == product_key
-        )).first()
-
     def get_device_groups_by_user_id_and_master_user_group(self, user_id: str) -> List[DeviceGroup]:
         return DeviceGroup.query.filter(
             DeviceGroup.id.in_(

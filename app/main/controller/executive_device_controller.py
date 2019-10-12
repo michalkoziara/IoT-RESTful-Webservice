@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from flask import Response
+from flask import Response, request
 
 from app import api
 from app.main.service.executive_device_service import ExecutiveDeviceService
@@ -15,13 +15,16 @@ _executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
 @api.route('/hubs/<product_key>/executive-devices/<device_key>', methods=['GET'])
 def get_executive_device_info(product_key: str, device_key: str):
-    result, result_values = _executive_device_service_instance.get_executive_device_info(device_key, product_key)
+    user_id = request.headers.get('userId')
 
-    if result is True:
+    result, result_values = _executive_device_service_instance.get_executive_device_info(device_key,
+                                                                                         product_key,
+                                                                                         user_id)
+    if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
         status = 200
     else:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
+        response = dict(errorMessage=result)
         status = 400
         request_dict = None
         _logger.log_exception(
