@@ -2,11 +2,15 @@ import pytest
 from typing import Dict
 from typing import List
 
+from app.main.model import UserGroup
 from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
+from app.main.model.user import User
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.sensor import Sensor
+
+from datetime import datetime
 
 
 @pytest.fixture
@@ -100,6 +104,7 @@ def executive_device_default_values(executive_type_default_values, device_group_
         'user_group_id': 1,
         'formula_id': 1
     }
+
 
 @pytest.fixture
 def create_executive_device(executive_device_default_values, create_executive_devices):
@@ -197,3 +202,58 @@ def create_formula(formula_default_values):
         return formula
 
     return _create_formula
+
+
+@pytest.fixture
+def user_default_values():
+    return {
+        'id': 1,
+        'username': 'default username',
+        'email': 'default email',
+        'registered_on': datetime(2015, 6, 5, 8, 10, 10, 10),
+        'is_admin': 0,
+        'password': 'default password'
+    }
+
+
+@pytest.fixture
+def create_user(user_default_values):
+    default_values = user_default_values
+
+    def _create_user(velues: dict = default_values):
+        return User(
+            id=velues['id'],
+            username=velues['username'],
+            email=velues['email'],
+            registered_on=velues['registered_on'],
+            is_admin=velues['is_admin'],
+            password=velues['password'],
+
+        )
+
+    return _create_user
+
+
+@pytest.fixture
+def user_group_default_values(device_group_default_values):
+    return {
+        'id': 1,
+        'name': 'default name',
+        'password': 'default password',
+        'device_group_id': device_group_default_values['id']
+    }
+
+
+@pytest.fixture
+def create_user_group(user_group_default_values):
+    default_values = user_group_default_values
+
+    def _create_user_group(values: dict = default_values):
+        return UserGroup(
+            id=values['id'],
+            name=values['name'],
+            password=values['password'],
+            device_group_id=values['device_group_id']
+        )
+
+    return _create_user_group
