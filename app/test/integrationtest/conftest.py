@@ -2,6 +2,8 @@ import pytest
 import datetime
 from typing import Dict
 from typing import List
+from typing import Union
+from typing import Optional
 
 from flask.testing import FlaskClient
 
@@ -116,30 +118,6 @@ def create_user_groups() -> [UserGroup]:
 
 
 @pytest.fixture
-def create_unconfigured_devices():
-    unconfigured_devices = []
-
-    def _create_unconfigured_devices(values: List[dict]) -> List[UnconfiguredDevice]:
-        for value in values:
-            unconfigured_device = UnconfiguredDevice(
-                device_key=value['device_key'],
-                password=value['password'],
-                device_group_id=value['device_group_id']
-            )
-            unconfigured_devices.append(unconfigured_device)
-            db.session.add(unconfigured_device)
-
-        if unconfigured_devices:
-            db.session.commit()
-
-        return unconfigured_devices
-
-    yield _create_unconfigured_devices
-
-    del unconfigured_devices[:]
-
-
-@pytest.fixture
 def create_sensors():
     sensors = []
 
@@ -200,3 +178,52 @@ def create_executive_devices():
     yield _create_executive_devices
 
     del executive_devices[:]
+
+
+@pytest.fixture
+def default_unconfigured_device_values() -> Dict[str, Optional[Union[str, int]]]:
+    return {
+        'id': 1,
+        'device_key': 'device_key',
+        'password': 'password',
+        'device_group_id': 1
+    }
+
+
+@pytest.fixture
+def create_unconfigured_device(
+        create_unconfigured_devices,
+        default_unconfigured_device_values):
+    def _create_unconfigured_device(values: Optional[Dict[str, str]] = None) -> UnconfiguredDevice:
+        if values is None:
+            values = default_unconfigured_device_values
+
+        return create_unconfigured_devices([values])[0]
+
+    return _create_unconfigured_device
+
+
+@pytest.fixture
+def create_unconfigured_devices():
+    unconfigured_devices = []
+
+    def _create_unconfigured_devices(values: List[Dict[str, str]]) -> List[UnconfiguredDevice]:
+        for value in values:
+            unconfigured_device = UnconfiguredDevice(
+                id=value['id'],
+                device_key=value['device_key'],
+                password=value['password'],
+                device_group_id=value['device_group_id']
+            )
+
+            unconfigured_devices.append(unconfigured_device)
+            db.session.add(unconfigured_device)
+
+        if unconfigured_devices:
+            db.session.commit()
+
+        return unconfigured_devices
+
+    yield _create_unconfigured_devices
+
+    del unconfigured_devices[:]

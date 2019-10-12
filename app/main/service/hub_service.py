@@ -7,6 +7,7 @@ from typing import Union
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.sensor_repository import SensorRepository
+from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 
 
 class HubService:
@@ -27,6 +28,7 @@ class HubService:
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._executive_device_repository_instance = ExecutiveDeviceRepository.get_instance()
         self._sensor_repository_instance = SensorRepository.get_instance()
+        self._unconfigured_device_repository_instance = UnconfiguredDeviceRepository.get_instance()
 
     def get_changed_devices_for_device_group(self, product_key: str) \
             -> Tuple[bool, Optional[Dict[str, Union[bool, List[str]]]]]:
@@ -69,3 +71,25 @@ class HubService:
             }
 
         return True, devices
+
+    def add_device_to_device_group(self, product_key: str, device_key: str) -> bool:
+        if product_key is None or device_key is None:
+            return False
+
+        device_group = self._device_group_repository_instance. \
+            get_device_group_by_product_key(product_key)
+
+        if device_group is None:
+            return False
+
+        unconfigured_device = \
+            self._unconfigured_device_repository_instance.get_unconfigured_device_by_device_key(
+                device_key
+            )
+
+        if unconfigured_device is None:
+            return False
+
+        unconfigured_device.device_group_id = device_group.id
+
+        return self._unconfigured_device_repository_instance.save(unconfigured_device)
