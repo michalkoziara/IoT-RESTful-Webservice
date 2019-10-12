@@ -12,6 +12,5 @@ class ExecutiveTypeRepository:
 
         return cls._instance
 
-    def get_executive_type_by_id(self, type_id: str) \
-            -> ExecutiveType:
+    def get_executive_type_by_id(self, type_id: str) -> ExecutiveType:
         return ExecutiveType.query.filter(ExecutiveType.id == type_id).first()

@@ -8,7 +8,6 @@ from app.main.model import Log
 
 
 class LogRepository:
-
     _instance = None
 
     @classmethod

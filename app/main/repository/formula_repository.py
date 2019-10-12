@@ -1,6 +1,6 @@
 # pylint: disable=no-self-use
-
 from app.main.model.formula import Formula
+
 
 class FormulaRepository:
     _instance = None
