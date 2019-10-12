@@ -1,18 +1,19 @@
-import pytest
 import datetime
 from typing import Dict
 from typing import List
 
+import pytest
 from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
+from app.main.model import ExecutiveType, Formula
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.sensor import Sensor
+from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
-from app.main.model.unconfigured_device import UnconfiguredDevice
-from app.main.model.sensor import Sensor
 from manage import app
 
 
@@ -200,3 +201,190 @@ def create_executive_devices():
     yield _create_executive_devices
 
     del executive_devices[:]
+
+
+@pytest.fixture
+def device_group_default_values():
+    return {
+        'id': 1,
+        'name': 'default device group',
+        'password': 'default password',
+        'product_key': 'default product key',
+        'user_id': 1
+    }
+
+
+@pytest.fixture
+def create_device_group(device_group_default_values):
+    default_values = device_group_default_values
+
+    def _create_device_group(values: dict = default_values):
+        device_group = DeviceGroup(id=values["id"], name=values["name"], password=values["password"],
+                                   product_key=values["product_key"], user_id=values["user_id"])
+
+        db.session.add(device_group)
+        db.session.commit()
+
+        return device_group
+
+    return _create_device_group
+
+
+@pytest.fixture
+def executive_device_default_values(executive_type_default_values, device_group_default_values, formula_default_values,
+                                    user_group_default_values):
+    return {
+        'id': 1,
+        'name': 'executive_device_default_name',
+        'state': 'default state',
+        'is_updated': True,
+        'is_active': True,
+        'is_assigned': False,
+        'positive_state': None,
+        'negative_state': None,
+        'device_key': 'default executive device key',
+        'executive_type_id': executive_type_default_values['id'],
+        'device_group_id': device_group_default_values['id'],
+        'user_group_id': user_group_default_values['id'],
+        'formula_id': formula_default_values["id"]
+    }
+
+
+@pytest.fixture
+def create_executive_device(executive_device_default_values, create_executive_devices):
+    default_values = executive_device_default_values
+
+    def _create_executive_device(values: dict = default_values):
+        executive_device = create_executive_devices(([values]))[0]
+
+        return executive_device
+
+    return _create_executive_device
+
+
+@pytest.fixture
+def executive_type_default_values(device_group_default_values):
+    return {
+        'id': 1,
+        'name': 'default executive type name',
+        'state_type': 'Enum',
+        'state_range_min': 0.0,
+        'state_range_max': 1.0,
+        'device_group_id': device_group_default_values['id']
+    }
+
+
+@pytest.fixture
+def create_executive_device_type(executive_type_default_values):
+    default_values = executive_type_default_values
+
+    def _create_executive_device_type(values: dict = default_values):
+        executive_type = ExecutiveType(id=values['id'],
+                                       name=values['name'],
+                                       state_type=values['state_type'],
+                                       state_range_min=values['state_range_min'],
+                                       state_range_max=values['state_range_max'],
+                                       device_group_id=values['device_group_id']
+                                       )
+        db.session.add(executive_type)
+        db.session.commit()
+        return executive_type
+
+    return _create_executive_device_type
+
+
+@pytest.fixture
+def formula_default_values():
+    return {
+        'id': 1,
+        'name': 'default formula name',
+        'rule': 'default rule',
+        'user_group_id': 1
+    }
+
+
+@pytest.fixture
+def create_formula(formula_default_values):
+    default_values = formula_default_values
+
+    def _create_formula(values: dict = default_values):
+        formula = Formula(id=values['id'],
+                          name=values['name'],
+                          rule=values['rule'],
+                          user_group_id=values['user_group_id'])
+
+        db.session.add(formula)
+        db.session.commit()
+        return formula
+
+    return _create_formula
+
+
+@pytest.fixture
+def user_default_values():
+    registered_on = datetime.datetime(2012, 3, 3, 10, 10, 10)
+    return {
+        'id': 1,
+        'username': 'default username',
+        'email': 'default email',
+        'registered_on': registered_on,
+        'is_admin': False,
+        'password': 'default password'
+    }
+
+
+@pytest.fixture
+def create_user(user_default_values):
+    default_values = user_default_values
+
+    def _create_user(velues: dict = default_values):
+        user = User(
+            id=velues['id'],
+            username=velues['username'],
+            email=velues['email'],
+            registered_on=velues['registered_on'],
+            is_admin=velues['is_admin'],
+            password=velues['password'],
+
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    return _create_user
+
+
+@pytest.fixture
+def user_group_default_values(device_group_default_values):
+    return {
+        'id': 1,
+        'name': 'default name',
+        'password': 'default password',
+        'device_group_id': device_group_default_values['id']
+    }
+
+
+@pytest.fixture
+def create_user_group(user_group_default_values):
+    default_values = user_group_default_values
+
+    def _create_user_group(values: dict = default_values):
+        user_group = UserGroup(
+            id=values['id'],
+            name=values['name'],
+            password=values['password'],
+            device_group_id=values['device_group_id']
+        )
+        db.session.add(user_group)
+        db.session.commit()
+        return user_group
+
+    return _create_user_group
+
+@pytest.fixture
+def insert_user_into_user_group():
+    def _insert_user_into_user_group(user: User, user_group: UserGroup):
+        user_group.users.append(user)
+        db.session.commit()
+
+    return _insert_user_into_user_group
