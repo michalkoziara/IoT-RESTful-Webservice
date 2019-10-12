@@ -1,9 +1,10 @@
 # pylint: disable=no-self-use
 from app.main.model.user import User
+from app.main.model.user_group import UserGroup
+from app.main.model.user_group_member import user_group_member
 
 
-class UnconfiguredDeviceRepository:
-
+class UserRepository:
     _instance = None
 
     @classmethod
@@ -15,3 +16,6 @@ class UnconfiguredDeviceRepository:
 
     def get_user_by_id(self, user_id: str) -> User:
         return User.query.filter(User.id == user_id).first()
+
+    def get_user_by_user_id_and_user_group_id(self, user_id: str, user_group_id: str):
+        return UserGroup.users.filter()
