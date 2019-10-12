@@ -1,17 +1,18 @@
 import datetime
 from typing import Dict
 from typing import List
-from typing import Union
 from typing import Optional
+from typing import Union
 
 import pytest
 from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
-from app.main.model import ExecutiveType, Formula
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.executive_type import ExecutiveType
+from app.main.model.formula import Formula
 from app.main.model.sensor import Sensor
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User

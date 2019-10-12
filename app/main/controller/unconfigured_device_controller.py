@@ -10,7 +10,6 @@ from app.main.service.log_service import LogService
 from app.main.service.unconfigured_device_service import UnconfiguredDeviceService
 from app.main.util.constants import Constants
 
-
 _unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
 
 _logger = LogService.get_instance()

@@ -1,6 +1,6 @@
-from app.main import db
-
 from sqlalchemy.types import Enum
+
+from app.main import db
 
 
 class Log(db.Model):

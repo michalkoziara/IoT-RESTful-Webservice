@@ -1,6 +1,6 @@
 from typing import List
-from typing import Tuple
 from typing import Optional
+from typing import Tuple
 
 from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository

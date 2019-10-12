@@ -1,14 +1,14 @@
 import datetime
-from typing import List
 from typing import Dict
-from typing import Tuple
+from typing import List
 from typing import Optional
+from typing import Tuple
 
-from app.main.util.constants import Constants
 from app.main.model.log import Log
 from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.log_repository import LogRepository
+from app.main.util.constants import Constants
 
 
 class LogService:

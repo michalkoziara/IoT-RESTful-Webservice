@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from flask import current_app
 from flask import Flask
+from flask import current_app
 
 from app.main.config import DevelopmentConfig
 from app.main.config import ProductionConfig

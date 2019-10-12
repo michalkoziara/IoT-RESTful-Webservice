@@ -1,19 +1,19 @@
-import pytest
+from datetime import datetime
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
 
+import pytest
+
 from app.main.model import UserGroup
-from app.main.model.executive_type import ExecutiveType
-from app.main.model.formula import Formula
-from app.main.model.user import User
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.executive_type import ExecutiveType
+from app.main.model.formula import Formula
 from app.main.model.sensor import Sensor
 from app.main.model.unconfigured_device import UnconfiguredDevice
-
-from datetime import datetime
+from app.main.model.user import User
 
 
 @pytest.fixture

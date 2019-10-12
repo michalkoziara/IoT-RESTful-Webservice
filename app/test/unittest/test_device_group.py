@@ -3,8 +3,8 @@ from unittest.mock import patch
 import pytest
 
 from app.main.model.user import User
-from app.main.service.device_group_service import DeviceGroupService
 from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.service.device_group_service import DeviceGroupService
 
 
 @pytest.fixture()

@@ -1,10 +1,10 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main import db
 from app.main.model.unconfigured_device import UnconfiguredDevice
-
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class UnconfiguredDeviceRepository:
