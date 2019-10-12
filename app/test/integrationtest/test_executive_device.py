@@ -55,8 +55,8 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
                                                                                                             insert_user_into_user_group):
     device_group = create_device_group()
     user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
+    create_executive_device_type()
+    create_formula()
     content_type = 'application/json'
     executive_device = create_executive_device()
     user = create_user()
@@ -83,8 +83,8 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_devic
                                                                                                     insert_user_into_user_group):
     device_group = create_device_group()
     user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
+    create_executive_device_type()
+    create_formula()
     content_type = 'application/json'
     user = create_user()
     insert_user_into_user_group(user, user_group)
@@ -110,8 +110,8 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_produ
                                                                                                      insert_user_into_user_group):
     executive_device = create_executive_device()
     user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
+    create_executive_device_type()
+    create_formula()
     content_type = 'application/json'
     user = create_user()
     insert_user_into_user_group(user, user_group)
@@ -138,9 +138,9 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
         insert_user_into_user_group,
         user_default_values):
     device_group = create_device_group()
-    user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
+    create_user_group()
+    create_executive_device_type()
+    create_formula()
     content_type = 'application/json'
     executive_device = create_executive_device()
     user = create_user()
@@ -167,15 +167,14 @@ def test_get_executive_device_info_should_return_device_key_not_found_error_when
         insert_user_into_user_group,
         user_default_values,
         device_group_default_values):
-
-    device_group = create_device_group()
+    create_device_group()
     second_device_group_data = device_group_default_values
     second_device_group_data['id'] += 2
     second_device_group_data['product_key'] += "2"
     second_device_group = create_device_group(second_device_group_data)
-    user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
+    create_user_group()
+    create_executive_device_type()
+    create_formula()
     content_type = 'application/json'
     executive_device = create_executive_device()
     user = create_user()
