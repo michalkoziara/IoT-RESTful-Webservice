@@ -30,27 +30,25 @@ class HubService:
         self._sensor_repository_instance = SensorRepository.get_instance()
         self._unconfigured_device_repository_instance = UnconfiguredDeviceRepository.get_instance()
 
-    def get_changed_devices_for_device_group(self, product_key: str) \
-            -> Tuple[bool, Optional[Dict[str, Union[bool, List[str]]]]]:
+    def get_changed_devices_for_device_group(
+            self,
+            product_key: str) -> Tuple[bool, Optional[Dict[str, Union[bool, List[str]]]]]:
 
         if product_key is None:
             return False, None
 
-        device_group = self._device_group_repository_instance. \
-            get_device_group_by_product_key(product_key)
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
             return False, None
 
-        executive_devices = \
-            self._executive_device_repository_instance.get_updated_executive_devices_by_device_group_id(
-                device_group.id
-            )
+        executive_devices = self._executive_device_repository_instance.get_updated_executive_devices_by_device_group_id(
+            device_group.id
+        )
 
-        sensors = \
-            self._sensor_repository_instance.get_sensors_by_device_group_id_and_update_status(
-                device_group.id
-            )
+        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_and_update_status(
+            device_group.id
+        )
 
         device_keys = []
         for executive_device in executive_devices:
@@ -76,16 +74,14 @@ class HubService:
         if product_key is None or device_key is None:
             return False
 
-        device_group = self._device_group_repository_instance. \
-            get_device_group_by_product_key(product_key)
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
             return False
 
-        unconfigured_device = \
-            self._unconfigured_device_repository_instance.get_unconfigured_device_by_device_key(
-                device_key
-            )
+        unconfigured_device = self._unconfigured_device_repository_instance.get_unconfigured_device_by_device_key(
+            device_key
+        )
 
         if unconfigured_device is None:
             return False

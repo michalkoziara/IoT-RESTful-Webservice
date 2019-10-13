@@ -32,15 +32,15 @@ class LogService:
         if Constants.LOGGER_LEVEL_OFF == 'ALL':
             return False
 
-        if product_key is None or \
-                'creationDate' not in log_values or \
-                log_values['creationDate'] is None or \
-                'type' not in log_values or (
-                log_values['type'] != 'Debug' and
-                log_values['type'] != 'Error' and
-                log_values['type'] != 'Info') or (
-                Constants.LOGGER_LEVEL_OFF is not None and
-                log_values['type'] in Constants.LOGGER_LEVEL_OFF):
+        if (product_key is None or
+                'creationDate' not in log_values or
+                log_values['creationDate'] is None or
+                'type' not in log_values or
+                (log_values['type'] != 'Debug' and
+                 log_values['type'] != 'Error' and
+                 log_values['type'] != 'Info') or
+                (Constants.LOGGER_LEVEL_OFF is not None and
+                 log_values['type'] in Constants.LOGGER_LEVEL_OFF)):
             return False
 
         try:
@@ -51,8 +51,7 @@ class LogService:
             print(log_values)
             return False
 
-        device_group = \
-            self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
             print(log_values)
@@ -78,18 +77,17 @@ class LogService:
 
         return self._log_repository_instance.save(log)
 
-    def get_log_values_for_device_group(self, product_key: str, user: User) \
-            -> Tuple[bool, Optional[List[dict]]]:
-        if user is None or \
-                product_key is None or \
-                user.is_admin is False:
+    def get_log_values_for_device_group(
+            self,
+            product_key: str,
+            user: User) -> Tuple[bool, Optional[List[dict]]]:
+
+        if user is None or product_key is None or user.is_admin is False:
             return False, None
 
-        user_device_group = self._device_group_repository_instance. \
-            get_device_group_by_user_id(user.id)
+        user_device_group = self._device_group_repository_instance.get_device_group_by_user_id(user.id)
 
-        if user_device_group is None or \
-                user_device_group.product_key != product_key:
+        if user_device_group is None or user_device_group.product_key != product_key:
             return False, None
 
         logs = self._log_repository_instance.get_logs_by_device_group_id(user_device_group.id)

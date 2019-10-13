@@ -20,8 +20,7 @@ def get_unconfigured_devices(product_key):
     request_dict = request.get_json()  # TODO Replace user request with token user
     user = User.query.get(request_dict['userId'])
 
-    result, result_values = \
-        _unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
+    result, result_values = _unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
             product_key,
             user)
 

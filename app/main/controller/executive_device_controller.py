@@ -17,9 +17,12 @@ _executive_device_service_instance = ExecutiveDeviceService.get_instance()
 def get_executive_device(product_key: str, device_key: str):
     user_id = request.headers.get('userId')
 
-    result, result_values = _executive_device_service_instance.get_executive_device_info(device_key,
-                                                                                         product_key,
-                                                                                         user_id)
+    result, result_values = _executive_device_service_instance.get_executive_device_info(
+        device_key,
+        product_key,
+        user_id
+    )
+
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
         status = 200

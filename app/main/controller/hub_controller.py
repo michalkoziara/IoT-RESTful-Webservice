@@ -18,8 +18,7 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>/states', methods=['GET'])
 def get_states(product_key):
-    result, result_values = \
-        _hub_service_instance.get_changed_devices_for_device_group(product_key)
+    result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
 
     if result is True:
         response = result_values
