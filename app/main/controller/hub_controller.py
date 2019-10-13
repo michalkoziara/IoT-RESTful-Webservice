@@ -7,8 +7,8 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
-from app.main.service.log_service import LogService
 from app.main.service.hub_service import HubService
+from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
 
 _hub_service_instance = HubService.get_instance()
@@ -18,8 +18,7 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>/states', methods=['GET'])
 def get_states(product_key):
-    result, result_values = \
-        _hub_service_instance.get_changed_devices_for_device_group(product_key)
+    result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
 
     if result is True:
         response = result_values

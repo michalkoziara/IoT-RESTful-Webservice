@@ -7,11 +7,10 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
+from app.main.model.user import User
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
-from app.main.model.user import User
 from app.main.util.constants import Constants
-
 
 _device_group_service_instance = DeviceGroupService.get_instance()
 _logger = LogService.get_instance()

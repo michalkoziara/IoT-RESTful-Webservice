@@ -11,7 +11,6 @@ from app.main.model.user import User
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
 
-
 _logger = LogService.get_instance()
 
 

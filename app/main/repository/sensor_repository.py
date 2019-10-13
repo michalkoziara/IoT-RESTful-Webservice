@@ -1,9 +1,9 @@
 # pylint: disable=no-self-use
 from typing import List
 
-from app.main.model.sensor import Sensor
-
 from sqlalchemy import and_
+
+from app.main.model.sensor import Sensor
 
 
 class SensorRepository:
@@ -16,8 +16,7 @@ class SensorRepository:
 
         return cls._instance
 
-    def get_sensors_by_device_group_id_and_update_status(self, device_group_id: str) \
-            -> List[Sensor]:
+    def get_sensors_by_device_group_id_and_update_status(self, device_group_id: str) -> List[Sensor]:
         return Sensor.query.filter(
             and_(
                 Sensor.device_group_id == device_group_id,

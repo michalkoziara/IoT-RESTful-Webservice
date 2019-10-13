@@ -7,58 +7,40 @@ from app.main.util.constants import Constants
 
 def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
         client,
-        create_device_groups,
-        create_executive_devices,
-        create_sensors):
+        get_device_group_default_values,
+        insert_device_group,
+        get_executive_device_default_values,
+        insert_executive_device,
+        get_sensor_default_values,
+        insert_sensor):
+    content_type = 'application/json'
+
     product_key = 'product_key'
     sensor_key = 'sensor device key'
     executive_device_key = 'executive device key'
-    content_type = 'application/json'
 
-    test_device_groups = create_device_groups(
-        [
-            {
-                'name': 'name',
-                'password': 'testing password',
-                'product_key': product_key,
-                'user_id': None
-            }
-        ]
-    )
-    test_device_group = test_device_groups[0]
-    create_sensors(
-        [
-            {
-                'name': 'name',
-                'is_updated': True,
-                'is_active': True,
-                'is_assigned': False,
-                'device_key': sensor_key,
-                'sensor_type_id': 1,
-                'user_group_id': None,
-                'device_group_id': test_device_group.id,
-                'sensor_readings': []
-            }
-        ]
-    )
-    create_executive_devices(
-        [
-            {
-                'name': 'name',
-                'state': 'state',
-                'is_updated': True,
-                'is_active': True,
-                'is_assigned': False,
-                'positive_state': None,
-                'negative_state': None,
-                'device_key': executive_device_key,
-                'executive_type_id': 1,
-                'device_group_id': test_device_group.id,
-                'user_group_id': None,
-                'formula_id': None
-            }
-        ]
-    )
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    test_device_group = insert_device_group(device_group_values)
+
+    sensor_values = get_sensor_default_values()
+    sensor_values['is_assigned'] = False
+    sensor_values['device_key'] = sensor_key
+    sensor_values['user_group_id'] = None
+    sensor_values['device_group_id'] = test_device_group.id
+
+    insert_sensor(sensor_values)
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['is_assigned'] = False
+    executive_device_values['device_key'] = executive_device_key
+    executive_device_values['user_group_id'] = None
+    executive_device_values['device_group_id'] = test_device_group.id
+    executive_device_values['formula_id'] = None
+
+    insert_executive_device(executive_device_values)
 
     response = client.get('/api/hubs/' + product_key + '/states', content_type=content_type)
 
@@ -76,20 +58,17 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
 
 def test_get_states_should_return_bad_request_message_when_invalid_request(
         client,
-        create_device_groups):
-    product_key = 'product_key'
+        get_device_group_default_values,
+        insert_device_group):
     content_type = 'application/json'
 
-    create_device_groups(
-        [
-            {
-                'name': 'name',
-                'password': 'testing password',
-                'product_key': product_key,
-                'user_id': None
-            }
-        ]
-    )
+    product_key = 'product_key'
+
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    insert_device_group(device_group_values)
 
     response = client.get('/api/hubs/' + 'not' + product_key + '/states',
                           content_type=content_type
@@ -107,27 +86,26 @@ def test_get_states_should_return_bad_request_message_when_invalid_request(
 
 def test_create_device_should_add_unconfigured_device_to_device_group_when_valid_request(
         client,
-        default_unconfigured_device_values,
-        create_unconfigured_device,
-        create_device_groups):
-    product_key = 'test product key'
-    device_key = 'test device key'
-
+        get_unconfigured_device_default_values,
+        insert_unconfigured_device,
+        get_device_group_default_values,
+        insert_device_group):
     content_type = 'application/json'
 
-    device_groups = create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=None
-        )]
-    )
+    product_key = 'product_key'
+    device_key = 'test device key'
 
-    unconfigured_device_values = default_unconfigured_device_values
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    device_group = insert_device_group(device_group_values)
+
+    unconfigured_device_values = get_unconfigured_device_default_values()
     unconfigured_device_values['device_key'] = device_key
     unconfigured_device_values['device_group_id'] = None
-    unconfigured_device = create_unconfigured_device()
+
+    unconfigured_device = insert_unconfigured_device(unconfigured_device_values)
 
     assert unconfigured_device.device_group_id is None
 
@@ -139,14 +117,14 @@ def test_create_device_should_add_unconfigured_device_to_device_group_when_valid
     assert response is not None
     assert response.status_code == 201
 
-    assert unconfigured_device.device_group_id == device_groups[0].id
+    assert unconfigured_device.device_group_id == device_group.id
 
 
 def test_create_device_should_return_error_message_when_mimetype_is_not_json(client):
+    content_type = 'text'
+
     product_key = 'test product key'
     device_key = 'test device key'
-
-    content_type = 'text'
 
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKey': device_key}),
@@ -169,8 +147,9 @@ def test_create_device_should_return_error_message_when_bad_request(
         client,
         request_data,
         error_message):
-    product_key = 'product_key'
     content_type = 'application/json'
+
+    product_key = 'product_key'
 
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=request_data,
@@ -186,27 +165,25 @@ def test_create_device_should_return_error_message_when_bad_request(
 
 def test_create_device_should_return_error_message_when_invalid_request_values(
         client,
-        default_unconfigured_device_values,
-        create_unconfigured_device,
-        create_device_groups):
+        get_unconfigured_device_default_values,
+        insert_unconfigured_device,
+        get_device_group_default_values,
+        insert_device_group):
+    content_type = 'application/json'
+
     product_key = 'test product key'
     device_key = 'test device key'
 
-    content_type = 'application/json'
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
 
-    create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=None
-        )]
-    )
+    insert_device_group(device_group_values)
 
-    unconfigured_device_values = default_unconfigured_device_values
+    unconfigured_device_values = get_unconfigured_device_default_values()
     unconfigured_device_values['device_key'] = device_key
     unconfigured_device_values['device_group_id'] = None
-    unconfigured_device = create_unconfigured_device()
+    unconfigured_device = insert_unconfigured_device(unconfigured_device_values)
 
     assert unconfigured_device.device_group_id is None
 

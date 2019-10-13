@@ -8,24 +8,26 @@ from app.main.util.constants import Constants
 
 def test_modify_device_group_should_change_device_group_name_when_valid_request(
         client,
-        create_admin,
-        create_device_groups):
+        get_user_default_values,
+        insert_user,
+        get_device_group_default_values,
+        insert_device_group):
+    content_type = 'application/json'
+
     product_key = 'test_product_key'
     old_name = 'name'
-    admin = create_admin()
-
-    test_device_groups = create_device_groups(
-        [dict(
-            name=old_name,
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=admin.id
-        )]
-    )
-    test_device_group = test_device_groups[0]
-
     new_name = 'new_name'
-    content_type = 'application/json'
+
+    user_default_values = get_user_default_values()
+    user_default_values['is_admin'] = True
+    admin = insert_user(user_default_values)
+
+    device_group_values = get_device_group_default_values()
+    device_group_values['name'] = old_name
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = admin.id
+
+    test_device_group = insert_device_group(device_group_values)
 
     response = client.put('/api/hubs/' + product_key,
                           data=json.dumps(
@@ -49,12 +51,16 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
 
 def test_modify_device_group_should_return_error_message_when_mimetype_is_not_json(
         client,
-        create_admin):
+        get_user_default_values,
+        insert_user):
+    content_type = 'text'
 
     product_key = 'test_product_key'
     new_name = 'new_name'
-    admin = create_admin()
-    content_type = 'text'
+
+    user_default_values = get_user_default_values()
+    user_default_values['is_admin'] = True
+    admin = insert_user(user_default_values)
 
     response = client.put('/api/hubs/' + product_key,
                           data=json.dumps(
@@ -81,8 +87,9 @@ def test_modify_device_group_should_return_error_message_when_bad_request(
         client,
         request_data,
         error_message):
-    product_key = 'product_key'
     content_type = 'application/json'
+
+    product_key = 'product_key'
 
     response = client.put('/api/hubs/' + product_key,
                           data=request_data,

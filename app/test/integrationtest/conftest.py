@@ -1,20 +1,21 @@
-import pytest
-import datetime
 from typing import Dict
 from typing import List
-from typing import Union
 from typing import Optional
 
+import pytest
 from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.executive_type import ExecutiveType
+from app.main.model.formula import Formula
+from app.main.model.log import Log
+from app.main.model.sensor import Sensor
+from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
-from app.main.model.unconfigured_device import UnconfiguredDevice
-from app.main.model.sensor import Sensor
 from manage import app
 
 
@@ -33,197 +34,202 @@ def client() -> FlaskClient:
 
 
 @pytest.fixture()
-def create_admin():
-    """ Return a sample admin """
+def create_record(create_multiple_records):
+    def _create_record(db_object: db.Model) -> db.Model:
+        create_multiple_records([db_object])
 
-    def _create_admin() -> User:
-        user = User(username='test_admin',
-                    email='admin@gmail.com',
-                    registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
-                    is_admin=True,
-                    password='testing_possward')
-        db.session.add(user)
-        db.session.commit()
+        return db_object
 
-        return user
-
-    yield _create_admin
+    return _create_record
 
 
 @pytest.fixture()
-def user() -> User:
-    """ Return a sample user """
-    user = User(username='test_user',
-                email='user@gmail.com',
-                registered_on=datetime.datetime(2000, 10, 12, 9, 10, 15, 200),
-                is_admin=False,
-                password='testing_possward')
-    db.session.add(user)
-    db.session.commit()
-
-    yield user
-
-
-@pytest.fixture
-def create_device_groups():
-    device_groups = []
-
-    def _create_device_groups(values: List[dict]) -> List[DeviceGroup]:
-        for value in values:
-            device_group = DeviceGroup(
-                name=value['name'],
-                password=value['password'],
-                product_key=value['product_key'],
-                user_id=value['user_id']
-            )
-            device_groups.append(device_group)
-            db.session.add(device_group)
-
-        if device_groups:
+def create_multiple_records():
+    def _create_multiple_records(db_objects: List[db.Model]) -> db.Model:
+        if db_objects:
+            db.session.add_all(db_objects)
             db.session.commit()
 
-        return device_groups
+        return db_objects
 
-    yield _create_device_groups
-
-    del device_groups[:]
+    return _create_multiple_records
 
 
 @pytest.fixture
-def create_user_groups() -> [UserGroup]:
-    user_groups = []
+def insert_device_group(create_device_group, create_record):
+    def _insert_device_group(values: Optional[Dict[str, str]] = None) -> DeviceGroup:
+        return create_record(
+            create_device_group(values)
+        )
 
-    def _create_user_groups(values: List[dict]) -> [UserGroup]:
-        for value in values:
-            user_group = UserGroup(
-                name=value['name'],
-                password=value['password'],
-                device_group_id=value['device_group_id'],
-                formulas=value['formulas'],
-                sensors=value['sensors'],
-                executive_devices=value['executive_devices'],
-                users=value['users']
-            )
-            user_groups.append(user_group)
-            db.session.add(user_group)
-
-        if user_groups:
-            db.session.commit()
-
-        return user_groups
-
-    yield _create_user_groups
-
-    del user_groups[:]
+    return _insert_device_group
 
 
 @pytest.fixture
-def create_sensors():
-    sensors = []
+def insert_device_groups(create_device_groups, create_multiple_records):
+    def _insert_device_groups(values: List[Dict[str, str]]) -> List[DeviceGroup]:
+        return create_multiple_records(
+            create_device_groups(values)
+        )
 
-    def _create_sensors(values: List[Dict[str, str]]) -> List[Sensor]:
-        for value in values:
-            sensor = Sensor(
-                name=value['name'],
-                is_updated=value['is_updated'],
-                is_active=value['is_active'],
-                is_assigned=value['is_assigned'],
-                device_key=value['device_key'],
-                sensor_type_id=value['sensor_type_id'],
-                user_group_id=value['user_group_id'],
-                device_group_id=value['device_group_id'],
-                sensor_readings=value['sensor_readings']
-            )
-            sensors.append(sensor)
-            db.session.add(sensor)
-
-        if sensors:
-            db.session.commit()
-
-        return sensors
-
-    yield _create_sensors
-
-    del sensors[:]
+    return _insert_device_groups
 
 
 @pytest.fixture
-def create_executive_devices():
-    executive_devices = []
+def insert_user(create_user, create_record):
+    def _insert_user(values: Optional[Dict[str, str]] = None) -> User:
+        return create_record(
+            create_user(values)
+        )
 
-    def _create_executive_devices(values: List[Dict[str, str]]) -> List[ExecutiveDevice]:
-        for value in values:
-            executive_device = ExecutiveDevice(
-                name=value['name'],
-                state=value['state'],
-                is_updated=value['is_updated'],
-                is_active=value['is_active'],
-                is_assigned=value['is_assigned'],
-                positive_state=value['positive_state'],
-                negative_state=value['negative_state'],
-                device_key=value['device_key'],
-                executive_type_id=value['executive_type_id'],
-                device_group_id=value['device_group_id'],
-                user_group_id=value['user_group_id'],
-                formula_id=value['formula_id']
-            )
-            executive_devices.append(executive_device)
-            db.session.add(executive_device)
-
-        if executive_devices:
-            db.session.commit()
-
-        return executive_devices
-
-    yield _create_executive_devices
-
-    del executive_devices[:]
+    return _insert_user
 
 
 @pytest.fixture
-def default_unconfigured_device_values() -> Dict[str, Optional[Union[str, int]]]:
-    return {
-        'id': 1,
-        'device_key': 'device_key',
-        'password': 'password',
-        'device_group_id': 1
-    }
+def insert_users(create_users, create_multiple_records):
+    def _insert_users(values: List[Dict[str, str]]) -> List[User]:
+        return create_multiple_records(
+            create_users(values)
+        )
+
+    return _insert_users
 
 
 @pytest.fixture
-def create_unconfigured_device(
-        create_unconfigured_devices,
-        default_unconfigured_device_values):
-    def _create_unconfigured_device(values: Optional[Dict[str, str]] = None) -> UnconfiguredDevice:
-        if values is None:
-            values = default_unconfigured_device_values
+def insert_executive_type(create_executive_type, create_record):
+    def _insert_executive_type(values: Optional[Dict[str, str]] = None) -> ExecutiveType:
+        return create_record(
+            create_executive_type(values)
+        )
 
-        return create_unconfigured_devices([values])[0]
-
-    return _create_unconfigured_device
+    return _insert_executive_type
 
 
 @pytest.fixture
-def create_unconfigured_devices():
-    unconfigured_devices = []
+def insert_executive_types(create_executive_types, create_multiple_records):
+    def _insert_executive_types(values: List[Dict[str, str]]) -> List[ExecutiveType]:
+        return create_multiple_records(
+            create_executive_types(values)
+        )
 
-    def _create_unconfigured_devices(values: List[Dict[str, str]]) -> List[UnconfiguredDevice]:
-        for value in values:
-            unconfigured_device = UnconfiguredDevice(
-                id=value['id'],
-                device_key=value['device_key'],
-                password=value['password'],
-                device_group_id=value['device_group_id']
-            )
+    return _insert_executive_types
 
-            unconfigured_devices.append(unconfigured_device)
-            db.session.add(unconfigured_device)
 
-        if unconfigured_devices:
-            db.session.commit()
+@pytest.fixture
+def insert_formula(create_formula, create_record):
+    def _insert_formula(values: Optional[Dict[str, str]] = None) -> Formula:
+        return create_record(
+            create_formula(values)
+        )
 
-        return unconfigured_devices
+    return _insert_formula
 
-    yield _create_unconfigured_devices
 
-    del unconfigured_devices[:]
+@pytest.fixture
+def insert_formulas(create_formulas, create_multiple_records):
+    def _insert_formulas(values: List[Dict[str, str]]) -> List[Formula]:
+        return create_multiple_records(
+            create_formulas(values)
+        )
+
+    return _insert_formulas
+
+
+@pytest.fixture
+def insert_executive_device(create_executive_device, create_record):
+    def _insert_executive_device(values: Optional[Dict[str, str]] = None) -> ExecutiveDevice:
+        return create_record(
+            create_executive_device(values)
+        )
+
+    return _insert_executive_device
+
+
+@pytest.fixture
+def insert_executive_devices(create_executive_devices, create_multiple_records):
+    def _insert_executive_devices(values: List[Dict[str, str]]) -> List[ExecutiveDevice]:
+        return create_multiple_records(
+            create_executive_devices(values)
+        )
+
+    return _insert_executive_devices
+
+
+@pytest.fixture
+def insert_sensor(create_sensor, create_record):
+    def _insert_sensor(values: Optional[Dict[str, str]] = None) -> Sensor:
+        return create_record(
+            create_sensor(values)
+        )
+
+    return _insert_sensor
+
+
+@pytest.fixture
+def insert_sensors(create_sensors, create_multiple_records):
+    def _insert_sensors(values: List[Dict[str, str]]) -> List[Sensor]:
+        return create_multiple_records(
+            create_sensors(values)
+        )
+
+    return _insert_sensors
+
+
+@pytest.fixture
+def insert_unconfigured_device(create_unconfigured_device, create_record):
+    def _insert_unconfigured_device(values: Optional[Dict[str, str]] = None) -> UnconfiguredDevice:
+        return create_record(
+            create_unconfigured_device(values)
+        )
+
+    return _insert_unconfigured_device
+
+
+@pytest.fixture
+def insert_unconfigured_devices(create_unconfigured_devices, create_multiple_records):
+    def _insert_unconfigured_devices(values: List[Dict[str, str]]) -> List[UnconfiguredDevice]:
+        return create_multiple_records(
+            create_unconfigured_devices(values)
+        )
+
+    return _insert_unconfigured_devices
+
+
+@pytest.fixture
+def insert_user_group(create_user_group, create_record):
+    def _insert_user_group(values: Optional[Dict[str, str]] = None) -> UserGroup:
+        return create_record(
+            create_user_group(values)
+        )
+
+    return _insert_user_group
+
+
+@pytest.fixture
+def insert_user_groups(create_user_groups, create_multiple_records):
+    def _insert_user_groups(values: List[Dict[str, str]]) -> List[UserGroup]:
+        return create_multiple_records(
+            create_user_groups(values)
+        )
+
+    return _insert_user_groups
+
+
+@pytest.fixture
+def insert_log(create_log, create_record):
+    def _insert_log(values: Optional[Dict[str, str]] = None) -> Log:
+        return create_record(
+            create_log(values)
+        )
+
+    return _insert_log
+
+
+@pytest.fixture
+def insert_logs(create_logs, create_multiple_records):
+    def _insert_logs(values: List[Dict[str, str]]) -> List[Log]:
+        return create_multiple_records(
+            create_logs(values)
+        )
+
+    return _insert_logs
