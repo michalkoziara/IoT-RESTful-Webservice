@@ -7,43 +7,38 @@ from app.main.util.constants import Constants
 
 def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
         client,
-        create_device_groups,
-        user,
-        create_user_groups,
-        default_unconfigured_device_values,
-        create_unconfigured_device):
-    product_key = 'product_key'
-    device_key = 'device_key'
+        get_device_group_default_values,
+        insert_device_group,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group,
+        get_unconfigured_device_default_values,
+        insert_unconfigured_device):
     content_type = 'application/json'
 
-    test_device_groups = create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=None
-        )]
-    )
-    test_device_group = test_device_groups[0]
-    create_user_groups(
-        [
-            dict(
-                name='Master',
-                password='password',
-                device_group_id=test_device_group.id,
-                formulas=[],
-                sensors=[],
-                executive_devices=[],
-                users=[user]
-            )
-        ]
-    )
+    product_key = 'product_key'
+    device_key = 'device_key'
 
-    unconfigured_device_values = default_unconfigured_device_values
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    test_device_group = insert_device_group(device_group_values)
+
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['name'] = 'Master'
+    user_group_values['device_group_id'] = test_device_group.id
+    user_group_values['users'] = [user]
+
+    insert_user_group(user_group_values)
+
+    unconfigured_device_values = get_unconfigured_device_default_values()
     unconfigured_device_values['device_key'] = device_key
     unconfigured_device_values['device_group_id'] = test_device_group.id
 
-    create_unconfigured_device(unconfigured_device_values)
+    insert_unconfigured_device(unconfigured_device_values)
 
     response = client.get('/api/hubs/' + product_key + '/non-configured-devices',
                           data=json.dumps({'userId': user.id}),  # TODO Replace user request with token user
@@ -61,19 +56,19 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
 
 def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid_request(
         client,
-        create_device_groups,
-        user):
+        get_device_group_default_values,
+        insert_device_group,
+        insert_user):
     product_key = 'product_key'
     content_type = 'application/json'
 
-    create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=None
-        )]
-    )
+    user = insert_user()
+
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    insert_device_group(device_group_values)
 
     response = client.get('/api/hubs/' + 'not' + product_key + '/non-configured-devices',
                           data=json.dumps({'userId': user.id}),  # TODO Replace user request with token user

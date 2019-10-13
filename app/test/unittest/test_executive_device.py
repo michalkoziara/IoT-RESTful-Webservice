@@ -12,13 +12,13 @@ from app.main.util.constants import Constants
 def test_get_executive_device_info_should_return_device_info_when_valid_product_key_device_key_and_user_id(
         create_executive_device,
         create_device_group,
-        create_executive_device_type,
+        create_executive_type,
         create_formula,
         create_user_group):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
     device_group = create_device_group()
-    executive_type = create_executive_device_type()
+    executive_type = create_executive_type()
     executive_device = create_executive_device()
     formula = create_formula()
     user_group = create_user_group()

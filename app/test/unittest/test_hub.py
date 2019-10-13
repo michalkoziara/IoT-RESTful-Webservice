@@ -10,18 +10,25 @@ from app.main.service.hub_service import HubService
 
 
 def test_get_changed_devices_for_device_group_should_return_device_keys_when_valid_product_key(
-        create_device_groups,
+        get_device_group_default_values,
+        create_device_group,
         create_executive_devices,
         create_sensors):
     hub_service_instance = HubService.get_instance()
+
     test_product_key = 'test product key'
     test_sensor_key = 'test sensor key'
     test_executive_device_key = 'test executive device key'
 
-    device_group = create_device_groups([test_product_key])[0]
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = test_product_key
+
+    device_group = create_device_group(device_group_values)
+
     sensors = create_sensors(
         [
             {
+                'id': 1,
                 'name': 'name',
                 'is_updated': True,
                 'is_active': True,
@@ -38,6 +45,7 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
     executive_devices = create_executive_devices(
         [
             {
+                'id': 1,
                 'name': 'name',
                 'state': 'state',
                 'is_updated': True,
@@ -54,16 +62,22 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
         ]
     )
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(ExecutiveDeviceRepository, 'get_updated_executive_devices_by_device_group_id') \
-                as get_updated_executive_devices_by_device_group_id_mock:
+        with patch.object(
+                ExecutiveDeviceRepository,
+                'get_updated_executive_devices_by_device_group_id'
+        ) as get_updated_executive_devices_by_device_group_id_mock:
             get_updated_executive_devices_by_device_group_id_mock.return_value = executive_devices
 
-            with patch.object(SensorRepository, 'get_sensors_by_device_group_id_and_update_status') \
-                    as get_sensors_by_device_group_id_and_update_status_mock:
+            with patch.object(
+                    SensorRepository,
+                    'get_sensors_by_device_group_id_and_update_status'
+            ) as get_sensors_by_device_group_id_and_update_status_mock:
                 get_sensors_by_device_group_id_and_update_status_mock.return_value = sensors
 
                 result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
@@ -86,15 +100,15 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
     assert result_values is None
 
 
-def test_get_changed_devices_for_device_group_should_not_return_device_keys_when_no_device_group(
-        create_device_groups,
-        create_executive_devices,
-        create_sensors):
+def test_get_changed_devices_for_device_group_should_not_return_device_keys_when_no_device_group():
     hub_service_instance = HubService.get_instance()
+
     test_product_key = 'test product key'
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
         result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
@@ -104,24 +118,33 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
 
 
 def test_get_changed_devices_for_device_group_should_not_return_device_keys_when_no_updated_devices(
-        create_device_groups,
-        create_executive_devices,
-        create_sensors):
+        get_device_group_default_values,
+        create_device_group):
     hub_service_instance = HubService.get_instance()
+
     test_product_key = 'test product key'
 
-    device_group = create_device_groups([test_product_key])[0]
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = test_product_key
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    device_group = create_device_group(device_group_values)
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(ExecutiveDeviceRepository, 'get_updated_executive_devices_by_device_group_id') \
-                as get_updated_executive_devices_by_device_group_id_mock:
+        with patch.object(
+                ExecutiveDeviceRepository,
+                'get_updated_executive_devices_by_device_group_id'
+        ) as get_updated_executive_devices_by_device_group_id_mock:
             get_updated_executive_devices_by_device_group_id_mock.return_value = []
 
-            with patch.object(SensorRepository, 'get_sensors_by_device_group_id_and_update_status') \
-                    as get_sensors_by_device_group_id_and_update_status_mock:
+            with patch.object(
+                    SensorRepository,
+                    'get_sensors_by_device_group_id_and_update_status'
+            ) as get_sensors_by_device_group_id_and_update_status_mock:
                 get_sensors_by_device_group_id_and_update_status_mock.return_value = []
 
                 result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
@@ -133,21 +156,30 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
 
 
 def test_add_device_to_device_group_should_result_true_when_given_valid_keys(
-        create_device_groups,
+        get_device_group_default_values,
+        create_device_group,
         create_unconfigured_device):
     hub_service_instance = HubService.get_instance()
     test_product_key = 'test product key'
     test_device_key = 'test device key'
 
-    device_group = create_device_groups([test_product_key])[0]
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = test_product_key
+
+    device_group = create_device_group(device_group_values)
+
     unconfigured_device = create_unconfigured_device()
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(UnconfiguredDeviceRepository, 'get_unconfigured_device_by_device_key') \
-                as get_unconfigured_device_by_device_key_mock:
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key'
+        ) as get_unconfigured_device_by_device_key_mock:
             get_unconfigured_device_by_device_key_mock.return_value = unconfigured_device
 
             with patch.object(UnconfiguredDeviceRepository, 'save') as save_mock:
@@ -160,12 +192,13 @@ def test_add_device_to_device_group_should_result_true_when_given_valid_keys(
 
     assert result is True
 
+
 @pytest.mark.parametrize("test_product_key, test_device_key", [
     (None, 'test device key'),
     ('test product key', None)])
 def test_add_device_to_device_group_should_result_false_when_given_invalid_keys(
-    test_product_key,
-    test_device_key):
+        test_product_key,
+        test_device_key):
     hub_service_instance = HubService.get_instance()
 
     result = hub_service_instance.add_device_to_device_group(
@@ -182,8 +215,10 @@ def test_add_device_to_device_group_should_result_false_when_no_device_group():
     test_product_key = 'test product key'
     test_device_key = 'test device key'
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
         result = hub_service_instance.add_device_to_device_group(
@@ -194,19 +229,29 @@ def test_add_device_to_device_group_should_result_false_when_no_device_group():
     assert result is False
 
 
-def test_add_device_to_device_group_should_result_false_when_no_unconfigured_device(create_device_groups):
+def test_add_device_to_device_group_should_result_false_when_no_unconfigured_device(
+        get_device_group_default_values,
+        create_device_group):
     hub_service_instance = HubService.get_instance()
+
     test_product_key = 'test product key'
     test_device_key = 'test device key'
 
-    device_group = create_device_groups([test_product_key])[0]
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = test_product_key
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    device_group = create_device_group(device_group_values)
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(UnconfiguredDeviceRepository, 'get_unconfigured_device_by_device_key') \
-                as get_unconfigured_device_by_device_key_mock:
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key'
+        ) as get_unconfigured_device_by_device_key_mock:
             get_unconfigured_device_by_device_key_mock.return_value = None
 
             result = hub_service_instance.add_device_to_device_group(
@@ -218,21 +263,31 @@ def test_add_device_to_device_group_should_result_false_when_no_unconfigured_dev
 
 
 def test_add_device_to_device_group_should_result_false_when_save_failed(
-        create_device_groups,
+        get_device_group_default_values,
+        create_device_group,
         create_unconfigured_device):
     hub_service_instance = HubService.get_instance()
+
     test_product_key = 'test product key'
     test_device_key = 'test device key'
 
-    device_group = create_device_groups([test_product_key])[0]
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = test_product_key
+
+    device_group = create_device_group(device_group_values)
+
     unconfigured_device = create_unconfigured_device()
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') \
-            as get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(UnconfiguredDeviceRepository, 'get_unconfigured_device_by_device_key') \
-                as get_unconfigured_device_by_device_key_mock:
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key'
+        ) as get_unconfigured_device_by_device_key_mock:
             get_unconfigured_device_by_device_key_mock.return_value = unconfigured_device
 
             with patch.object(UnconfiguredDeviceRepository, 'save') as save_mock:

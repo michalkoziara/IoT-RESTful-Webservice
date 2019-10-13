@@ -5,22 +5,25 @@ from app.main.util.constants import Constants
 
 def test_get_executive_device_info_should_return_device_info_when_valid_request(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_device_group,
+        insert_executive_device,
+        insert_user,
+        get_user_group_default_values,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group):
+        insert_executive_type,
+        insert_formula):
     content_type = 'application/json'
 
-    device_group = create_device_group()
-    user_group = create_user_group()
-    executive_type = create_executive_device_type()
-    formula = create_formula()
-    executive_device = create_executive_device()
-    user = create_user()
-    insert_user_into_user_group(user, user_group)
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+
+    user_group = create_user_group(user_group_values)
+    executive_type = insert_executive_type()
+    formula = insert_formula()
+    executive_device = insert_executive_device()
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
@@ -50,22 +53,25 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
 
 def test_get_executive_device_info_should_return_user_does_not_have_privileges_error_when_not_known_user_id(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_device_group,
+        insert_executive_device,
+        insert_user,
+        get_user_group_default_values,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group):
+        insert_executive_type,
+        insert_formula):
     content_type = 'application/json'
 
-    device_group = create_device_group()
-    user_group = create_user_group()
-    create_executive_device_type()
-    create_formula()
-    executive_device = create_executive_device()
-    user = create_user()
-    insert_user_into_user_group(user, user_group)
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+
+    create_user_group(user_group_values)
+    insert_executive_type()
+    insert_formula()
+    executive_device = insert_executive_device()
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
@@ -83,21 +89,24 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
 
 def test_get_executive_device_info_should_return_device_key_not_found_when_device_key_was_not_found(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_device_group,
+        insert_executive_device,
+        insert_user,
+        get_user_group_default_values,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group):
+        insert_executive_type,
+        insert_formula):
     content_type = 'application/json'
 
-    device_group = create_device_group()
-    user_group = create_user_group()
-    create_executive_device_type()
-    create_formula()
-    user = create_user()
-    insert_user_into_user_group(user, user_group)
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+
+    create_user_group(user_group_values)
+    insert_executive_type()
+    insert_formula()
 
     response = client.get('/api/hubs/' + device_group.product_key + '/executive-devices/' + '1',
                           content_type=content_type, headers={'userId': (user.id + 1)})
@@ -112,21 +121,23 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_devic
 
 def test_get_executive_device_info_should_return_device_key_not_found_when_product_key_was_not_found(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_executive_device,
+        insert_user,
+        get_user_group_default_values,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group):
+        insert_executive_type,
+        insert_formula):
     content_type = 'application/json'
 
-    executive_device = create_executive_device()
-    user_group = create_user_group()
-    create_executive_device_type()
-    create_formula()
-    user = create_user()
-    insert_user_into_user_group(user, user_group)
+    executive_device = insert_executive_device()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+
+    create_user_group(user_group_values)
+    insert_executive_type()
+    insert_formula()
 
     response = client.get(
         '/api/hubs/' + 'test' + '/executive-devices/' + executive_device.device_key,
@@ -144,21 +155,20 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_produ
 
 def test_get_executive_device_info_should_return_user_does_not_have_privileges_error_when_user_not_is_same_user_group(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_device_group,
+        insert_executive_device,
+        insert_user,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group,
-        user_default_values):
-    device_group = create_device_group()
-    create_user_group()
-    create_executive_device_type()
-    create_formula()
+        insert_executive_type,
+        insert_formula):
     content_type = 'application/json'
-    executive_device = create_executive_device()
-    user = create_user()
+
+    device_group = insert_device_group()
+    create_user_group()
+    insert_executive_type()
+    insert_formula()
+    executive_device = insert_executive_device()
+    user = insert_user()
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
@@ -176,29 +186,27 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
 
 def test_get_executive_device_info_should_return_device_key_not_found_error_when_device_is_in_another_device_group(
         client,
-        create_device_group,
-        create_executive_device,
-        create_user,
+        insert_device_group,
+        insert_executive_device,
+        insert_user,
         create_user_group,
-        create_executive_device_type,
-        create_formula,
-        insert_user_into_user_group,
-        user_default_values,
-        device_group_default_values):
+        insert_executive_type,
+        insert_formula,
+        get_device_group_default_values):
     content_type = 'application/json'
 
-    create_device_group()
+    insert_device_group()
 
-    second_device_group_data = device_group_default_values
+    second_device_group_data = get_device_group_default_values()
     second_device_group_data['id'] += 2
     second_device_group_data['product_key'] += "2"
-    second_device_group = create_device_group(second_device_group_data)
+    second_device_group = insert_device_group(second_device_group_data)
 
     create_user_group()
-    create_executive_device_type()
-    create_formula()
-    executive_device = create_executive_device()
-    user = create_user()
+    insert_executive_type()
+    insert_formula()
+    executive_device = insert_executive_device()
+    user = insert_user()
 
     response = client.get(
         '/api/hubs/' + second_device_group.product_key + '/executive-devices/' + executive_device.device_key,
