@@ -5,7 +5,6 @@ from flask import Response
 from flask import request
 
 from app import api
-from app.main.model.user import User
 from app.main.service.log_service import LogService
 from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants

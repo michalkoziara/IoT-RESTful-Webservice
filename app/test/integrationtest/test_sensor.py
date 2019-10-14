@@ -63,9 +63,9 @@ def test_get_sensor_info_should_return_sensor_info_when_bad_product_key(
     user_group_values = get_user_group_default_values()
     user_group_values['users'] = [user]
 
-    user_group = create_user_group(user_group_values)
+    create_user_group(user_group_values)
 
-    sensor_type = insert_sensor_type()
+    insert_sensor_type()
     sensor = insert_sensor()
 
     response = client.get(
