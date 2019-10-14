@@ -15,6 +15,7 @@ from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
 from app.main.model.log import Log
 from app.main.model.sensor import Sensor
+from app.main.model.sensor_type import SensorType
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
 
@@ -185,6 +186,61 @@ def create_executive_types():
     return _create_executive_types
 
 
+################
+
+@pytest.fixture
+def sensor_type_default_values(device_group_default_values) -> Dict[str, Optional[Union[int, str]]]:
+    return {
+        'id': 1,
+        'name': 'executive type default name',
+        'reading_type': 'Enum',
+        'range_min': 0.0,
+        'range_max': 1.0,
+        'device_group_id': device_group_default_values['id'],
+    }
+
+
+@pytest.fixture
+def get_sensor_type_default_values(sensor_type_default_values):
+    def _get_sensor_type_default_values() -> Dict[str, Optional[Union[int, str]]]:
+        return deepcopy(sensor_type_default_values)
+
+    return _get_sensor_type_default_values
+
+
+@pytest.fixture
+def create_sensor_type(get_sensor_type_default_values, create_sensor_types):
+    def _create_sensor_type(values: Optional[Dict[str, str]] = None) -> SensorType:
+        if not values:
+            values = get_sensor_type_default_values()
+        return create_sensor_types([values])[0]
+
+    return _create_sensor_type
+
+
+@pytest.fixture
+def create_sensor_types():
+    def _create_sensor_types(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[SensorType]:
+        sensor_types = []
+        for value in values:
+            sensor_types.append(
+                SensorType(
+                    id=value['id'],
+                    name=value['name'],
+                    reading_type=value['reading_type'],
+                    range_min=value['range_min'],
+                    range_max=value['range_max'],
+                    device_group_id=value['device_group_id']
+                )
+            )
+            return sensor_types
+
+    return _create_sensor_types
+
+
+##############
+
+
 @pytest.fixture
 def formula_default_values(user_group_default_values) -> Dict[str, Optional[Union[int, str, List[Any]]]]:
     return {
@@ -305,6 +361,7 @@ def create_executive_devices():
 @pytest.fixture
 def sensor_default_values(
         device_group_default_values,
+        sensor_type_default_values,
         user_group_default_values) -> Dict[str, Optional[Union[str, int]]]:
     return {
         'id': 1,
@@ -313,7 +370,7 @@ def sensor_default_values(
         'is_active': True,
         'is_assigned': True,
         'device_key': 'default sensor device key',
-        'sensor_type_id': 1,
+        'sensor_type_id': sensor_type_default_values['id'],
         'user_group_id': user_group_default_values['id'],
         'device_group_id': device_group_default_values['id'],
         'sensor_readings': []
