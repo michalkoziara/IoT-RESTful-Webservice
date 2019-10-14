@@ -21,3 +21,11 @@ class UserGroupRepository:
                 UserGroup.executive_devices.any(device_key=device_key)
             )
         ).first()
+
+    def get_user_group_by_user_id_and_sensor_device_key(self, user_id: str, device_key: str) -> UserGroup:
+        return UserGroup.query.filter(
+            and_(
+                UserGroup.users.any(id=user_id),
+                UserGroup.sensors.any(device_key=device_key)
+            )
+        ).first()
