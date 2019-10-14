@@ -58,7 +58,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
                             test_user_id
                         )
 
-    assert result
+    assert result ==  Constants.RESPONSE_MESSAGE_OK
     assert result_values
     assert result_values['name'] == executive_device.name
     assert result_values['state'] == executive_device.state
