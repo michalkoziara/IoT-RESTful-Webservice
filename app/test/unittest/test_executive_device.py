@@ -65,6 +65,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
     assert result_values['isUpdated'] == executive_device.is_updated
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
+    assert result_values['isFormulaUsed'] == executive_device.is_formula_used
     assert result_values['isPositiveState'] == executive_device.positive_state
     assert result_values['isNegativeState'] == executive_device.negative_state
     assert result_values['deviceKey'] == executive_device.device_key

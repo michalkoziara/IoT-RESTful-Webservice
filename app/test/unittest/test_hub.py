@@ -51,6 +51,7 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
                 'is_updated': True,
                 'is_active': True,
                 'is_assigned': False,
+                'is_formula_used': False,
                 'positive_state': None,
                 'negative_state': None,
                 'device_key': test_executive_device_key,
