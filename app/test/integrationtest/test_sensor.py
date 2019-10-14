@@ -101,7 +101,6 @@ def test_get_sensor_info_should_return_sensor_info_when_bad_device_key(
 
     create_user_group(user_group_values)
 
-    insert_sensor()
     sensor = insert_sensor()
 
     response = client.get(
