@@ -50,7 +50,7 @@ class SensorService:
 
         user_group = self._user_group_repository.get_user_group_by_user_id_and_sensor_device_key(user_id, device_key)
 
-        if not user_group:
+        if not user_group and sensor.user_group_id is not None:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         senor_info = {}
@@ -61,6 +61,9 @@ class SensorService:
         senor_info['deviceKey'] = sensor.device_key
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
         senor_info['sensorTypeName'] = sensor_type.name
-        senor_info['sensorUserGroup'] = user_group.name
+        if user_group:
+            senor_info['sensorUserGroup'] = user_group.name
+        else:
+            senor_info['sensorUserGroup'] = None
 
         return Constants.RESPONSE_MESSAGE_OK, senor_info

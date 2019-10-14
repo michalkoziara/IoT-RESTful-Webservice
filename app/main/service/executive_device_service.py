@@ -56,7 +56,7 @@ class ExecutiveDeviceService:
             user_id,
             device_key
         )
-        if not user_group:
+        if not user_group and executive_device.user_group_id is not None:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_device_info = {}
@@ -73,7 +73,10 @@ class ExecutiveDeviceService:
             executive_device.executive_type_id
         )
         executive_device_info['deviceTypeName'] = executive_device_type.name
-        executive_device_info['deviceUserGroup'] = user_group.name
+        if user_group:
+            executive_device_info['deviceUserGroup'] = user_group.name
+        else:
+            executive_device_info['deviceUserGroup'] = None
 
         formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
 
