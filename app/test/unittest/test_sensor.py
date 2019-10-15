@@ -22,22 +22,24 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
 
     test_user_id = 1
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') as \
-            get_device_group_by_product_key_mock:
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(SensorRepository,
-                          'get_sensor_by_device_key_and_device_group_id') as \
-                get_sensor_by_device_key_and_device_group_id_mock:
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
             get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
 
-            with patch.object(UserGroupRepository,
-                              'get_user_group_by_user_id_and_sensor_device_key') as \
-                    get_user_group_by_user_id_and_sensor_device_key_mock:
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
                 get_user_group_by_user_id_and_sensor_device_key_mock.return_value = user_group
 
-                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as \
-                        get_sensor_type_by_id_mock:
+                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
                     result, result_values = sensor_service_instance.get_sensor_info(
@@ -56,7 +58,8 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
     assert result_values['sensorTypeName'] == sensor_type.name
     assert result_values['sensorUserGroup'] == user_group.name
 
-def test_get_sensor_info_should_return_sensor_info_when_user_is_not_in_the_same_user_group_as_sensor_and_sensor_is_not_in_any_user_group(
+
+def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_user_group(
         create_sensor,
         create_sensor_type,
         create_device_group,
@@ -70,22 +73,24 @@ def test_get_sensor_info_should_return_sensor_info_when_user_is_not_in_the_same_
 
     test_user_id = 1
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') as \
-            get_device_group_by_product_key_mock:
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(SensorRepository,
-                          'get_sensor_by_device_key_and_device_group_id') as \
-                get_sensor_by_device_key_and_device_group_id_mock:
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
             get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
 
-            with patch.object(UserGroupRepository,
-                              'get_user_group_by_user_id_and_sensor_device_key') as \
-                    get_user_group_by_user_id_and_sensor_device_key_mock:
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
                 get_user_group_by_user_id_and_sensor_device_key_mock.return_value = None
 
-                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as \
-                        get_sensor_type_by_id_mock:
+                with patch.object(SensorTypeRepository,
+                                  'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
                     result, result_values = sensor_service_instance.get_sensor_info(
@@ -168,22 +173,22 @@ def test_get_sensor_info_should_not_return_sensor_info_when_user_is_not_in_the_s
     test_user_id = 1
 
     with patch.object(DeviceGroupRepository,
-                      'get_device_group_by_product_key') as \
-            get_device_group_by_product_key_mock:
+                      'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(SensorRepository,
-                          'get_sensor_by_device_key_and_device_group_id') as \
-                get_sensor_by_device_key_and_device_group_id_mock:
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
             get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
 
-            with patch.object(UserGroupRepository,
-                              'get_user_group_by_user_id_and_sensor_device_key') as \
-                    get_user_group_by_user_id_and_sensor_device_key_mock:
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
                 get_user_group_by_user_id_and_sensor_device_key_mock.return_value = None
 
-                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as \
-                        get_sensor_type_by_id_mock:
+                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
                     result, result_values = sensor_service_instance.get_sensor_info(
@@ -211,22 +216,22 @@ def test_get_sensor_info_should_not_return_sensor_info_when_sensor_is_not_in_dev
     test_user_id = 1
 
     with patch.object(DeviceGroupRepository,
-                      'get_device_group_by_product_key') as \
-            get_device_group_by_product_key_mock:
+                      'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(SensorRepository,
-                          'get_sensor_by_device_key_and_device_group_id') as \
-                get_sensor_by_device_key_and_device_group_id_mock:
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
             get_sensor_by_device_key_and_device_group_id_mock.return_value = None
 
-            with patch.object(UserGroupRepository,
-                              'get_user_group_by_user_id_and_sensor_device_key') as \
-                    get_user_group_by_user_id_and_sensor_device_key_mock:
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
                 get_user_group_by_user_id_and_sensor_device_key_mock.return_value = user_group
 
-                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as \
-                        get_sensor_type_by_id_mock:
+                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
                     result, result_values = sensor_service_instance.get_sensor_info(
@@ -253,22 +258,22 @@ def test_get_executive_device_info_should_not_return_device_info_when_device_gro
     test_user_id = 1
 
     with patch.object(DeviceGroupRepository,
-                      'get_device_group_by_product_key') as \
-            get_device_group_by_product_key_mock:
+                      'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
-        with patch.object(SensorRepository,
-                          'get_sensor_by_device_key_and_device_group_id') as \
-                get_sensor_by_device_key_and_device_group_id_mock:
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
             get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
 
-            with patch.object(UserGroupRepository,
-                              'get_user_group_by_user_id_and_sensor_device_key') as \
-                    get_user_group_by_user_id_and_sensor_device_key_mock:
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
                 get_user_group_by_user_id_and_sensor_device_key_mock.return_value = user_group
 
-                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as \
-                        get_sensor_type_by_id_mock:
+                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
                     result, result_values = sensor_service_instance.get_sensor_info(

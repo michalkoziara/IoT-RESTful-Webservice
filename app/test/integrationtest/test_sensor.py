@@ -53,7 +53,6 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_product_key(
         insert_sensor,
         insert_user,
         get_user_group_default_values,
-        create_user_group,
         insert_sensor_type):
     content_type = 'application/json'
 
@@ -62,8 +61,6 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_product_key(
 
     user_group_values = get_user_group_default_values()
     user_group_values['users'] = [user]
-
-    create_user_group(user_group_values)
 
     insert_sensor_type()
     sensor = insert_sensor()
@@ -89,7 +86,6 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_device_key(
         insert_sensor,
         insert_user,
         get_user_group_default_values,
-        create_user_group,
         insert_sensor_type):
     content_type = 'application/json'
 
@@ -98,8 +94,6 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_device_key(
 
     user_group_values = get_user_group_default_values()
     user_group_values['users'] = [user]
-
-    create_user_group(user_group_values)
 
     sensor = insert_sensor()
 
