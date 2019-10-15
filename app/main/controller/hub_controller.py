@@ -41,6 +41,24 @@ def get_states(product_key):
         mimetype='application/json')
 
 
+@api.route('/hubs/<product_key>/states', methods=['POST'])
+def set_sensors_readings_and_devices_states(product_key):
+    request_dict = request.get_json()
+    sensors_readings = request_dict['sensors']
+    devices_states = request_dict['devices']
+    result, result_values = _hub_service_instance.set_devices_states_and_sensors_readings(product_key,
+                                                                                          sensors_readings,
+                                                                                          devices_states
+                                                                                          )
+
+    if result == Constants.RESPONSE_MESSAGE_OK:
+        pass
+    else:
+        pass
+
+
+
+
 @api.route('/hubs/<product_key>/devices', methods=['POST'])
 def create_device(product_key: str):
     response = None

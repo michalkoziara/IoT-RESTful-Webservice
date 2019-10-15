@@ -19,4 +19,6 @@ class Constants:
     RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND = 'Device key was not found'
     RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES = 'User does not have necessary privileges'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined'
+    RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND = 'Sensors readings not found'
+    RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND = 'Devices states not found'
     RESPONSE_MESSAGE_OK = 'OK'

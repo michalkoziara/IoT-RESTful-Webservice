@@ -7,5 +7,5 @@ class SensorReading(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     value = db.Column(db.Float, nullable=False)
-
+    date = db.Column(db.DateTime, nullable=False)
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)

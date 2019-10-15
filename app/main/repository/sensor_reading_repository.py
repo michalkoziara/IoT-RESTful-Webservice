@@ -4,10 +4,10 @@ from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import db
-from app.main.model import Log
+from app.main.model.sensor_reading import SensorReading
 
 
-class LogRepository:
+class SensorReadingRepository:
     _instance = None
 
     @classmethod
@@ -17,16 +17,17 @@ class LogRepository:
 
         return cls._instance
 
-    def get_logs_by_device_group_id(self, device_group_id: str) -> List[Log]:
-        return Log.query.filter(Log.device_group_id == device_group_id).all()
+    def get_sensor_readings_by_sensor_id(self, sensor_id: str) -> List[SensorReading]:
+        return SensorReadingRepository.query.filter(
+            SensorReading.sensor_id == sensor_id
+        ).all()
 
-    def save(self, log: Log) -> bool:
+    def save(self, sensor_reading: SensorReading) -> bool:
         try:
-            db.session.add(log)
+            db.session.add(sensor_reading)
             db.session.commit()
             result = True
         except SQLAlchemyError:
             result = False
 
         return result
-
