@@ -12,6 +12,5 @@ class SensorTypeRepository:
 
         return cls._instance
 
-    def get_sensor_type_by_id(self, type_id: str) \
-            -> SensorType:
+    def get_sensor_type_by_id(self, type_id: str) -> SensorType:
         return SensorType.query.filter(SensorType.id == type_id).first()
