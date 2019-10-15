@@ -186,8 +186,6 @@ def create_executive_types():
     return _create_executive_types
 
 
-################
-
 @pytest.fixture
 def sensor_type_default_values(device_group_default_values) -> Dict[str, Optional[Union[int, str]]]:
     return {
@@ -236,9 +234,6 @@ def create_sensor_types():
             return sensor_types
 
     return _create_sensor_types
-
-
-##############
 
 
 @pytest.fixture

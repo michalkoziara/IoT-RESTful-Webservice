@@ -16,11 +16,13 @@ _sensor_service_instance = SensorService.get_instance()
 
 @api.route('/hubs/<product_key>/sensors/<device_key>', methods=['GET'])
 def get_sensor(product_key: str, device_key: str):
-    user_id = request.headers.get('userId') #Todo replace userID with user token
+    user_id = request.headers.get('userId')  # Todo replace userID with user token
 
-    result, result_values = _sensor_service_instance.get_sensor_info(device_key,
-                                                                     product_key,
-                                                                     user_id)
+    result, result_values = _sensor_service_instance.get_sensor_info(
+        device_key,
+        product_key,
+        user_id
+    )
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
