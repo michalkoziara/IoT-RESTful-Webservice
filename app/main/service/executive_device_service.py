@@ -1,3 +1,6 @@
+from typing import Optional
+from typing import Tuple
+
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -28,7 +31,7 @@ class ExecutiveDeviceService:
         self._executive_device_type_repository = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
 
-    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str):
+    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -56,7 +59,7 @@ class ExecutiveDeviceService:
             user_id,
             device_key
         )
-        if not user_group:
+        if not user_group and executive_device.user_group_id is not None:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_device_info = {}
@@ -74,7 +77,10 @@ class ExecutiveDeviceService:
             executive_device.executive_type_id
         )
         executive_device_info['deviceTypeName'] = executive_device_type.name
-        executive_device_info['deviceUserGroup'] = user_group.name
+        if user_group:
+            executive_device_info['deviceUserGroup'] = user_group.name
+        else:
+            executive_device_info['deviceUserGroup'] = None
 
         formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
 

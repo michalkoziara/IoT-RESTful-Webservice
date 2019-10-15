@@ -13,6 +13,7 @@ from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
 from app.main.model.log import Log
 from app.main.model.sensor import Sensor
+from app.main.model.sensor_type import SensorType
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
@@ -113,6 +114,26 @@ def insert_executive_types(create_executive_types, create_multiple_records):
         )
 
     return _insert_executive_types
+
+
+@pytest.fixture
+def insert_sensor_type(create_sensor_type, create_record):
+    def _insert_sensor_type(values: Optional[Dict[str, str]] = None) -> SensorType:
+        return create_record(
+            create_sensor_type(values)
+        )
+
+    return _insert_sensor_type
+
+
+@pytest.fixture
+def insert_sensor_types(create_sensor_types, create_multiple_records):
+    def _insert_sensor_types(values: List[Dict[str, str]]) -> List[SensorType]:
+        return create_multiple_records(
+            create_sensor_types(values)
+        )
+
+    return _insert_sensor_types
 
 
 @pytest.fixture
