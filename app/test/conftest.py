@@ -195,6 +195,8 @@ def sensor_type_default_values(device_group_default_values) -> Dict[str, Optiona
         'range_min': 0.0,
         'range_max': 1.0,
         'device_group_id': device_group_default_values['id'],
+        'sensors': [],
+        'reading_enumerators': []
     }
 
 
@@ -228,7 +230,9 @@ def create_sensor_types():
                     reading_type=value['reading_type'],
                     range_min=value['range_min'],
                     range_max=value['range_max'],
-                    device_group_id=value['device_group_id']
+                    device_group_id=value['device_group_id'],
+                    sensors=value['sensors'],
+                    reading_enumerators=value['reading_enumerators']
                 )
             )
             return sensor_types
