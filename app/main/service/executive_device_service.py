@@ -68,6 +68,7 @@ class ExecutiveDeviceService:
         executive_device_info['isUpdated'] = executive_device.is_updated
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
+        executive_device_info['isFormulaUsed'] = executive_device.is_formula_used
         executive_device_info['isPositiveState'] = executive_device.positive_state
         executive_device_info['isNegativeState'] = executive_device.negative_state
         executive_device_info['deviceKey'] = executive_device.device_key
