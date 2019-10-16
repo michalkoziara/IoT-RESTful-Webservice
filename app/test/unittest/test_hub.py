@@ -2,11 +2,16 @@ from unittest.mock import patch
 
 import pytest
 
+from app.main.model import SensorReading
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
+from app.main.repository.executive_type_repository import ExecutiveTypeRepository
+from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
+from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.hub_service import HubService
+from app.main.util.utils import Utils
 
 
 def test_get_changed_devices_for_device_group_should_return_device_keys_when_valid_product_key(
@@ -300,6 +305,260 @@ def test_add_device_to_device_group_should_result_false_when_save_failed(
                 )
 
     assert result is False
+
+
+def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_parameters(
+        create_sensor_type,
+        create_sensor,
+        create_sensor_reading):
+    hub_service_instance = HubService.get_instance()
+    sensor_type = create_sensor_type()
+    sensor_reading = create_sensor_reading()
+    sensor = create_sensor()
+    sensor.is_active = True
+
+    test_device_group_id = sensor.device_group_id
+
+    values = {
+        'deviceKey': sensor.device_key,
+        'readingValue': 0.5,
+        'isActive': False
+    }
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_device_key_and_device_group_id'
+    ) as get_sensor_by_device_key_and_device_group_id_mock:
+        get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_type_by_id'
+        ) as get_sensor_type_by_id_mock:
+            get_sensor_type_by_id_mock.return_value = sensor_type
+            with patch.object(
+                    HubService,
+                    '_reading_in_range'
+            ) as _reading_in_range_mock:
+                with patch.object(
+                        SensorReadingRepository,
+                        'save'
+                ) as save_mock:
+                    save_mock.return_value = True
+                    get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+                    _reading_in_range_mock.return_value = True
+
+                    hub_service_instance._set_sensor_reading(test_device_group_id, values)
+                    assert sensor.is_active == values['isActive']
+                    save_mock.assert_called()
+
+
+def test_set_device_state_should_set_device_state_when_called_with_right_parameters(
+        create_executive_type,
+        create_executive_device):
+    hub_service_instance = HubService.get_instance()
+    executive_type = create_executive_type()
+
+    executive_device = create_executive_device()
+    executive_device.is_active = True
+
+    test_device_group_id = executive_device.device_group_id
+
+    values = {
+        'deviceKey': executive_device.device_key,
+        'state': 0.5,
+        'isActive': False
+    }
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_device_key_and_device_group_id'
+    ) as get_executive_device_by_device_key_and_device_group_id_mock:
+        get_executive_device_by_device_key_and_device_group_id_mock.return_value = executive_device
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_id'
+        ) as get_executive_type_by_id_mock:
+            get_executive_type_by_id_mock.return_value = executive_type
+
+            with patch.object(
+                    HubService,
+                    '_state_in_range'
+            ) as _state_in_range_mock:
+                _state_in_range_mock.return_value = True
+
+                with patch.object(
+                        Utils,
+                        'update_db'
+                ) as update_db_mock:
+                    update_db_mock.return_value = True
+
+                    hub_service_instance._set_device_state(test_device_group_id, values)
+
+    assert executive_device.is_active == values['isActive']
+    assert executive_device.state == values['state']
+    update_db_mock.assert_called_once()
+
+
+def test_set_device_state_should_not_set_device_state_when_state_not_in_range(
+        create_executive_type,
+        create_executive_device):
+    hub_service_instance = HubService.get_instance()
+    executive_type = create_executive_type()
+    executive_device = create_executive_device()
+    executive_device.is_active = True
+
+    test_device_group_id = executive_device.device_group_id
+
+    values = {
+        'deviceKey': executive_device.device_key,
+        'state': 0.5,
+        'isActive': False
+    }
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_device_key_and_device_group_id'
+    ) as get_executive_device_by_device_key_and_device_group_id_mock:
+        get_executive_device_by_device_key_and_device_group_id_mock.return_value = executive_device
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_id'
+        ) as get_executive_type_by_id_mock:
+            get_executive_type_by_id_mock.return_value = executive_type
+
+            with patch.object(
+                    HubService,
+                    '_state_in_range'
+            ) as _state_in_range_mock:
+                _state_in_range_mock.return_value = False
+
+                assert not hub_service_instance._set_device_state(test_device_group_id, values)
+
+
+def test_set_device_state_should_not_set_device_state_when_called_with_wrong_dictionary():
+    device_group_id = 1
+    values = {
+        'deviceKey': 1,
+        'test': 0.5,
+        'isActive': False
+    }
+    hub_service_instance = HubService.get_instance()
+    assert not hub_service_instance._set_device_state(device_group_id, values)
+
+
+def test_set_device_state_should_not_set_device_when_device_not_in_device_group():
+    device_group_id = 1
+    values = {
+        'deviceKey': 1,
+        'state': 0.5,
+        'isActive': False
+    }
+
+    hub_service_instance = HubService.get_instance()
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_device_key_and_device_group_id'
+    ) as get_executive_device_by_device_key_and_device_group_id_mock:
+        get_executive_device_by_device_key_and_device_group_id_mock.return_value = None
+        assert not hub_service_instance._set_device_state(device_group_id, values)
+
+
+def test_set_device_state_should_not_set_device_state_when_called_with_wrong_dictionary():
+    device_group_id = 1
+    values = {
+        'deviceKey': 1,
+        'test': 0.5,
+        'isActive': False
+    }
+    hub_service_instance = HubService.get_instance()
+    assert not hub_service_instance._set_device_state(device_group_id, values)
+
+
+@pytest.mark.parametrize("range_min,range_max,value", [
+    (-1, 2, 0),
+    (1.0, 2.0, 2.0),
+    (-2.0, -1.0, -2.0),
+    (-2.0, -1.0, -1.5)])
+def test_is_decimal_reading_in_range_should_return_true_when_value_in_range(
+        range_min, range_max, value,
+        create_sensor_type,
+        get_sensor_type_default_values):
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = range_min
+    sensor_type_values['range_max'] = range_max
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    hub_service_instance = HubService.get_instance()
+
+    assert hub_service_instance._is_decimal_reading_in_range(value, sensor_type)
+
+
+@pytest.mark.parametrize("range_min,range_max,value", [
+    (-1, 2, 2.1),
+    (1.0, 2.0, 20),
+    (-2.0, -1.0, -2.5),
+    (-2.0, -1.0, True),
+    (-2.0, -1.0, "Test"),
+    (-2.0, -1.0, 0)])
+def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range_or_wrong_type(
+        range_min, range_max, value,
+        create_sensor_type,
+        get_sensor_type_default_values):
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = range_min
+    sensor_type_values['range_max'] = range_max
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    hub_service_instance = HubService.get_instance()
+
+    assert not hub_service_instance._is_decimal_reading_in_range(value, sensor_type)
+
+
+@pytest.mark.parametrize("state_range_min,state_range_max,value", [
+    (-1, 2, 0),
+    (1.0, 2.0, 2.0),
+    (-2.0, -1.0, -2.0),
+    (-2.0, -1.0, -1.5)])
+def test_is_decimal_reading_in_range_should_return_true_when_value_in_range(
+        state_range_min, state_range_max, value,
+        create_executive_type,
+        get_executive_type_default_values):
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_type'] = 'Decimal'
+    executive_type_values['state_range_min'] = state_range_min
+    executive_type_values['state_range_max'] = state_range_max
+
+    executive_type = create_executive_type(executive_type_values)
+    hub_service_instance = HubService.get_instance()
+
+    assert hub_service_instance._is_decimal_state_in_range(value, executive_type)
+
+
+@pytest.mark.parametrize("state_range_min,state_range_max,value", [
+    (-1, 2, 2.1),
+    (1.0, 2.0, 20),
+    (-2.0, -1.0, -2.5),
+    (-2.0, -1.0, True),
+    (-2.0, -1.0, "Test"),
+    (-2.0, -1.0, 0)])
+def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range_or_wrong_type(
+        state_range_min, state_range_max, value,
+        create_executive_type,
+        get_executive_type_default_values):
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_type'] = 'Decimal'
+    executive_type_values['state_range_min'] = state_range_min
+    executive_type_values['state_range_max'] = state_range_max
+
+    executive_type = create_executive_type(executive_type_values)
+    hub_service_instance = HubService.get_instance()
+
+    assert not hub_service_instance._is_decimal_state_in_range(value, executive_type)
 
 
 if __name__ == '__main__':
