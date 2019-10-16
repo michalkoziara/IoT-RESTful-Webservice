@@ -239,6 +239,8 @@ class HubService:
             return False
 
     def _is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
+        if not isinstance(reading_value, str):
+            return False
         possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
             sensor_type.id)
         if reading_value in [possible_reading.name for possible_reading in possible_readings]:
@@ -246,6 +248,8 @@ class HubService:
         return False
 
     def _is_decimal_reading_in_range(self, reading_value, sensor_type: SensorType) -> bool:
+        if not isinstance(reading_value, (float, int)):
+            return False
         return sensor_type.range_min <= reading_value <= sensor_type.range_max
 
     def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
@@ -259,6 +263,8 @@ class HubService:
             return False
 
     def _is_enum_state_right(self, state: str, executive_type: ExecutiveType) -> bool:
+        if not isinstance(state, str):
+            return False
         possible_states = self._state_enumerator_repository.get_state_enumerators_by_sensor_type_id(
             executive_type.id)
         if state in [possible_state.number for possible_state in possible_states]:
@@ -266,4 +272,6 @@ class HubService:
         return False
 
     def _is_decimal_state_in_range(self, state, executive_type: ExecutiveType) -> bool:
+        if not isinstance(state, (float, int)):
+            return False
         return executive_type.state_range_min <= state <= executive_type.state_range_max
