@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.main import db
 
 
@@ -7,5 +9,5 @@ class SensorReading(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     value = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.now)
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
