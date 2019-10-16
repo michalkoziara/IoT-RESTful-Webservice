@@ -1,3 +1,4 @@
+PyJWT
 alembic==1.0.10
 aniso8601==6.0.0
 astroid==2.2.5
