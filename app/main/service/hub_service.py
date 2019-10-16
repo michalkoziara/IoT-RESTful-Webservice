@@ -7,7 +7,6 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from app.main import db
 from app.main.model import SensorType, SensorReading, ExecutiveType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
@@ -20,6 +19,7 @@ from app.main.repository.state_enumerator_repository import StateEnumeratorRepos
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
+from app.main.util.utils import *
 
 _logger = LogService.get_instance()
 
@@ -113,11 +113,12 @@ class HubService:
 
         return self._unconfigured_device_repository_instance.save(unconfigured_device)
 
-    def set_devices_states_and_sensors_readings(self, product_key: str,
-                                                sensors_readings: List[Dict[str:str]],
-                                                devices_states: List[Dict[str:str]]
+    def set_devices_states_and_sensors_readings(self,
+                                                product_key: str,
+                                                sensors_readings: List[Dict],
+                                                devices_states: List[Dict]
                                                 ) -> str:
-
+        # TODO add hub authentication
         if product_key is None:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
@@ -134,29 +135,50 @@ class HubService:
 
         device_group_id = device_group.id
 
+
+
+        # TODO make sure that user is informed about occuring exxceptions
+        all_sensor_values_OK = True
+        all_devices_values_OK = True
         for values in sensors_readings:
-            if not self.set_sensor_reading(device_group_id, values):
+            if not self._set_sensor_reading(device_group_id, values):
                 _logger.log_exception(
                     dict(
                         type='Error',
-                        creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                         errorMessage='Wrong values passed to set sensor readings',
                         payload=json.dumps(values)
                     ),
                     product_key
                 )
+                all_sensor_values_OK = False
 
-    def set_sensor_reading(self, device_group_id, values: dict[str: str]) -> str:
+        for values in devices_states:
+            if not self._set_device_state(device_group_id, values):
+                _logger.log_exception(
+                    dict(
+                        type='Error',
+                        creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        errorMessage='Wrong values passed to set device state',
+                        payload=json.dumps(values)
+                    ),
+                    product_key
+                )
+                all_devices_values_OK= False
 
-        device_key = values.get('deviceKey', None)
-        reading_value = values.get('readingValue', None)
-        is_active = values.get('isActive', None)
+        if all_sensor_values_OK and all_devices_values_OK:
+            return Constants.RESPONSE_MESSAGE_OK
+        else:
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
-        if not device_key:
+    def _set_sensor_reading(self, device_group_id, values: dict) -> bool:
+
+        if 'deviceKey' not in values or 'readingValue' not in values or 'isActive' not in values:
             return False
 
-        if reading_value is None or is_active is None:
-            return False
+        device_key = values['deviceKey']
+        reading_value = values['readingValue']
+        is_active = values['isActive']
 
         sensor = self._sensor_repository_instance.get_sensor_by_device_key_and_device_group_id(device_key,
                                                                                                device_group_id)
@@ -165,27 +187,27 @@ class HubService:
 
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
 
-        if sensor_type is None:
+        if not sensor_type:
             return False
 
-        if not self.reading_in_range(reading_value, sensor_type):
+        if not self._reading_in_range(reading_value, sensor_type):
             return False
 
         sensor.is_active = is_active
-        db.session.commit()
-        sensor_reading = SensorReading(value=reading_value, date=datetime.now(), sensor_id=sensor.id)
-        self._sensor_reading_repository_instance.save(sensor_reading)
-
-    def set_device_state(self, device_group_id, values: dict[str: str]):
-        device_key = values.get('deviceKey', None)
-        state = values.get('state', None)
-        is_active = values.get('isActive', None)
-
-        if not device_key:
+        sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id)
+        if not self._sensor_reading_repository_instance.save(sensor_reading):
             return False
 
-        if state is None or is_active is None:
+        return True
+
+    def _set_device_state(self, device_group_id, values: dict):
+
+        if 'deviceKey' not in values or 'state' not in values or 'isActive' not in values:
             return False
+
+        device_key = values['deviceKey']
+        state = values['state']
+        is_active = values['isActive']
 
         executive_device = self._executive_device_repository_instance \
             .get_executive_device_by_device_key_and_device_group_id(
@@ -201,53 +223,48 @@ class HubService:
         if not executive_type:
             return False
 
-        if not self.state_in_range(state, executive_type):
+        if not self._state_in_range(state, executive_type):
             return False
         executive_device.is_active = is_active
         executive_device.state = state
+        return update_db()
 
-        db.session.commit() #TODO add try catch blocks or function to encapsulate updating feature
-
-    def is_bool(self, reading_value) -> bool:
-        return isinstance(reading_value, bool)
-
-    def reading_in_range(self, reading_value: str, sensor_type: SensorType):
+    def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
-            return self.is_enum_reading_right(reading_value, sensor_type)
+            return self._is_enum_reading_right(reading_value, sensor_type)
         elif sensor_type.reading_type == 'Decimal':
-            return self.is_decimal_reading_in_range(reading_value, sensor_type)
+            return self._is_decimal_reading_in_range(reading_value, sensor_type)
         elif sensor_type.reading_type == 'Boolean':
-            return self.is_bool(reading_value)
+            return is_bool(reading_value)
         else:
             return False
 
-    def is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
+    def _is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
         possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
             sensor_type.id)
-        if reading_value in possible_readings:
+        if reading_value in [possible_reading.name for possible_reading in possible_readings]:
             return True
         return False
 
-    def is_decimal_reading_in_range(self, reading_value, sensor_type: SensorType) -> bool:
-        return sensor_type.range_min < reading_value < sensor_type.range_max
+    def _is_decimal_reading_in_range(self, reading_value, sensor_type: SensorType) -> bool:
+        return sensor_type.range_min <= reading_value <= sensor_type.range_max
 
-    def state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
+    def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
         if executive_type.state_type == 'Enum':
-            return self.is_enum_state_right(state, executive_type)
+            return self._is_enum_state_right(state, executive_type)
         elif executive_type.state_type == 'Decimal':
-            return self.is_decimal_reading_in_range(state, executive_type)
+            return self._is_decimal_reading_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
-            return self.is_bool(state)
+            return is_bool(state)
         else:
             return False
 
-    def is_enum_state_right(self, state: str, executive_type: ExecutiveType) -> bool:
-
+    def _is_enum_state_right(self, state: str, executive_type: ExecutiveType) -> bool:
         possible_states = self._state_enumerator_repository.get_state_enumerators_by_sensor_type_id(
             executive_type.id)
-        if state in possible_states:
+        if state in [possible_state.number for possible_state in possible_states]:
             return True
         return False
 
-    def is_decimal_state_in_range(self, state, executive_type: ExecutiveType) -> bool:
-        return executive_type.state_range_min < state < executive_type.state_range_max
+    def _is_decimal_state_in_range(self, state, executive_type: ExecutiveType) -> bool:
+        return executive_type.state_range_min <= state <= executive_type.state_range_max
