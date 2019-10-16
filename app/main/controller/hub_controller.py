@@ -46,6 +46,7 @@ def create_device(product_key: str):
     status = None
     request_dict = None
     device_key = None
+    response = None
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
