@@ -119,14 +119,14 @@ class HubService:
                                                 devices_states: List[Dict]
                                                 ) -> str:
         # TODO add hub authentication
-        if product_key is None:
+        if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
-        if not sensors_readings:
-            return Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND
+        if not isinstance(sensors_readings, List) or not all(isinstance(values, dict) for values in sensors_readings):
+            return Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST
 
-        if not devices_states:
-            return Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND
+        if not isinstance(devices_states, List) or not all(isinstance(values, dict) for values in devices_states):
+            return Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
@@ -135,16 +135,13 @@ class HubService:
 
         device_group_id = device_group.id
 
-
-
-        # TODO make sure that user is informed about occuring exxceptions
         all_sensor_values_OK = True
         all_devices_values_OK = True
         for values in sensors_readings:
             if not self._set_sensor_reading(device_group_id, values):
                 _logger.log_exception(
                     dict(
-                        type='Error',
+                        type='Info',
                         creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                         errorMessage='Wrong values passed to set sensor readings',
                         payload=json.dumps(values)
@@ -152,6 +149,7 @@ class HubService:
                     product_key
                 )
                 all_sensor_values_OK = False
+                print(values)
 
         for values in devices_states:
             if not self._set_device_state(device_group_id, values):
@@ -164,10 +162,11 @@ class HubService:
                     ),
                     product_key
                 )
-                all_devices_values_OK= False
+                all_devices_values_OK = False
+                print(values)
 
         if all_sensor_values_OK and all_devices_values_OK:
-            return Constants.RESPONSE_MESSAGE_OK
+            return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
         else:
             return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 

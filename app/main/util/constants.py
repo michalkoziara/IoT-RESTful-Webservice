@@ -23,5 +23,7 @@ class Constants:
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND = 'Sensors readings not found'
     RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND = 'Devices states not found'
+    RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST = 'Sensors readings must be a list of dictionaries'
+    RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST = 'Devices states must be a list of dictionaries'
     RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES = "States of devices and readings of sensors were updated"
     RESPONSE_MESSAGE_OK = 'OK'

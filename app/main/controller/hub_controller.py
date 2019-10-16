@@ -136,22 +136,7 @@ def set_sensors_readings_and_devices_states(product_key):
     else:
         try:
             request_dict = request.get_json()
-            try:
-                sensors_readings = request_dict['sensors']
-                devices_states = request_dict['devices']
-            except KeyError as e:
-                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
-                _logger.log_exception(
-                    dict(
-                        type='Error',
-                        creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        errorMessage=response['errorMessage'],
-                        stackTrace=traceback.format_exc(),
-                        payload=json.dumps(request_dict)
-                    ),
-                    product_key
-                )
+
         except BadRequest as e:
             response = dict(errorMessage=e.description)
             status = e.code
@@ -164,46 +149,48 @@ def set_sensors_readings_and_devices_states(product_key):
                 ),
                 product_key
             )
-
-    if not status:
-        result = _hub_service_instance.set_devices_states_and_sensors_readings(
-            product_key,
-            sensors_readings,
-            devices_states
-        )
-
-        if result == Constants.RESPONSE_MESSAGE_OK:
-            status = 201
-        else:
-            response = dict(errorMessage=result)
+        try:
+            sensors_readings = request_dict['sensors']
+            devices_states = request_dict['devices']
+        except KeyError as e:
+            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
             status = 400
             _logger.log_exception(
                 dict(
                     type='Error',
                     creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                     errorMessage=response['errorMessage'],
-                    payload=json.dumps(request_dict)  # TODO make sure that there is enough space in DB
+                    stackTrace=traceback.format_exc(),
+                    payload=json.dumps(request_dict)
                 ),
                 product_key
             )
 
-    if status == 201:
-        response = Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
+    if status is None:
+        result = _hub_service_instance.set_devices_states_and_sensors_readings(
+            product_key,
+            sensors_readings,
+            devices_states
+        )
+
+    if result in [Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES,
+                  Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA]:
+        status = 201
+
     else:
-        error_message = dict(errorMessage=Constants.RESPONSE_MESSAGE_WRONG_DATA)
-        status = 409
+        response = dict(errorMessage=result)
+        status = 400
         _logger.log_exception(
             dict(
                 type='Error',
                 creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 errorMessage=response['errorMessage'],
-                payload=json.dumps(request_dict)
+                payload=json.dumps(request_dict)  # TODO make sure that there is enough space in DB
             ),
             product_key
         )
-        response = error_message['errorMessage']
 
     return Response(
-        response=response,
+        response=result,
         status=status,
         mimetype='application/json')
