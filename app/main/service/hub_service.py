@@ -19,7 +19,7 @@ from app.main.repository.state_enumerator_repository import StateEnumeratorRepos
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
-from app.main.util.utils import *
+from app.main.util.utils import Utils
 
 _logger = LogService.get_instance()
 
@@ -226,7 +226,7 @@ class HubService:
             return False
         executive_device.is_active = is_active
         executive_device.state = state
-        return update_db()
+        return Utils.update_db()
 
     def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
@@ -234,7 +234,7 @@ class HubService:
         elif sensor_type.reading_type == 'Decimal':
             return self._is_decimal_reading_in_range(reading_value, sensor_type)
         elif sensor_type.reading_type == 'Boolean':
-            return is_bool(reading_value)
+            return Utils.is_bool(reading_value)
         else:
             return False
 
@@ -243,7 +243,7 @@ class HubService:
             return False
         possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
             sensor_type.id)
-        if reading_value in [possible_reading.name for possible_reading in possible_readings]:
+        if reading_value in [possible_reading.number for possible_reading in possible_readings]:
             return True
         return False
 
@@ -258,7 +258,7 @@ class HubService:
         elif executive_type.state_type == 'Decimal':
             return self._is_decimal_reading_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
-            return is_bool(state)
+            return Utils.is_bool(state)
         else:
             return False
 
@@ -275,3 +275,5 @@ class HubService:
         if not isinstance(state, (float, int)):
             return False
         return executive_type.state_range_min <= state <= executive_type.state_range_max
+
+

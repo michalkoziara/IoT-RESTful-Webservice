@@ -3,15 +3,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.main import db
 
 
-def update_db() -> bool:
-    try:
-        db.session.commit()
-        result = True
-    except SQLAlchemyError:
-        result = False
+class Utils:
+    # Class is used to simplify tests
+    @classmethod
+    def update_db(self) -> bool:
+        try:
+            db.session.commit()
+            result = True
+        except SQLAlchemyError:
+            result = False
 
-    return result
+        return result
 
-
-def is_bool(value) -> bool:
-    return isinstance(value, bool)
+    @classmethod
+    def is_bool(self, value) -> bool:
+        return isinstance(value, bool)
