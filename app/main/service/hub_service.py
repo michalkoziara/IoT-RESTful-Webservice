@@ -163,7 +163,6 @@ class HubService:
                     product_key
                 )
                 all_devices_values_OK = False
-                print(values)
 
         if all_sensor_values_OK and all_devices_values_OK:
             return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
@@ -275,5 +274,3 @@ class HubService:
         if not isinstance(state, (float, int)):
             return False
         return executive_type.state_range_min <= state <= executive_type.state_range_max
-
-
