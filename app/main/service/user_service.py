@@ -36,13 +36,13 @@ class UserService:
         if not is_password_correct:
             return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS, None
 
-        token = Auth.encode_auth_token(user.id)
+        token = Auth.encode_auth_token(user.id, user.is_admin)
 
         return Constants.RESPONSE_MESSAGE_OK, token
 
     def create_user(self, username: str, email: str, password: str) -> str:
-        if not username or not email:
-            return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
+        if not username or not email or not password:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
         user = self._user_repository_instance.get_user_by_email_or_username(email, username)
 

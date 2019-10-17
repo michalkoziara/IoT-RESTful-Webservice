@@ -9,11 +9,12 @@ from app.main.util.constants import Constants
 class Auth:
 
     @staticmethod
-    def encode_auth_token(user_id: str) -> str:
+    def encode_auth_token(user_id: str, is_admin: bool) -> str:
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
             'iat': datetime.datetime.utcnow(),
-            'sub': user_id
+            'sub': user_id,
+            'admin': is_admin
         }
 
         auth_token = jwt.encode(
