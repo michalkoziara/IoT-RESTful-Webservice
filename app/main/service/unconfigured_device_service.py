@@ -2,9 +2,9 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
+from app.main.util.constants import Constants
 
 
 class UnconfiguredDeviceService:
@@ -27,17 +27,17 @@ class UnconfiguredDeviceService:
     def get_unconfigured_device_keys_for_device_group(
             self,
             product_key: str,
-            user: User) -> Tuple[bool, Optional[List[str]]]:
+            user_id: str) -> Tuple[bool, Optional[List[str]]]:
 
-        if user is None or product_key is None:
-            return False, None
+        if product_key is None:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         user_device_groups = self._device_group_repository_instance.get_device_groups_by_user_id_and_master_user_group(
-            user.id
+            user_id
         )
 
-        if user_device_groups is None or len(user_device_groups) == 0:
-            return False, None
+        if not user_device_groups:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         for user_device_group in user_device_groups:
             if user_device_group.product_key == product_key:
@@ -48,6 +48,6 @@ class UnconfiguredDeviceService:
                 for unconfigured_device in unconfigured_devices:
                     devices_keys.append(unconfigured_device.device_key)
 
-                return True, devices_keys
+                return Constants.RESPONSE_MESSAGE_OK, devices_keys
 
-        return False, None
+        return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None

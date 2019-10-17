@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 
@@ -40,10 +41,14 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
 
     insert_unconfigured_device(unconfigured_device_values)
 
-    response = client.get('/api/hubs/' + product_key + '/non-configured-devices',
-                          data=json.dumps({'userId': user.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    response = client.get(
+        '/api/hubs/' + product_key + '/non-configured-devices',
+        data=json.dumps({'userId': user.id}),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 200
@@ -70,17 +75,21 @@ def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid
 
     insert_device_group(device_group_values)
 
-    response = client.get('/api/hubs/' + 'not' + product_key + '/non-configured-devices',
-                          data=json.dumps({'userId': user.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    response = client.get(
+        '/api/hubs/' + 'not' + product_key + '/non-configured-devices',
+        data=json.dumps({'userId': user.id}),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 400
     assert response.content_type == content_type
 
     response_data = json.loads(response.data.decode())
-    error_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
+    error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
     assert error_message == response_data['errorMessage']
 

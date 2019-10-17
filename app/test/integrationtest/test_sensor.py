@@ -1,5 +1,6 @@
 import json
 
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 
@@ -27,7 +28,9 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
         content_type=content_type,
-        headers={'userId': user.id}
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+        }
     )
 
     assert response is not None
@@ -68,7 +71,9 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_product_key(
     response = client.get(
         '/api/hubs/' + device_group.product_key + "test" + '/sensors/' + sensor.device_key,
         content_type=content_type,
-        headers={'userId': user.id}
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+        }
     )
 
     assert response is not None
@@ -100,7 +105,9 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_device_key(
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key + '1',
         content_type=content_type,
-        headers={'userId': user.id}
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+        }
     )
 
     assert response is not None

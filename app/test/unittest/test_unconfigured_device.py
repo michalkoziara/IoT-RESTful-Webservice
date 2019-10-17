@@ -2,15 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from app.main.model import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.unconfigured_device_service import UnconfiguredDeviceService
-
-
-@pytest.fixture
-def default_user(create_user) -> User:
-    return create_user()
+from app.main.util.constants import Constants
 
 
 def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys_when_valid_product_key(
@@ -51,37 +46,35 @@ def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys
 
             result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
                 test_product_key,
-                user
+                user.id
             )
 
-    assert result is True
+    assert result == Constants.RESPONSE_MESSAGE_OK
     assert len(result_values) == 1
     assert result_values[0] == test_device_key
 
 
-@pytest.mark.parametrize("test_user, test_product_key", [
-    (None, 'test product key'),
-    (default_user, None)])
-def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_none_parameters(
-        default_user,
+def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_(
+        create_user,
         create_device_groups,
-        create_unconfigured_devices,
-        test_user,
-        test_product_key):
+        create_unconfigured_devices):
     unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
 
+    user = create_user()
+
     result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
-        test_product_key,
-        test_user
+        None,
+        user.id
     )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
     assert result_values is None
 
 
 def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_no_user_device_group(
         create_user):
     unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
+
     test_product_key = 'test product key'
 
     user = create_user()
@@ -95,10 +88,10 @@ def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_
 
         result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
             test_product_key,
-            user
+            user.id
         )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
 
 
@@ -140,10 +133,10 @@ def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_
 
             result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
                 test_product_key,
-                user
+                user.id
             )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
 
 

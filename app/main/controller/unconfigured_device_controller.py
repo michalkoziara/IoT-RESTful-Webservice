@@ -5,9 +5,9 @@ from flask import Response
 from flask import request
 
 from app import api
-from app.main.model.user import User
 from app.main.service.log_service import LogService
 from app.main.service.unconfigured_device_service import UnconfiguredDeviceService
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 _unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
@@ -17,25 +17,30 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>/non-configured-devices', methods=['GET'])
 def get_unconfigured_devices(product_key):
-    request_dict = request.get_json()  # TODO Replace user request with token user
-    user = User.query.get(request_dict['userId'])
+    auth_header = request.headers.get('Authorization')
 
-    result, result_values = _unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        result, result_values = _unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
             product_key,
-            user)
+            user_info['user_id']
+        )
+    else:
+        result = error_message
 
-    if result is True:
+    if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
         status = 200
     else:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
+        response = dict(errorMessage=result)
         status = 400
         _logger.log_exception(
             dict(
                 type='Error',
                 creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-                payload=json.dumps(request_dict)
+                errorMessage=response['errorMessage']
             ),
             product_key
         )
