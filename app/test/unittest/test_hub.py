@@ -718,7 +718,7 @@ def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range
     (1.0, 2.0, 2.0),
     (-2.0, -1.0, -2.0),
     (-2.0, -1.0, -1.5)])
-def test_is_decimal_reading_in_range_should_return_true_when_value_in_range(
+def test_is_decimal_state_in_range_should_return_true_when_value_in_range(
         state_range_min, state_range_max, value,
         create_executive_type,
         get_executive_type_default_values):
@@ -740,7 +740,7 @@ def test_is_decimal_reading_in_range_should_return_true_when_value_in_range(
     (-2.0, -1.0, True),
     (-2.0, -1.0, "Test"),
     (-2.0, -1.0, 0)])
-def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range_or_wrong_type(
+def test_is_decimal_state_in_range_should_return_false_when_value_not_in_range_or_wrong_type(
         state_range_min, state_range_max, value,
         create_executive_type,
         get_executive_type_default_values):
