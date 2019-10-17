@@ -1,3 +1,5 @@
+# pylint: disable=no-self-use
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import db
