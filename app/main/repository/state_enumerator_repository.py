@@ -2,9 +2,10 @@
 from typing import List
 
 from app.main.model.state_enumerator import StateEnumerator
+from app.main.repository.base_repository import BaseRepository
 
 
-class StateEnumeratorRepository:
+class StateEnumeratorRepository(BaseRepository):
     _instance = None
 
     @classmethod

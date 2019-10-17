@@ -2,9 +2,10 @@
 from typing import List
 
 from app.main.model.reading_enumerator import ReadingEnumerator
+from app.main.repository.base_repository import BaseRepository
 
 
-class ReadingEnumeratorRepository:
+class ReadingEnumeratorRepository(BaseRepository):
     _instance = None
 
     @classmethod

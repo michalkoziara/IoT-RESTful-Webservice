@@ -12,7 +12,6 @@ from app.main.repository.unconfigured_device_repository import UnconfiguredDevic
 from app.main.service.hub_service import HubService
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
-from app.main.util.utils import Utils
 
 
 def test_get_changed_devices_for_device_group_should_return_device_keys_when_valid_product_key(
@@ -593,16 +592,16 @@ def test_set_device_state_should_set_device_state_when_called_with_right_paramet
                 _state_in_range_mock.return_value = True
 
                 with patch.object(
-                        Utils,
-                        'update_db'
-                ) as update_db_mock:
-                    update_db_mock.return_value = True
+                        ExecutiveDeviceRepository,
+                        'update_database'
+                ) as update_database_mock:
+                    update_database_mock.return_value = True
 
                     hub_service_instance._set_device_state(test_device_group_id, values)
 
     assert executive_device.is_active == values['isActive']
     assert executive_device.state == values['state']
-    update_db_mock.assert_called_once()
+    update_database_mock.assert_called_once()
 
 
 def test_set_device_state_should_not_set_device_state_when_state_not_in_range(

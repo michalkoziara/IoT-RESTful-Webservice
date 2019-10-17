@@ -4,9 +4,10 @@ from typing import List
 from sqlalchemy import and_
 
 from app.main.model.sensor import Sensor
+from app.main.repository.base_repository import BaseRepository
 
 
-class SensorRepository:
+class SensorRepository(BaseRepository):
     _instance = None
 
     @classmethod

@@ -19,7 +19,7 @@ from app.main.repository.state_enumerator_repository import StateEnumeratorRepos
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
-from app.main.util.utils import Utils
+from app.main.util.utils import is_bool
 
 _logger = LogService.get_instance()
 
@@ -231,7 +231,7 @@ class HubService:
             return False
         executive_device.is_active = is_active
         executive_device.state = state
-        return Utils.update_db()
+        return self._executive_device_repository_instance.update_database()
 
     def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
@@ -239,7 +239,7 @@ class HubService:
         elif sensor_type.reading_type == 'Decimal':
             return self._is_decimal_reading_in_range(reading_value, sensor_type)
         elif sensor_type.reading_type == 'Boolean':
-            return Utils.is_bool(reading_value)
+            return is_bool(reading_value)
         else:
             return False
 
@@ -263,7 +263,7 @@ class HubService:
         elif executive_type.state_type == 'Decimal':
             return self._is_decimal_state_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
-            return Utils.is_bool(state)
+            return is_bool(state)
         else:
             return False
 

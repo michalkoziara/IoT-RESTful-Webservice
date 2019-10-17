@@ -2,9 +2,10 @@
 from sqlalchemy import and_
 
 from app.main.model.user_group import UserGroup
+from app.main.repository.base_repository import BaseRepository
 
 
-class UserGroupRepository:
+class UserGroupRepository(BaseRepository):
     _instance = None
 
     @classmethod

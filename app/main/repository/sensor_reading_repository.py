@@ -5,9 +5,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import db
 from app.main.model.sensor_reading import SensorReading
+from app.main.repository.base_repository import BaseRepository
 
 
-class SensorReadingRepository:
+class SensorReadingRepository(BaseRepository):
     _instance = None
 
     @classmethod
@@ -21,13 +22,3 @@ class SensorReadingRepository:
         return SensorReading.query.filter(
             SensorReading.sensor_id == sensor_id
         ).all()
-
-    def save(self, sensor_reading: SensorReading) -> bool:
-        try:
-            db.session.add(sensor_reading)
-            db.session.commit()
-            result = True
-        except SQLAlchemyError:
-            result = False
-
-        return result

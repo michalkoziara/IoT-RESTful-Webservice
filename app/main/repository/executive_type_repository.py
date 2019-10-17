@@ -1,8 +1,9 @@
 # pylint: disable=no-self-use
 from app.main.model.executive_type import ExecutiveType
+from app.main.repository.base_repository import BaseRepository
 
 
-class ExecutiveTypeRepository:
+class ExecutiveTypeRepository(BaseRepository):
     _instance = None
 
     @classmethod
