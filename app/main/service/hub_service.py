@@ -7,19 +7,14 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from app.main.model import SensorType, SensorReading, ExecutiveType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
-from app.main.repository.executive_type_repository import ExecutiveTypeRepository
-from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
-from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
-from app.main.repository.sensor_type_repository import SensorTypeRepository
-from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
+from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.log_service import LogService
+from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
-from app.main.util.utils import is_bool
 
 _logger = LogService.get_instance()
 
@@ -43,15 +38,12 @@ class HubService:
         return cls._instance
 
     def __init__(self):
+        self._executive_device_service_instance = ExecutiveDeviceService.get_instance()
+        self._sensor_service_instance = SensorService.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._executive_device_repository_instance = ExecutiveDeviceRepository.get_instance()
         self._sensor_repository_instance = SensorRepository.get_instance()
-        self._sensor_type_repository_instance = SensorTypeRepository.get_instance()
         self._unconfigured_device_repository_instance = UnconfiguredDeviceRepository.get_instance()
-        self._reading_enumerator_repository_instance = ReadingEnumeratorRepository.get_instance()
-        self._sensor_reading_repository_instance = SensorReadingRepository.get_instance()
-        self._executive_type_repository = ExecutiveTypeRepository.get_instance()
-        self._state_enumerator_repository = StateEnumeratorRepository.get_instance()
 
     def get_changed_devices_for_device_group(
             self,
@@ -137,8 +129,9 @@ class HubService:
 
         all_sensor_values_ok = True
         all_devices_values_ok = True
+
         for values in sensors_readings:
-            if not self._set_sensor_reading(device_group_id, values):
+            if not self._sensor_service_instance.set_sensor_reading(device_group_id, values):
                 _logger.log_exception(
                     dict(
                         type='Info',
@@ -151,7 +144,7 @@ class HubService:
                 all_sensor_values_ok = False
 
         for values in devices_states:
-            if not self._set_device_state(device_group_id, values):
+            if not self._executive_device_service_instance.set_device_state(device_group_id, values):
                 _logger.log_exception(
                     dict(
                         type='Error',
@@ -167,115 +160,3 @@ class HubService:
             return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
         else:
             return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
-
-    def _set_sensor_reading(self, device_group_id, values: dict) -> bool:
-
-        if (not isinstance(values, dict) or \
-                'deviceKey' not in values or \
-                'readingValue' not in values or \
-                'isActive' not in values):
-            return False
-
-        device_key = values['deviceKey']
-        reading_value = values['readingValue']
-        is_active = values['isActive']
-
-        sensor = self._sensor_repository_instance.get_sensor_by_device_key_and_device_group_id(device_key,
-                                                                                               device_group_id)
-        if not sensor:
-            return False
-
-        sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
-
-        if not sensor_type:
-            return False
-
-        if not self._reading_in_range(reading_value, sensor_type):
-            return False
-
-        sensor.is_active = is_active
-        sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id)
-        if not self._sensor_reading_repository_instance.save(sensor_reading):
-            return False
-
-        return True
-
-    def _set_device_state(self, device_group_id, values: dict):
-
-        if not (isinstance(values, dict) or \
-                'deviceKey' not in values or \
-                'state' not in values or \
-                'isActive' not in values):
-            return False
-
-        device_key = values['deviceKey']
-        state = values['state']
-        is_active = values['isActive']
-
-        executive_device = self._executive_device_repository_instance \
-            .get_executive_device_by_device_key_and_device_group_id(
-            device_key,
-            device_group_id
-        )
-
-        if not executive_device:
-            return False
-
-        executive_type = self._executive_type_repository.get_executive_type_by_id(executive_device.executive_type_id)
-
-        if not executive_type:
-            return False
-
-        if not self._state_in_range(state, executive_type):
-            return False
-        executive_device.is_active = is_active
-        executive_device.state = state
-        return self._executive_device_repository_instance.update_database()
-
-    def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
-        if sensor_type.reading_type == 'Enum':
-            return self._is_enum_reading_right(reading_value, sensor_type)
-        elif sensor_type.reading_type == 'Decimal':
-            return self._is_decimal_reading_in_range(reading_value, sensor_type)
-        elif sensor_type.reading_type == 'Boolean':
-            return is_bool(reading_value)
-        else:
-            return False
-
-    def _is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
-        if not isinstance(reading_value, str):
-            return False
-        possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
-            sensor_type.id)
-        if reading_value in [possible_reading.number for possible_reading in possible_readings]:
-            return True
-        return False
-
-    def _is_decimal_reading_in_range(self, reading_value, sensor_type: SensorType) -> bool:
-        if not isinstance(reading_value, (float, int)):
-            return False
-        return sensor_type.range_min <= reading_value <= sensor_type.range_max
-
-    def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
-        if executive_type.state_type == 'Enum':
-            return self._is_enum_state_right(state, executive_type)
-        elif executive_type.state_type == 'Decimal':
-            return self._is_decimal_state_in_range(state, executive_type)
-        elif executive_type.state_type == 'Boolean':
-            return is_bool(state)
-        else:
-            return False
-
-    def _is_enum_state_right(self, state: str, executive_type: ExecutiveType) -> bool:
-        if not isinstance(state, str):
-            return False
-        possible_states = self._state_enumerator_repository.get_state_enumerators_by_sensor_type_id(
-            executive_type.id)
-        if state in [possible_state.number for possible_state in possible_states]:
-            return True
-        return False
-
-    def _is_decimal_state_in_range(self, state, executive_type: ExecutiveType) -> bool:
-        if not isinstance(state, (float, int)):
-            return False
-        return executive_type.state_range_min <= state <= executive_type.state_range_max
