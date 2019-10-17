@@ -135,8 +135,8 @@ class HubService:
 
         device_group_id = device_group.id
 
-        all_sensor_values_OK = True
-        all_devices_values_OK = True
+        all_sensor_values_ok = True
+        all_devices_values_ok = True
         for values in sensors_readings:
             if not self._set_sensor_reading(device_group_id, values):
                 _logger.log_exception(
@@ -148,7 +148,7 @@ class HubService:
                     ),
                     product_key
                 )
-                all_sensor_values_OK = False
+                all_sensor_values_ok = False
                 print(values)
 
         for values in devices_states:
@@ -162,16 +162,19 @@ class HubService:
                     ),
                     product_key
                 )
-                all_devices_values_OK = False
+                all_devices_values_ok = False
 
-        if all_sensor_values_OK and all_devices_values_OK:
+        if all_sensor_values_ok and all_devices_values_ok:
             return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
         else:
             return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
     def _set_sensor_reading(self, device_group_id, values: dict) -> bool:
 
-        if 'deviceKey' not in values or 'readingValue' not in values or 'isActive' not in values:
+        if not isinstance(values, dict) or \
+                'deviceKey' not in values or \
+                'readingValue' not in values or \
+                'isActive' not in values:
             return False
 
         device_key = values['deviceKey']
@@ -200,7 +203,10 @@ class HubService:
 
     def _set_device_state(self, device_group_id, values: dict):
 
-        if 'deviceKey' not in values or 'state' not in values or 'isActive' not in values:
+        if not isinstance(values, dict) or \
+                'deviceKey' not in values or \
+                'state' not in values or \
+                'isActive' not in values:
             return False
 
         device_key = values['deviceKey']

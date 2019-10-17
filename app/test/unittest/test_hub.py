@@ -467,11 +467,9 @@ def test_add_device_to_device_group_should_result_false_when_save_failed(
 
 def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_parameters(
         create_sensor_type,
-        create_sensor,
-        create_sensor_reading):
+        create_sensor):
     hub_service_instance = HubService.get_instance()
     sensor_type = create_sensor_type()
-    sensor_reading = create_sensor_reading()
     sensor = create_sensor()
     sensor.is_active = True
 
@@ -552,7 +550,7 @@ def test_set_sensor_reading_should_not_set_sensor_reading_when_wrong_dict():
 
     values = {
         'deviceKey': test_device_group_id,
-        'Test': "rew",
+        'Test': "test",
         'isActive': False
     }
 
@@ -671,17 +669,6 @@ def test_set_device_state_should_not_set_device_when_device_not_in_device_group(
     ) as get_executive_device_by_device_key_and_device_group_id_mock:
         get_executive_device_by_device_key_and_device_group_id_mock.return_value = None
         assert not hub_service_instance._set_device_state(device_group_id, values)
-
-
-def test_set_device_state_should_not_set_device_state_when_called_with_wrong_dictionary():
-    device_group_id = 1
-    values = {
-        'deviceKey': 1,
-        'test': 0.5,
-        'isActive': False
-    }
-    hub_service_instance = HubService.get_instance()
-    assert not hub_service_instance._set_device_state(device_group_id, values)
 
 
 @pytest.mark.parametrize("range_min,range_max,value", [

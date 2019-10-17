@@ -118,7 +118,7 @@ def create_device(product_key: str):
 @api.route('/hubs/<product_key>/states', methods=['POST'])
 def set_sensors_readings_and_devices_states(product_key):
     # TODO add hub authentication
-    result = None
+    response = None
     status = None
     request_dict = None
 
@@ -177,7 +177,6 @@ def set_sensors_readings_and_devices_states(product_key):
                       Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA]:
             status = 201
             response = {"errorMessage": result}
-
 
         else:
             response = dict(errorMessage=result)
