@@ -18,7 +18,7 @@ class SensorReadingRepository:
         return cls._instance
 
     def get_sensor_readings_by_sensor_id(self, sensor_id: str) -> List[SensorReading]:
-        return SensorReadingRepository.query.filter(
+        return SensorReading.query.filter(
             SensorReading.sensor_id == sensor_id
         ).all()
 
