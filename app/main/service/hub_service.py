@@ -149,7 +149,6 @@ class HubService:
                     product_key
                 )
                 all_sensor_values_ok = False
-                print(values)
 
         for values in devices_states:
             if not self._set_device_state(device_group_id, values):
@@ -171,10 +170,10 @@ class HubService:
 
     def _set_sensor_reading(self, device_group_id, values: dict) -> bool:
 
-        if not isinstance(values, dict) or \
+        if (not isinstance(values, dict) or \
                 'deviceKey' not in values or \
                 'readingValue' not in values or \
-                'isActive' not in values:
+                'isActive' not in values):
             return False
 
         device_key = values['deviceKey']
@@ -203,10 +202,10 @@ class HubService:
 
     def _set_device_state(self, device_group_id, values: dict):
 
-        if not isinstance(values, dict) or \
+        if not (isinstance(values, dict) or \
                 'deviceKey' not in values or \
                 'state' not in values or \
-                'isActive' not in values:
+                'isActive' not in values):
             return False
 
         device_key = values['deviceKey']
