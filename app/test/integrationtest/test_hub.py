@@ -223,7 +223,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
     executive_type_values['state_range_min'] = 0
     executive_type_values['state_range_max'] = 1.0
 
-    executive_type = insert_executive_type(executive_type_values)
+    insert_executive_type(executive_type_values)
     executive_device = insert_executive_device()
 
     sensor_type_values = get_sensor_type_default_values()
