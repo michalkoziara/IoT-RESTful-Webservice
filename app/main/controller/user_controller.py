@@ -44,9 +44,9 @@ def login():
         if result == Constants.RESPONSE_MESSAGE_OK:
             response = dict(authToken=token)
             status = 200
-        else:
+        elif result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS:
             response = dict(errorMessage=result)
-            status = 400
+            status = 401
 
     return Response(
         response=json.dumps(response),
@@ -86,6 +86,9 @@ def register_user():
 
         if result == Constants.RESPONSE_MESSAGE_OK:
             status = 201
+        elif result == Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS:
+            response = dict(errorMessage=result)
+            status = 409
         elif result == Constants.RESPONSE_MESSAGE_ERROR:
             response = dict(errorMessage=result)
             status = 500
