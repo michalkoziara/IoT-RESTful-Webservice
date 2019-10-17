@@ -25,11 +25,10 @@ class SensorRepository(BaseRepository):
             )
         ).all()
 
-    def get_sensor_by_device_key_and_device_group_id(self, device_key: str , device_group_id: int ) -> Sensor:
+    def get_sensor_by_device_key_and_device_group_id(self, device_key: str, device_group_id: int) -> Sensor:
         return Sensor.query.filter(
             and_(
                 Sensor.device_group_id == device_group_id,
                 Sensor.device_key == device_key
             )
         ).first()
-
