@@ -56,13 +56,19 @@ def get_sensor(product_key: str, device_key: str):
 
 @api.route('/hubs/<product_key>/sensors/<device_key>/readings', methods=['GET'])
 def get_sensor_readings(product_key: str, device_key: str):
-    user_id = request.headers.get('userId')  # Todo replace userID with user token
+    auth_header = request.headers.get('Authorization')
 
-    result, result_values = _sensor_service_instance.get_sensor_readings(
-        device_key,
-        product_key,
-        user_id
-    )
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        result, result_values = _sensor_service_instance.get_sensor_readings(
+            device_key,
+            product_key,
+            user_info['user_id']
+        )
+    else:
+        result = error_message
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
