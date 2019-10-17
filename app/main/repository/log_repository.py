@@ -1,13 +1,11 @@
 # pylint: disable=no-self-use
 from typing import List
 
-from sqlalchemy.exc import SQLAlchemyError
-
-from app.main import db
 from app.main.model import Log
+from app.main.repository.base_repository import BaseRepository
 
 
-class LogRepository:
+class LogRepository(BaseRepository):
     _instance = None
 
     @classmethod
@@ -19,13 +17,3 @@ class LogRepository:
 
     def get_logs_by_device_group_id(self, device_group_id: str) -> List[Log]:
         return Log.query.filter(Log.device_group_id == device_group_id).all()
-
-    def save(self, log: Log) -> bool:
-        try:
-            db.session.add(log)
-            db.session.commit()
-            result = True
-        except SQLAlchemyError:
-            result = False
-
-        return result

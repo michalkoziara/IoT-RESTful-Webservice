@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.util.constants import Constants
 
 
@@ -200,6 +201,217 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     error_message = Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
 
     assert response_data['errorMessage'] == error_message
+
+
+def test_set_devices_states_and_sensors_readings_should_update_devices_and_sensors_when_valid_request(
+        client,
+        insert_device_group,
+        insert_executive_device,
+        get_executive_type_default_values,
+        insert_executive_type,
+        get_sensor_type_default_values,
+        insert_sensor_type,
+        insert_sensor):
+    sensor_reading_repository_instance = SensorReadingRepository.get_instance()
+
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_type'] = 'Decimal'
+    executive_type_values['state_range_min'] = 0
+    executive_type_values['state_range_max'] = 1.0
+
+    insert_executive_type(executive_type_values)
+    executive_device = insert_executive_device()
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = -1
+    sensor_type_values['range_max'] = 2
+
+    insert_sensor_type(sensor_type_values)
+    sensor = insert_sensor()
+
+    sensor_reading_value_to_be_set = 0.9
+    sensors_readings = [
+        {
+            "deviceKey": sensor.device_key,
+            "readingValue": sensor_reading_value_to_be_set,
+            "isActive": False
+        }
+    ]
+
+    device_state_to_set = 0.5
+    device_states = [
+        {
+            "deviceKey": executive_device.device_key,
+            "state": device_state_to_set,
+            "isActive": False
+        }
+    ]
+
+    data_json = {'sensors': sensors_readings, 'devices': device_states}
+
+    assert sensor.is_active
+    assert executive_device.is_active
+
+    assert executive_device.state != device_state_to_set
+
+    response = client.post('api/hubs/' + device_group.product_key + '/states',
+                           data=json.dumps(data_json),
+                           content_type=content_type
+                           )
+
+    assert response is not None
+    assert response.status_code == 201
+
+    response_data = json.loads(response.data.decode())
+    assert Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES == response_data['errorMessage']
+    assert executive_device.state == str(device_state_to_set)
+    created_sensor_reading = sensor_reading_repository_instance.get_sensor_readings_by_sensor_id(sensor.id)[0]
+    assert created_sensor_reading.value == sensor_reading_value_to_be_set
+    assert not sensor.is_active
+    assert not executive_device.is_active
+
+
+def test_set_devices_states_and_sensors_readings_should_update_devices_and_sensors_when_partially_valid_request(
+        client,
+        insert_device_group,
+        insert_executive_device,
+        get_executive_type_default_values,
+        insert_executive_type,
+        get_sensor_type_default_values,
+        insert_sensor_type,
+        insert_sensor):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_type'] = 'Decimal'
+    executive_type_values['state_range_min'] = 0
+    executive_type_values['state_range_max'] = 1.0
+
+    insert_executive_type(executive_type_values)
+    executive_device = insert_executive_device()
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = -1
+    sensor_type_values['range_max'] = 2
+
+    insert_sensor_type(sensor_type_values)
+    sensor = insert_sensor()
+
+    sensor_reading_value_to_be_set = 0.9
+    sensors_readings = [
+        {
+            "deviceKey": sensor.device_key,
+            "test": sensor_reading_value_to_be_set,
+            "isActive": False
+        }
+    ]
+
+    device_state_to_set = 0.5
+    device_states = [
+        {
+            "deviceKey": executive_device.device_key,
+            "state": device_state_to_set,
+            "isActive": False
+        }
+    ]
+
+    data_json = {'sensors': sensors_readings, 'devices': device_states}
+
+    assert sensor.is_active
+    assert executive_device.is_active
+
+    assert executive_device.state != device_state_to_set
+
+    response = client.post('api/hubs/' + device_group.product_key + '/states',
+                           data=json.dumps(data_json),
+                           content_type=content_type
+                           )
+
+    assert response is not None
+    assert response.status_code == 201
+    response_data = json.loads(response.data.decode())
+    assert Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA == response_data['errorMessage']
+    assert executive_device.state == str(device_state_to_set)
+    assert sensor.is_active
+    assert not executive_device.is_active
+
+
+def test_set_devices_states_and_sensors_readings_should_return_error_message_when_wrong_request(
+        client):
+    content_type = 'application/json'
+
+    sensor_reading_value_to_be_set = 0.9
+    sensors_readings = [
+        {
+            "deviceKey": '2',
+            "test": sensor_reading_value_to_be_set,
+            "isActive": False
+        }
+    ]
+
+    device_state_to_set = 0.5
+    device_states = [
+        {
+            "deviceKey": '1',
+            "state": device_state_to_set,
+            "isActive": False
+        }
+    ]
+
+    data_json = {'sensors': sensors_readings, 'not devices': device_states}
+
+    response = client.post('api/hubs/' + '1' + '/states',
+                           data=json.dumps(data_json),
+                           content_type=content_type
+                           )
+
+    assert response is not None
+    assert response.status_code == 400
+    response_data = json.loads(response.data.decode())
+    assert Constants.RESPONSE_MESSAGE_BAD_REQUEST == response_data['errorMessage']
+
+
+def test_set_devices_states_and_sensors_readings_should_return_error_message_when_mimetype_is_not_json(
+        client):
+    content_type = 'test'
+
+    sensor_reading_value_to_be_set = 0.9
+    sensors_readings = [
+        {
+            "deviceKey": '2',
+            "state": sensor_reading_value_to_be_set,
+            "isActive": False
+        }
+    ]
+
+    device_state_to_set = 0.5
+    device_states = [
+        {
+            "deviceKey": '1',
+            "state": device_state_to_set,
+            "isActive": False
+        }
+    ]
+
+    data_json = {'sensors': sensors_readings, 'not devices': device_states}
+
+    response = client.post('api/hubs/' + '1' + '/states',
+                           data=json.dumps(data_json),
+                           content_type=content_type
+                           )
+
+    assert response is not None
+    assert response.status_code == 400
+    response_data = json.loads(response.data.decode())
+    assert Constants.RESPONSE_MESSAGE_BAD_MIMETYPE == response_data['errorMessage']
 
 
 if __name__ == '__main__':

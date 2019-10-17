@@ -1,6 +1,9 @@
 from unittest.mock import patch
 
+import pytest
+
 from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
@@ -244,7 +247,7 @@ def test_get_sensor_info_should_not_return_sensor_info_when_sensor_is_not_in_dev
     assert result_values is None
 
 
-def test_get_executive_device_info_should_not_return_device_info_when_device_group_does_not_exist(
+def test_get_sensor_device_info_should_not_return_sensor_info_when_device_group_does_not_exist(
         create_device_group,
         create_sensor_type,
         create_user_group,
@@ -284,3 +287,138 @@ def test_get_executive_device_info_should_not_return_device_info_when_device_gro
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
     assert result_values is None
+
+
+def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_parameters(
+        create_sensor_type,
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+    sensor_type = create_sensor_type()
+    sensor = create_sensor()
+    sensor.is_active = True
+
+    test_device_group_id = sensor.device_group_id
+
+    values = {
+        'deviceKey': sensor.device_key,
+        'readingValue': 0.5,
+        'isActive': False
+    }
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_device_key_and_device_group_id'
+    ) as get_sensor_by_device_key_and_device_group_id_mock:
+        get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_type_by_id'
+        ) as get_sensor_type_by_id_mock:
+            get_sensor_type_by_id_mock.return_value = sensor_type
+            with patch.object(
+                    SensorService,
+                    '_reading_in_range'
+            ) as _reading_in_range_mock:
+                with patch.object(
+                        SensorReadingRepository,
+                        'save'
+                ) as save_mock:
+                    save_mock.return_value = True
+                    get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+                    _reading_in_range_mock.return_value = True
+
+                    sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+                    assert sensor.is_active == values['isActive']
+                    save_mock.assert_called()
+
+
+def test_set_sensor_reading_should_not_set_sensor_reading_when_state_not_in_range(
+        create_sensor_type,
+        create_sensor, ):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor_type = create_sensor_type()
+    sensor = create_sensor()
+    sensor.is_active = True
+
+    test_device_group_id = sensor.device_group_id
+
+    values = {
+        'deviceKey': sensor.device_key,
+        'readingValue': 0.5,
+        'isActive': False
+    }
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_device_key_and_device_group_id'
+    ) as get_sensor_by_device_key_and_device_group_id_mock:
+        get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_type_by_id'
+        ) as get_sensor_type_by_id_mock:
+            get_sensor_type_by_id_mock.return_value = sensor_type
+            with patch.object(
+                    SensorService,
+                    '_reading_in_range'
+            ) as _reading_in_range_mock:
+                get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+                _reading_in_range_mock.return_value = False
+                assert not sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+
+
+def test_set_sensor_reading_should_not_set_sensor_reading_when_wrong_dict():
+    sensor_service_instance = SensorService.get_instance()
+
+    test_device_group_id = "test id"
+
+    values = {
+        'deviceKey': test_device_group_id,
+        'Test': "test",
+        'isActive': False
+    }
+
+    assert not sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+
+
+@pytest.mark.parametrize("range_min,range_max,value", [
+    (-1, 2, 0),
+    (1.0, 2.0, 2.0),
+    (-2.0, -1.0, -2.0),
+    (-2.0, -1.0, -1.5)])
+def test_is_decimal_reading_in_range_should_return_true_when_value_in_range(
+        range_min, range_max, value,
+        create_sensor_type,
+        get_sensor_type_default_values):
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = range_min
+    sensor_type_values['range_max'] = range_max
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    sensor_service_instance = SensorService.get_instance()
+
+    assert sensor_service_instance._is_decimal_reading_in_range(value, sensor_type)
+
+
+@pytest.mark.parametrize("range_min,range_max,value", [
+    (-1, 2, 2.1),
+    (1.0, 2.0, 20),
+    (-2.0, -1.0, -2.5),
+    (-2.0, -1.0, True),
+    (-2.0, -1.0, "Test"),
+    (-2.0, -1.0, 0)])
+def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range_or_wrong_type(
+        range_min, range_max, value,
+        create_sensor_type,
+        get_sensor_type_default_values):
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = range_min
+    sensor_type_values['range_max'] = range_max
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    sensor_service_instance = SensorService.get_instance()
+
+    assert not sensor_service_instance._is_decimal_reading_in_range(value, sensor_type)

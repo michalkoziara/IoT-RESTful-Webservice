@@ -4,9 +4,10 @@ from typing import List
 from sqlalchemy import and_
 
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.repository.base_repository import BaseRepository
 
 
-class ExecutiveDeviceRepository:
+class ExecutiveDeviceRepository(BaseRepository):
     _instance = None
 
     @classmethod

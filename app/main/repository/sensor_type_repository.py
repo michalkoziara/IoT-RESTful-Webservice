@@ -1,8 +1,9 @@
 # pylint: disable=no-self-use
 from app.main.model.sensor_type import SensorType
+from app.main.repository.base_repository import BaseRepository
 
 
-class SensorTypeRepository:
+class SensorTypeRepository(BaseRepository):
     _instance = None
 
     @classmethod

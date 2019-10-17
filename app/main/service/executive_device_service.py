@@ -1,20 +1,24 @@
+# pylint: disable=no-self-use
 from typing import Optional
 from typing import Tuple
 
+from app.main.model import SensorType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.formula_repository import FormulaRepository
+from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.constants import Constants
+from app.main.util.utils import is_bool
 
 
 class ExecutiveDeviceService:
     _instance = None
 
     _device_group_repository_instance = None
-    _executive_device_repository = None
-    _executive_device_type_repository = None
+    _executive_device_repository_instance = None
+    _executive_type_repository_instance = None
     _formula_repository = None
 
     @classmethod
@@ -25,10 +29,11 @@ class ExecutiveDeviceService:
         return cls._instance
 
     def __init__(self):
+        self._state_enumerator_repository_instance = StateEnumeratorRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
-        self._executive_device_repository = ExecutiveDeviceRepository.get_instance()
+        self._executive_device_repository_instance = ExecutiveDeviceRepository.get_instance()
         self._formula_repository = FormulaRepository.get_instance()
-        self._executive_device_type_repository = ExecutiveTypeRepository.get_instance()
+        self._executive_type_repository_instance = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
 
     def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
@@ -47,7 +52,8 @@ class ExecutiveDeviceService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        executive_device = self._executive_device_repository.get_executive_device_by_device_key_and_device_group_id(
+        executive_device = self._executive_device_repository_instance \
+            .get_executive_device_by_device_key_and_device_group_id(
             device_key,
             device_group.id
         )
@@ -73,7 +79,7 @@ class ExecutiveDeviceService:
         executive_device_info['isNegativeState'] = executive_device.negative_state
         executive_device_info['deviceKey'] = executive_device.device_key
 
-        executive_device_type = self._executive_device_type_repository.get_executive_type_by_id(
+        executive_device_type = self._executive_type_repository_instance.get_executive_type_by_id(
             executive_device.executive_type_id
         )
         executive_device_info['deviceTypeName'] = executive_device_type.name
@@ -90,3 +96,60 @@ class ExecutiveDeviceService:
             executive_device_info['formulaName'] = None
 
         return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+    def set_device_state(self, device_group_id, values: dict):
+
+        if (not isinstance(values, dict) or
+                'deviceKey' not in values or
+                'state' not in values or
+                'isActive' not in values):
+            return False
+
+        device_key = values['deviceKey']
+        state = values['state']
+        is_active = values['isActive']
+
+        executive_device = self._executive_device_repository_instance \
+            .get_executive_device_by_device_key_and_device_group_id(
+            device_key,
+            device_group_id
+        )
+
+        if not executive_device:
+            return False
+
+        executive_type = self._executive_type_repository_instance.get_executive_type_by_id(
+            executive_device.executive_type_id)
+
+        if not executive_type:
+            return False
+
+        if not self._state_in_range(state, executive_type):
+            return False
+        executive_device.is_active = is_active
+        executive_device.state = state
+        return self._executive_device_repository_instance.update_database()
+
+    def _state_in_range(self, state: str, sensor_type: SensorType) -> bool:
+        if sensor_type.state_type == 'Enum':
+            return self._is_enum_state_right(state, sensor_type)
+        elif sensor_type.state_type == 'Decimal':
+            return self._is_decimal_state_in_range(state, sensor_type)
+        elif sensor_type.state_type == 'Boolean':
+            return is_bool(state)
+        else:
+            return False
+
+    def _is_enum_state_right(self, state: str, sensor_type: SensorType) -> bool:
+        if not isinstance(state, str):
+            return False
+        possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_sensor_type_id(
+            sensor_type.id)
+        if state in [possible_state.number for possible_state in possible_states]:
+            return True
+        return False
+
+    def _is_decimal_state_in_range(self, state, sensor_type: SensorType) -> bool:
+        if not isinstance(state, (float, int)):
+            return False
+        return sensor_type.state_range_min <= state <= sensor_type.state_range_max

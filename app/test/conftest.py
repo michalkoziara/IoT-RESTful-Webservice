@@ -15,6 +15,7 @@ from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
 from app.main.model.log import Log
 from app.main.model.sensor import Sensor
+from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
@@ -238,6 +239,51 @@ def create_sensor_types():
             return sensor_types
 
     return _create_sensor_types
+
+
+@pytest.fixture
+def sensor_reading_default_values(sensor_default_values) -> Dict[str, Optional[Union[int, str]]]:
+    return {
+        'id': 1,
+        'value': 0.5,
+        'date': datetime(2015, 6, 5, 8, 10, 10, 10),
+        'sensor_id': sensor_default_values['id'],
+    }
+
+
+@pytest.fixture
+def get_sensor_reading_default_values(sensor_reading_default_values):
+    def _get_sensor_reading_default_values() -> Dict[str, Optional[Union[int, str]]]:
+        return deepcopy(sensor_reading_default_values)
+
+    return _get_sensor_reading_default_values
+
+
+@pytest.fixture
+def create_sensor_reading(get_sensor_reading_default_values, create_sensor_readings):
+    def _create_sensor_reading(values: Optional[Dict[str, str]] = None) -> SensorReading:
+        if not values:
+            values = get_sensor_reading_default_values()
+        return create_sensor_readings([values])[0]
+
+    return _create_sensor_reading
+
+
+@pytest.fixture
+def create_sensor_readings():
+    def _create_sensor_readings(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[SensorReading]:
+        sensor_readings = []
+        for value in values:
+            sensor_readings.append(
+                SensorReading(
+                    id=value['id'],
+                    value=value['value'],
+                    date=value['date'],
+                )
+            )
+        return sensor_readings
+
+    return _create_sensor_readings
 
 
 @pytest.fixture
