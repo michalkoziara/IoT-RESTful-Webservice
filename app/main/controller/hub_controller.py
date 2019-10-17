@@ -184,8 +184,7 @@ def set_sensors_readings_and_devices_states(product_key):
                 dict(
                     type='Error',
                     creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    payload=json.dumps(request_dict)  # TODO make sure that there is enough space in DB
+                    errorMessage=response['errorMessage']
                 ),
                 product_key
             )
