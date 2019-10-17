@@ -241,7 +241,6 @@ def create_sensor_types():
     return _create_sensor_types
 
 
-#######################################################
 @pytest.fixture
 def sensor_reading_default_values(sensor_default_values) -> Dict[str, Optional[Union[int, str]]]:
     return {
@@ -285,9 +284,6 @@ def create_sensor_readings():
         return sensor_readings
 
     return _create_sensor_readings
-
-
-######################################################
 
 
 @pytest.fixture
