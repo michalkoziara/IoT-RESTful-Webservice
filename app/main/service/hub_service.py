@@ -255,7 +255,7 @@ class HubService:
         if executive_type.state_type == 'Enum':
             return self._is_enum_state_right(state, executive_type)
         elif executive_type.state_type == 'Decimal':
-            return self._is_decimal_reading_in_range(state, executive_type)
+            return self._is_decimal_state_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
             return Utils.is_bool(state)
         else:
