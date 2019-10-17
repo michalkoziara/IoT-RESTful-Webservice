@@ -6,7 +6,11 @@ from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
+from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.hub_service import HubService
+from app.main.service.log_service import LogService
+from app.main.service.sensor_service import SensorService
+from app.main.util.constants import Constants
 
 
 def test_get_changed_devices_for_device_group_should_return_device_keys_when_valid_product_key(
@@ -261,6 +265,163 @@ def test_add_device_to_device_group_should_result_false_when_no_unconfigured_dev
             )
 
     assert result is False
+
+
+def test_set_devices_states_and_sensors_readings_should_return_update_info_when_called_with_right_parameters(
+        create_device_group):
+    hub_service_instance = HubService.get_instance()
+    device_group = create_device_group()
+    sensors_readings = [{
+        "deviceKey": "2",
+        "readingValue": 0.9,
+        "isActive": False
+    }]
+    devices_states = [
+        {
+            "deviceKey": "1",
+            "state": 1,
+            "isActive": False
+        }
+    ]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+        with patch.object(
+                ExecutiveDeviceService,
+                'set_device_state'
+        ) as _set_device_state_mock:
+            _set_device_state_mock.return_value = True
+            with patch.object(
+                    SensorService,
+                    'set_sensor_reading'
+            ) as _set_sensor_reading_mock:
+                _set_sensor_reading_mock.return_value = True
+
+                result = hub_service_instance.set_devices_states_and_sensors_readings(
+                    device_group.product_key,
+                    sensors_readings,
+                    devices_states)
+    assert result == Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
+
+
+def test_set_devices_states_and_sensors_readings_should_return_partial_success_message_when_called_with_right_parameters(
+        create_device_group):
+    hub_service_instance = HubService.get_instance()
+    device_group = create_device_group()
+    sensors_readings = [{
+        "deviceKey": "2",
+        "readingValue": 0.9,
+        "isActive": False
+    }]
+    devices_states = [
+        {
+            "deviceKey": "",
+            "test": 1,
+            "isActive": False
+        }
+    ]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+        with patch.object(
+                ExecutiveDeviceService,
+                'set_device_state'
+        ) as _set_device_state_mock:
+            _set_device_state_mock.return_value = True
+            with patch.object(
+                    SensorService,
+                    'set_sensor_reading'
+            ) as _set_sensor_reading_mock:
+                _set_sensor_reading_mock.return_value = False
+                with patch.object(
+                        LogService,
+                        'log_exception'
+                ) as log_exception_mock:
+                    log_exception_mock.side_effects = None
+                    result = hub_service_instance.set_devices_states_and_sensors_readings(
+                        device_group.product_key,
+                        sensors_readings,
+                        devices_states)
+    assert result == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+
+
+def test_set_devices_states_and_sensors_readings_should_return_product_key_error_when_called_with_wrong_product_key(
+        create_device_group):
+    hub_service_instance = HubService.get_instance()
+    test_product_key = "Test"
+    sensors_readings = [{
+        "deviceKey": "2",
+        "readingValue": 0.9,
+        "isActive": False
+    }]
+    devices_states = [
+        {
+            "deviceKey": "",
+            "test": 1,
+            "isActive": False
+        }
+    ]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = hub_service_instance.set_devices_states_and_sensors_readings(
+            test_product_key,
+            sensors_readings,
+            devices_states)
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_set_devices_states_and_sensors_readings_should_return_device_states_error_when_called_with_wrong_parameter(
+        create_device_group):
+    hub_service_instance = HubService.get_instance()
+    test_product_key = "Test"
+    sensors_readings = [{
+        "deviceKey": "2",
+        "readingValue": 0.9,
+        "isActive": False
+    }]
+    devices_states = [
+        "test"
+    ]
+
+    result = hub_service_instance.set_devices_states_and_sensors_readings(
+        test_product_key,
+        sensors_readings,
+        devices_states)
+
+    assert result == Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST
+
+
+def test_set_devices_states_and_sensors_readings_should_return_sensors_readings_error_when_called_with_wrong_parameter(
+        create_device_group):
+    hub_service_instance = HubService.get_instance()
+    test_product_key = "Test"
+    sensors_readings = "test"
+    devices_states = [
+        {
+            "deviceKey": "1",
+            "test": 1,
+            "isActive": False
+        }
+    ]
+
+    result = hub_service_instance.set_devices_states_and_sensors_readings(
+        test_product_key,
+        sensors_readings,
+        devices_states)
+
+    assert result == Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST
 
 
 def test_add_device_to_device_group_should_result_false_when_save_failed(

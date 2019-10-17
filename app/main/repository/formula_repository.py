@@ -1,8 +1,9 @@
 # pylint: disable=no-self-use
 from app.main.model.formula import Formula
+from app.main.repository.base_repository import BaseRepository
 
 
-class FormulaRepository:
+class FormulaRepository(BaseRepository):
     _instance = None
 
     @classmethod

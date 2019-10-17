@@ -2,14 +2,13 @@
 from typing import List
 
 from sqlalchemy import and_
-from sqlalchemy.exc import SQLAlchemyError
 
-from app.main import db
 from app.main.model.device_group import DeviceGroup
 from app.main.model.user_group import UserGroup
+from app.main.repository.base_repository import BaseRepository
 
 
-class DeviceGroupRepository:
+class DeviceGroupRepository(BaseRepository):
     _instance = None
 
     @classmethod
@@ -36,13 +35,3 @@ class DeviceGroupRepository:
                 )
             )
         ).all()
-
-    def save(self, device_group: DeviceGroup) -> bool:
-        try:
-            db.session.add(device_group)
-            db.session.commit()
-            result = True
-        except SQLAlchemyError:
-            result = False
-
-        return result
