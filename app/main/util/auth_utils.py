@@ -11,7 +11,7 @@ class Auth:
     @staticmethod
     def encode_auth_token(user_id: str) -> str:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
