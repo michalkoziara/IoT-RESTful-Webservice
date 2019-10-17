@@ -86,7 +86,7 @@ def create_log(product_key: str):
 
 @api.route('/hubs/<product_key>/logs', methods=['GET'])
 def get_logs(product_key):
-    request_dict = request.get_json()  # TODO Replace user request with token user
+    request_dict = request.get_json()  # TODO Replace user request with admin token
     user = User.query.get(request_dict['userId'])
 
     result, result_values = _logger.get_log_values_for_device_group(

@@ -40,7 +40,7 @@ def modify_device_group(product_key: str):
             request_dict = request.get_json()
 
             try:
-                user = User.query.get(request_dict['userId'])  # TODO Replace user request with token user
+                user = User.query.get(request_dict['userId'])  # TODO Replace user request with admin token
                 new_name = request_dict['name']
             except KeyError as e:
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
