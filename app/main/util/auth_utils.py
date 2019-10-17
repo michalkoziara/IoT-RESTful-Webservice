@@ -28,7 +28,7 @@ class Auth:
     @staticmethod
     def decode_auth_token(auth_token: str) -> Tuple[Optional[str], Optional[dict]]:
         try:
-            payload = jwt.decode(auth_token, Constants.SECRET_KEY)
+            payload = jwt.decode(auth_token, Constants.SECRET_KEY, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             return Constants.RESPONSE_MESSAGE_SIGNATURE_EXPIRED, None
         except jwt.InvalidTokenError:
@@ -37,7 +37,7 @@ class Auth:
         return None, payload
 
     @staticmethod
-    def get_user_id_from_auth_header(auth_header: str) -> Tuple[Optional[str], Optional[str]]:
+    def get_user_info_from_auth_header(auth_header: str) -> Tuple[Optional[str], Optional[dict]]:
         if auth_header:
             auth_header_parts = auth_header.split(" ")
 
@@ -48,10 +48,14 @@ class Auth:
                 if result is None:
                     try:
                         user_id = token_payload['sub']
+                        admin = token_payload['admin']
                     except KeyError:
                         return Constants.RESPONSE_MESSAGE_INVALID_TOKEN, None
 
-                    return None, user_id
+                    return None, {
+                        'user_id': user_id,
+                        'is_admin': admin
+                    }
                 else:
                     return result, None
 

@@ -19,14 +19,14 @@ _sensor_service_instance = SensorService.get_instance()
 def get_sensor(product_key: str, device_key: str):
     auth_header = request.headers.get('Authorization')
 
-    error_message, user_id = Auth.get_user_id_from_auth_header(auth_header)
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
     result_values = None
 
     if error_message is None:
         result, result_values = _sensor_service_instance.get_sensor_info(
             device_key,
             product_key,
-            user_id
+            user_info['user_id']
         )
     else:
         result = error_message
