@@ -3,7 +3,9 @@ import json
 import flask_bcrypt
 import jwt
 import pytest
+from sqlalchemy import and_
 
+from app.main.model.user import User
 from app.main.util.constants import Constants
 
 
@@ -37,7 +39,6 @@ def test_login_should_return_auth_token_when_valid_request(
 
     response_data = json.loads(response.data.decode())
     assert response_data
-    assert len(response_data['authToken']) == 139
 
     payload = jwt.decode(response_data['authToken'], Constants.SECRET_KEY)
     assert payload['sub'] == user.id
@@ -128,6 +129,135 @@ def test_login_should_return_invalid_credentials_message_when_invalid_password(
     response_data = json.loads(response.data.decode())
     assert response_data
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
+
+
+def test_register_user_should_create_user_when_valid_request(client):
+    content_type = 'application/json'
+
+    email = 'email'
+    password = 'password'
+    username = 'username'
+
+    response = client.post(
+        'api/users',
+        data=json.dumps(
+            {
+                'email': email,
+                'password': password,
+                'username': username
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 201
+    assert response.content_type == content_type
+
+    user = User.query.filter(
+        and_(
+            User.email == email,
+            User.username == username
+        )
+    ).first()
+
+    assert user
+    assert user.is_admin is False
+
+
+def test_register_user_should_return_user_already_exists_message_when_duplicate_user(client, insert_user):
+    content_type = 'application/json'
+
+    user = insert_user()
+
+    response = client.post(
+        'api/users',
+        data=json.dumps(
+            {
+                'email': user.email,
+                'password': user.password,
+                'username': user.username
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 409
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
+
+
+def test_register_user_should_return_bad_request_message_when_invalid_data(client):
+    content_type = 'application/json'
+
+    response = client.post(
+        'api/users',
+        data=json.dumps(
+            {
+                'email': '',
+                'password': '',
+                'username': ''
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+
+def test_register_user_should_return_error_message_when_mimetype_is_not_json(client):
+    content_type = 'text'
+
+    response = client.post(
+        'api/users',
+        data=json.dumps(
+            {
+                'email': 'email',
+                'password': 'password'
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_MIMETYPE
+
+
+@pytest.mark.parametrize("request_data, error_message", [
+    (json.dumps(dict(test='test')), Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+    ("{/fe/", 'Failed to decode JSON object')])
+def test_register_user_group_should_return_bad_request_message_when_bad_request(
+        client,
+        request_data,
+        error_message):
+    content_type = 'application/json'
+
+    response = client.post(
+        'api/users',
+        data=request_data,
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert error_message in response_data['errorMessage']
 
 
 if __name__ == '__main__':
