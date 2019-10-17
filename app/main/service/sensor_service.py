@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use
 from typing import Optional
 from typing import Tuple
 
