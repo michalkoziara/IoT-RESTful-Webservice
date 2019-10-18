@@ -247,7 +247,7 @@ def test_get_sensor_info_should_not_return_sensor_info_when_sensor_is_not_in_dev
     assert result_values is None
 
 
-def test_get_sensor_device_info_should_not_return_sensor_info_when_device_group_does_not_exist(
+def test_get_sensor_info_should_not_return_sensor_info_when_device_group_does_not_exist(
         create_device_group,
         create_sensor_type,
         create_user_group,
@@ -286,6 +286,276 @@ def test_get_sensor_device_info_should_not_return_sensor_info_when_device_group_
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+    assert result_values is None
+
+
+def test_get_sensor_readings_should_return_sensors_readings_when_called_with_right_parameters(
+        create_sensor,
+        create_sensor_reading,
+        get_sensor_reading_default_values,
+        create_device_group,
+        create_user_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+    user_group = create_user_group()
+    sensor = create_sensor()
+    first_reading = create_sensor_reading()
+    second_reading_values = get_sensor_reading_default_values()
+    second_reading_values['value'] = 0
+    second_reading = create_sensor_reading(second_reading_values)
+
+    test_user_id = "1"
+
+    readings_list = [first_reading, second_reading]
+    readings_list_values = [
+
+        {
+            'value': first_reading.value,
+            'date': str(first_reading.date)
+        },
+        {
+            'value': second_reading.value,
+            'date': str(second_reading.date)
+        }
+
+    ]
+
+    expected_returned_dict = {
+        'sensorName': sensor.name,
+        'List': readings_list_values
+    }
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
+                get_user_group_by_user_id_and_sensor_device_key_mock.return_value = user_group
+
+                with patch.object(
+                        SensorReadingRepository,
+                        'get_sensor_readings_by_sensor_id'
+                ) as get_sensor_readings_by_sensor_id_mock:
+                    get_sensor_readings_by_sensor_id_mock.return_value = readings_list
+
+                    result, result_values = sensor_service_instance.get_sensor_readings(
+                        sensor.device_key,
+                        device_group.product_key,
+                        test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_returned_dict
+
+def test_get_sensor_readings_should_return_empty_list_of_readings_when_sensor_does_not_have_readings(
+        create_sensor,
+        create_sensor_reading,
+        get_sensor_reading_default_values,
+        create_device_group,
+        create_user_group):
+    sensor_service_instance = SensorService.get_instance()
+    test_user_id = "1"
+    device_group = create_device_group()
+    user_group = create_user_group()
+    sensor = create_sensor()
+
+    expected_returned_dict = {
+        'sensorName': sensor.name,
+        'List': []
+    }
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
+                get_user_group_by_user_id_and_sensor_device_key_mock.return_value = user_group
+
+                with patch.object(
+                        SensorReadingRepository,
+                        'get_sensor_readings_by_sensor_id'
+                ) as get_sensor_readings_by_sensor_id_mock:
+                    get_sensor_readings_by_sensor_id_mock.return_value = []
+
+                    result, result_values = sensor_service_instance.get_sensor_readings(
+                        sensor.device_key,
+                        device_group.product_key,
+                        test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_returned_dict
+
+def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_assigned_to_user_group(
+        create_sensor,
+        create_sensor_reading,
+        get_sensor_reading_default_values,
+        create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+    sensor = create_sensor()
+    sensor.user_group_id = None
+    first_reading = create_sensor_reading()
+    second_reading_values = get_sensor_reading_default_values()
+    second_reading_values['value'] = 0
+    second_reading = create_sensor_reading(second_reading_values)
+
+    test_user_id = "1"
+
+    readings_list = [first_reading, second_reading]
+    readings_list_values = [
+
+        {
+            'value': first_reading.value,
+            'date': str(first_reading.date)
+        },
+        {
+            'value': second_reading.value,
+            'date': str(second_reading.date)
+        }
+
+    ]
+
+    expected_returned_dict = {
+        'sensorName': sensor.name,
+        'List': readings_list_values
+    }
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
+                get_user_group_by_user_id_and_sensor_device_key_mock.return_value = None
+
+                with patch.object(
+                        SensorReadingRepository,
+                        'get_sensor_readings_by_sensor_id'
+                ) as get_sensor_readings_by_sensor_id_mock:
+                    get_sensor_readings_by_sensor_id_mock.return_value = readings_list
+
+                    result, result_values = sensor_service_instance.get_sensor_readings(
+                        sensor.device_key,
+                        device_group.product_key,
+                        test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_returned_dict
+
+
+
+def test_get_sensor_readings_should_return_error_message_when_device_group_does_not_exist():
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group_product_key = "2"
+    sensor_device_key = "2"
+    test_user_id = "1"
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = sensor_service_instance.get_sensor_readings(
+            sensor_device_key,
+            device_group_product_key,
+            test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+    assert result_values is None
+
+
+def test_get_sensor_readings_should_return_error_message_when_sensor_not_in_device_group(create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+    device_group = create_device_group()
+    sensor_device_key = "2"
+    test_user_id = "1"
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = None
+
+            result, result_values = sensor_service_instance.get_sensor_readings(
+                sensor_device_key,
+                device_group.product_key,
+                test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
+    assert result_values is None
+
+
+def test_get_sensor_readings_should_return_error_message_when_user_not_in_the_same_user_group(
+        create_device_group,
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+    device_group = create_device_group()
+    sensor = create_sensor()
+
+    test_user_id = "1"
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_user_id_and_sensor_device_key'
+            ) as get_user_group_by_user_id_and_sensor_device_key_mock:
+                get_user_group_by_user_id_and_sensor_device_key_mock.return_value = None
+
+                result, result_values = sensor_service_instance.get_sensor_readings(
+                    sensor.device_key,
+                    device_group.product_key,
+                    test_user_id)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
 
 
