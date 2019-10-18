@@ -31,7 +31,10 @@ class UserService:
         if user is None:
             return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS, None
 
-        is_password_correct = flask_bcrypt.check_password_hash(user.password, password)
+        try:
+            is_password_correct = flask_bcrypt.check_password_hash(user.password, password)
+        except ValueError:
+            return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS, None
 
         if not is_password_correct:
             return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS, None
