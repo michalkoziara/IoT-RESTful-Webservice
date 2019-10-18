@@ -2,8 +2,8 @@ import os
 
 
 class Constants:
-    RESPONSE_MESSAGE_WRONG_DATA = "HUB device send wrong data"
-    RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA = "HUB send partially wrong data"
+    RESPONSE_MESSAGE_WRONG_DATA = "Hub device send wrong data"
+    RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA = "Hub device send partially wrong data"
     LOGGER_LEVEL_OFF = os.environ.get('LOGGER_LEVEL_OFF')
 
     CURRENT_ENV = os.environ.get('APP_ENV', 'dev')
