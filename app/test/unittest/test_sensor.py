@@ -357,6 +357,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_called_with_rig
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_dict
 
+
 def test_get_sensor_readings_should_return_empty_list_of_readings_when_sensor_does_not_have_readings(
         create_sensor,
         create_sensor_reading,
@@ -404,6 +405,7 @@ def test_get_sensor_readings_should_return_empty_list_of_readings_when_sensor_do
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_dict
+
 
 def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_assigned_to_user_group(
         create_sensor,
@@ -471,7 +473,6 @@ def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_a
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_dict
-
 
 
 def test_get_sensor_readings_should_return_error_message_when_device_group_does_not_exist():
