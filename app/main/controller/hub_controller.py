@@ -18,6 +18,7 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>/states', methods=['GET'])
 def get_states(product_key):
+    # TODO add hub device authentication
     result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
 
     if result is True:
@@ -43,6 +44,7 @@ def get_states(product_key):
 
 @api.route('/hubs/<product_key>/devices', methods=['POST'])
 def create_device(product_key: str):
+    # TODO add hub device authentication
     status = None
     request_dict = None
     device_key = None
@@ -117,7 +119,7 @@ def create_device(product_key: str):
 
 @api.route('/hubs/<product_key>/states', methods=['POST'])
 def set_sensors_readings_and_devices_states(product_key):
-    # TODO add hub authentication
+    # TODO add hub device authentication
     response = None
     status = None
     request_dict = None
