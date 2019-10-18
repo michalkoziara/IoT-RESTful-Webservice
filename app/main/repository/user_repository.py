@@ -20,6 +20,9 @@ class UserRepository:
     def get_user_by_email(self, email: str) -> User:
         return User.query.filter(User.email == email).first()
 
+    def get_user_by_id(self, user_id: str) -> User:
+        return User.query.filter(User.id == user_id).first()
+
     def get_user_by_email_or_username(self, email: str, username: str) -> User:
         return User.query.filter(
             or_(

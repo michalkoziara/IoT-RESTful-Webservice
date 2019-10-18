@@ -20,9 +20,12 @@ class Constants:
         'The browser (or proxy) sent a request with mimetype that does not indicate JSON data.')
     RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND = 'Product key was not found.'
     RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND = 'Device key was not found.'
+    RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND = 'User group name was not found.'
+    RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED = 'User group was not found.'
     RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES = 'User does not have necessary privileges.'
     RESPONSE_MESSAGE_INVALID_CREDENTIALS = 'User credentials are invalid.'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
+
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
     RESPONSE_MESSAGE_SIGNATURE_EXPIRED = 'Signature expired.'
     RESPONSE_MESSAGE_INVALID_TOKEN = 'Invalid token.'

@@ -30,3 +30,19 @@ class UserGroupRepository(BaseRepository):
                 UserGroup.sensors.any(device_key=device_key)
             )
         ).first()
+
+    def get_user_group_by_name_device_group_id(self, name: str, device_group_id: str) -> UserGroup:
+        return UserGroup.query.filter(
+            and_(
+                UserGroup.name == name,
+                UserGroup.device_group_id == device_group_id
+            )
+        ).first()
+
+    def get_user_group_by_id_and_user_id(self, user_group_id: str, user_id: str) -> UserGroup:
+        return UserGroup.query.filter(
+            and_(
+                UserGroup.id == user_group_id,
+                UserGroup.users.any(id=user_id)
+            )
+        ).first()

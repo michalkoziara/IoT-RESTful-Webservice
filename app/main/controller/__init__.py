@@ -5,3 +5,4 @@ import app.main.controller.log_controller
 import app.main.controller.sensor_controller
 import app.main.controller.unconfigured_device_controller
 import app.main.controller.user_controller
+import app.main.controller.user_group_controller
