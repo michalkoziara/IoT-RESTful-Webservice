@@ -18,4 +18,4 @@ class SensorReadingRepository(BaseRepository):
     def get_sensor_readings_by_sensor_id(self, sensor_id: str) -> List[SensorReading]:
         return SensorReading.query.filter(
             SensorReading.sensor_id == sensor_id
-        ).all()
+        ).order_by(SensorReading.date)
