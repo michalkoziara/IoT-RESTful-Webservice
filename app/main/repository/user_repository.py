@@ -1,13 +1,11 @@
 # pylint: disable=no-self-use
 from sqlalchemy import or_
 
-from sqlalchemy.exc import SQLAlchemyError
-
-from app.main import db
 from app.main.model.user import User
+from app.main.repository.base_repository import BaseRepository
 
 
-class UserRepository:
+class UserRepository(BaseRepository):
     _instance = None
 
     @classmethod
@@ -28,12 +26,3 @@ class UserRepository:
             )
         ).first()
 
-    def save(self, user: User) -> bool:
-        try:
-            db.session.add(user)
-            db.session.commit()
-            result = True
-        except SQLAlchemyError:
-            result = False
-
-        return result
