@@ -146,7 +146,6 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     sensors_first_reading = get_sensor_reading_default_values()
 
     sensors_second_reading = get_sensor_reading_default_values()
-    assert sensors_second_reading['sensor_id'] == sensor.id
     sensors_second_reading['id'] += 1
     sensors_second_reading['value'] += 0.1
     sensors_second_reading['date'] = datetime(2019, 8, 5, 8, 10, 10, 10)
