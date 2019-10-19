@@ -55,9 +55,10 @@ class UserService:
         if not username or not email or not password:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
-        user = self._user_repository_instance.get_user_by_email_or_username(email, username)
+        if self._user_repository_instance.get_user_by_email_or_username(email, username) is not None:
+            return Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
 
-        if user is not None:
+        if self._admin_repository_instance.get_admin_by_email_or_username(email, username) is not None:
             return Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
 
         password_hash = flask_bcrypt.generate_password_hash(password).decode('utf-8')

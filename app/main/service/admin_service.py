@@ -29,13 +29,13 @@ class AdminService:
         self._user_repository_instance = UserRepository.get_instance()
 
     def create_admin(self, username: str, email: str, password: str, product_key: str, product_password: str) -> str:
-        if not username or not email or not password:
+        if not username or not email or not password or not product_key or not product_password:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
-        if self._admin_repository_instance.get_user_by_email_or_username(email, username) is not None:
+        if self._user_repository_instance.get_user_by_email_or_username(email, username) is not None:
             return Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
 
-        if self._user_repository_instance.get_user_by_email_or_username(email, username) is not None:
+        if self._admin_repository_instance.get_admin_by_email_or_username(email, username) is not None:
             return Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
