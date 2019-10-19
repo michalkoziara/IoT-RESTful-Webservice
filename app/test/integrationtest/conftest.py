@@ -8,7 +8,7 @@ from flask.testing import FlaskClient
 from app.main import db
 from app.main.config import TestingConfig
 from app.main.model.admin import Admin
-from app.main.model import SensorReading
+from app.main.model.sensor_reading import SensorReading
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
