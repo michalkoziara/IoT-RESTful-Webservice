@@ -7,6 +7,7 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
+from app.main.model import SensorReading
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
@@ -134,6 +135,26 @@ def insert_sensor_types(create_sensor_types, create_multiple_records):
         )
 
     return _insert_sensor_types
+
+
+@pytest.fixture
+def insert_sensor_reading(create_sensor_reading, create_record):
+    def _insert_sensor_reading(values: Optional[Dict[str, str]] = None) -> SensorReading:
+        return create_record(
+            create_sensor_reading(values)
+        )
+
+    return _insert_sensor_reading
+
+
+@pytest.fixture
+def insert_sensor_readings(create_sensor_readings, create_multiple_records):
+    def _insert_sensor_readings(values: List[Dict[str, str]]) -> List[SensorReading]:
+        return create_multiple_records(
+            create_sensor_readings(values)
+        )
+
+    return _insert_sensor_readings
 
 
 @pytest.fixture

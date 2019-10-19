@@ -52,3 +52,42 @@ def get_sensor(product_key: str, device_key: str):
         response=json.dumps(response),
         status=status,
         mimetype='application/json')
+
+
+@api.route('/hubs/<product_key>/sensors/<device_key>/readings', methods=['GET'])
+def get_sensor_readings(product_key: str, device_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        result, result_values = _sensor_service_instance.get_sensor_readings(
+            device_key,
+            product_key,
+            user_info['user_id']
+        )
+    else:
+        result = error_message
+
+    if result == Constants.RESPONSE_MESSAGE_OK:
+        response = result_values
+        status = 200
+    else:
+        response = dict(errorMessage=result)
+        status = 400
+        request_dict = None
+        _logger.log_exception(
+            dict(
+                type='Error',
+                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                errorMessage=response['errorMessage'],
+                payload=json.dumps(request_dict)
+            ),
+            product_key
+        )
+
+    return Response(
+        response=json.dumps(response),
+        status=status,
+        mimetype='application/json')
