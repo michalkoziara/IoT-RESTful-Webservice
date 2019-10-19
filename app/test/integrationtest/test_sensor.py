@@ -129,8 +129,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
         insert_user_group,
         get_sensor_reading_default_values,
         sensor_reading_default_values,
-        insert_sensor_readings
-):
+        insert_sensor_readings):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -170,7 +169,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key + '/readings',
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
         }
     )
 
