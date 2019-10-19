@@ -8,7 +8,8 @@ from typing import Union
 
 import pytest
 
-from app.main.model import UserGroup
+from app.main.model.admin import Admin
+from app.main.model.user_group import UserGroup
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
@@ -22,13 +23,13 @@ from app.main.model.user import User
 
 
 @pytest.fixture
-def device_group_default_values(user_default_values) -> Dict[str, Optional[Union[int, str, List[Any]]]]:
+def device_group_default_values(admin_default_values) -> Dict[str, Optional[Union[int, str, List[Any]]]]:
     return {
         'id': 1,
         'name': 'device group default name',
         'password': 'default password',
         'product_key': 'default product key',
-        'user_id': user_default_values['id'],
+        'admin_id': admin_default_values['id'],
         'executive_devices': [],
         'executive_types': [],
         'sensors': [],
@@ -68,7 +69,7 @@ def create_device_groups():
                     name=value['name'],
                     password=value['password'],
                     product_key=value['product_key'],
-                    user_id=value['user_id'],
+                    admin_id=value['admin_id'],
                     executive_devices=value['executive_devices'],
                     executive_types=value['executive_types'],
                     sensors=value['sensors'],
@@ -84,15 +85,63 @@ def create_device_groups():
 
 
 @pytest.fixture
+def admin_default_values() -> Dict[str, Optional[Union[int, str, List[Any]]]]:
+    return {
+        'id': 1,
+        'username': 'default username',
+        'email': 'default email',
+        'registered_on': datetime(2015, 6, 5, 8, 10, 10, 10),
+        'password': 'default password',
+        'device_group': None
+    }
+
+
+@pytest.fixture
+def get_admin_default_values(admin_default_values):
+    def _get_admin_default_values() -> Dict[str, Optional[Union[int, str, List[Any]]]]:
+        return deepcopy(admin_default_values)
+
+    return _get_admin_default_values
+
+
+@pytest.fixture
+def create_admin(get_admin_default_values, create_admins):
+    def _create_admin(values: Optional[Dict[str, str]] = None) -> Admin:
+        if not values:
+            values = get_admin_default_values()
+        return create_admins([values])[0]
+
+    return _create_admin
+
+
+@pytest.fixture
+def create_admins():
+    def _create_admins(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[Admin]:
+        admins = []
+        for value in values:
+            admins.append(
+                Admin(
+                    id=value['id'],
+                    username=value['username'],
+                    email=value['email'],
+                    registered_on=value['registered_on'],
+                    password=value['password'],
+                    device_group=value['device_group']
+                )
+            )
+            return admins
+
+    return _create_admins
+
+
+@pytest.fixture
 def user_default_values() -> Dict[str, Optional[Union[int, str, List[Any]]]]:
     return {
         'id': 1,
         'username': 'default username',
         'email': 'default email',
         'registered_on': datetime(2015, 6, 5, 8, 10, 10, 10),
-        'is_admin': False,
-        'password': 'default password',
-        'device_group': None
+        'password': 'default password'
     }
 
 
@@ -125,9 +174,7 @@ def create_users():
                     username=value['username'],
                     email=value['email'],
                     registered_on=value['registered_on'],
-                    is_admin=value['is_admin'],
-                    password=value['password'],
-                    device_group=value['device_group']
+                    password=value['password']
                 )
             )
             return users

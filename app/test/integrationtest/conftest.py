@@ -7,6 +7,7 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
+from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
@@ -74,8 +75,6 @@ def insert_device_groups(create_device_groups, create_multiple_records):
         )
 
     return _insert_device_groups
-
-
 @pytest.fixture
 def insert_user(create_user, create_record):
     def _insert_user(values: Optional[Dict[str, str]] = None) -> User:
@@ -91,6 +90,26 @@ def insert_users(create_users, create_multiple_records):
     def _insert_users(values: List[Dict[str, str]]) -> List[User]:
         return create_multiple_records(
             create_users(values)
+        )
+
+    return _insert_users
+
+
+@pytest.fixture
+def insert_admin(create_admin, create_record):
+    def _insert_admin(values: Optional[Dict[str, str]] = None) -> Admin:
+        return create_record(
+            create_admin(values)
+        )
+
+    return _insert_admin
+
+
+@pytest.fixture
+def insert_admins(create_admins, create_multiple_records):
+    def _insert_users(values: List[Dict[str, str]]) -> List[Admin]:
+        return create_multiple_records(
+            create_admins(values)
         )
 
     return _insert_users
