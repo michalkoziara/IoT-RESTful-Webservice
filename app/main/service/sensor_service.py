@@ -83,6 +83,52 @@ class SensorService:
 
         return Constants.RESPONSE_MESSAGE_OK, senor_info
 
+    def get_sensor_readings(self, device_key: str, product_key: str, user_id: str) -> Tuple[
+        bool, Optional[dict]]:
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not device_key:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        sensor = self._sensor_repository_instance.get_sensor_by_device_key_and_device_group_id(
+            device_key,
+            device_group.id
+        )
+
+        if not sensor:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        user_group = self._user_group_repository.get_user_group_by_user_id_and_sensor_device_key(user_id, device_key)
+
+        if not user_group and sensor.user_group_id is not None:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        sensor_readings = self._sensor_reading_repository_instance.get_sensor_readings_by_sensor_id(sensor.id)
+
+        sensor_readings_values = []
+        for sensor_reading in sensor_readings:
+            sensor_readings_values.append({
+                'value': sensor_reading.value,
+                'date': str(sensor_reading.date)
+            })
+
+        sensor_readings_response = {
+            'sensorName': sensor.name,
+            'List': sensor_readings_values
+        }
+
+        return Constants.RESPONSE_MESSAGE_OK, sensor_readings_response
+
     def set_sensor_reading(self, device_group_id, values: dict) -> bool:
 
         if (not isinstance(values, dict) or
