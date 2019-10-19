@@ -48,13 +48,13 @@ class UserGroupService:
             user_group_name,
             device_group.id)
 
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED, None
+
         user = self._user_repository.get_user_by_id(user_id)
 
         if not user:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
-
-        if not user_group:
-            return Constants.RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED, None
 
         if user not in user_group.users:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
@@ -64,8 +64,11 @@ class UserGroupService:
         list_of_executive_devices_info = []
 
         for executive_device in executive_devices:
-            formula_name = self._formula_repository.get_formula_by_id(executive_device.formula_id)
-
+            formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
+            if formula:
+                formula_name = formula.name
+            else:
+                formula_name = None
             list_of_executive_devices_info.append({
                 "name": executive_device.name,
                 "state": executive_device.state,
