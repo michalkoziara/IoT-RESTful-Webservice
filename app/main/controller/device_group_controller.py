@@ -7,9 +7,9 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
-from app.main.model.user import User
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 _device_group_service_instance = DeviceGroupService.get_instance()
@@ -18,10 +18,13 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>', methods=['PUT'])
 def modify_device_group(product_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
     response = None
     status = None
     new_name = None
-    user = None
     request_dict = None
 
     if not request.is_json:
@@ -40,9 +43,8 @@ def modify_device_group(product_key: str):
             request_dict = request.get_json()
 
             try:
-                user = User.query.get(request_dict['userId'])  # TODO Replace user request with admin token
                 new_name = request_dict['name']
-            except KeyError as e:
+            except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
                 _logger.log_exception(
@@ -69,17 +71,31 @@ def modify_device_group(product_key: str):
             )
 
     if status is None:
-        result = _device_group_service_instance.change_name(
-            product_key,
-            new_name,
-            user)
+        if error_message is None:
+            if user_info['is_admin']:
+                result = _device_group_service_instance.change_name(
+                    product_key,
+                    new_name,
+                    user_info['user_id'])
+            else:
+                result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+        else:
+            result = error_message
 
-        if result is True:
+        if result == Constants.RESPONSE_MESSAGE_OK:
             response = dict(name=new_name)
             status = 200
         else:
-            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_CONFLICTING_DATA)
-            status = 409
+            if result == Constants.RESPONSE_MESSAGE_ERROR:
+                response = dict(errorMessage=result)
+                status = 500
+            elif result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES:
+                response = dict(errorMessage=result)
+                status = 403
+            else:
+                response = dict(errorMessage=result)
+                status = 400
+
             _logger.log_exception(
                 dict(
                     type='Error',
