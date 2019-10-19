@@ -67,7 +67,7 @@ def create_device(product_key: str):
 
             try:
                 device_key = request_dict['deviceKey']
-            except KeyError as e:
+            except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
                 _logger.log_exception(

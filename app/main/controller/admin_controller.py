@@ -37,7 +37,7 @@ def register_admin():
                 password = request_dict['password']
                 product_key = request_dict['productKey']
                 product_password = request_dict['productPassword']
-            except KeyError as e:
+            except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
         except BadRequest as e:

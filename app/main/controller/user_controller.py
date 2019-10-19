@@ -31,7 +31,7 @@ def login():
             try:
                 email = request_dict['email']
                 password = request_dict['password']
-            except KeyError as e:
+            except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
         except BadRequest as e:
@@ -74,7 +74,7 @@ def register_user():
                 username = request_dict['username']
                 email = request_dict['email']
                 password = request_dict['password']
-            except KeyError as e:
+            except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
                 status = 400
         except BadRequest as e:
