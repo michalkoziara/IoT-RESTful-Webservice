@@ -79,7 +79,7 @@ def test_login_should_return_error_message_when_mimetype_is_not_json(
 @pytest.mark.parametrize("request_data, error_message", [
     (json.dumps(dict(test='test')), Constants.RESPONSE_MESSAGE_BAD_REQUEST),
     ("{/fe/", 'Failed to decode JSON object')])
-def test_modify_device_group_should_return_error_message_when_bad_request(
+def test_login_should_return_error_message_when_bad_request(
         client,
         request_data,
         error_message):
@@ -162,7 +162,6 @@ def test_register_user_should_create_user_when_valid_request(client):
     ).first()
 
     assert user
-    assert user.is_admin is False
 
 
 def test_register_user_should_return_user_already_exists_message_when_duplicate_user(client, insert_user):
