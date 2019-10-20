@@ -4,7 +4,7 @@ from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.util.auth_utils import Auth
 
 
-def test_get_sensor_info_should_return_sensor_info_when_valid_request(
+def test_get_sensor_type_info_should_return_sensor_info_when_valid_request(
         client,
         insert_device_group,
         insert_user,
