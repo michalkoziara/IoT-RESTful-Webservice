@@ -2,7 +2,6 @@ import json
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.util.auth_utils import Auth
-from app.main.util.constants import Constants
 
 
 def test_get_sensor_info_should_return_sensor_info_when_valid_request(
@@ -55,5 +54,3 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
     response_data = json.loads(response.data.decode())
     assert response_data is not None
     assert response_data == expected_returned_values
-
-

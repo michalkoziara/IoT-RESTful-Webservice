@@ -290,26 +290,6 @@ def test_get_sensor_type_info_should_return_error_message_when_device_group_not_
     assert result_values is None
 
 
-def test_get_sensor_type_info_should_return_error_message_when_device_group_not_found():
-    sensor_type_service_instance = SensorTypeService.get_instance()
-    test_user_id = '1'
-
-    with patch.object(
-            DeviceGroupRepository,
-            'get_device_group_by_product_key'
-    ) as get_device_group_by_product_key_mock:
-        get_device_group_by_product_key_mock.return_value = None
-
-        result, result_values = sensor_type_service_instance.get_sensor_type_info(
-            'device_group_product_key',
-            'user_group_name',
-            test_user_id
-        )
-
-    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
-    assert result_values is None
-
-
 @pytest.mark.parametrize("product_key, type_name, user_id, expected_result", [
     ('product_key', 'type_name', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
     ('product_key', None, 'user_id', Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED),
