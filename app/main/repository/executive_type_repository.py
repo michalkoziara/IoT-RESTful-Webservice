@@ -1,4 +1,6 @@
 # pylint: disable=no-self-use
+from sqlalchemy import and_
+
 from app.main.model.executive_type import ExecutiveType
 from app.main.repository.base_repository import BaseRepository
 
@@ -15,3 +17,11 @@ class ExecutiveTypeRepository(BaseRepository):
 
     def get_executive_type_by_id(self, type_id: str) -> ExecutiveType:
         return ExecutiveType.query.filter(ExecutiveType.id == type_id).first()
+
+    def get_executive_type_by_device_group_id_and_name(self, device_group_id: str, name: str) -> ExecutiveType:
+        return ExecutiveType.query.filter(
+            and_(
+                ExecutiveType.device_group_id == device_group_id,
+                ExecutiveType.name == name
+            )
+        ).first()

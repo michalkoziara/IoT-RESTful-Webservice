@@ -8,7 +8,7 @@ from typing import Union
 
 import pytest
 
-from app.main.model import ReadingEnumerator
+from app.main.model import ReadingEnumerator, StateEnumerator
 from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
@@ -233,6 +233,54 @@ def create_executive_types():
             return executive_types
 
     return _create_executive_types
+
+
+@pytest.fixture
+def state_enumerator_default_values(executive_type_default_values) -> Dict[str, Optional[Union[int, str]]]:
+    return {
+        'id': 1,
+        'number': 1,
+        'text': 'reading enumerator ',
+        'executive_type_id': executive_type_default_values['id']
+    }
+
+
+@pytest.fixture
+def get_state_enumerator_default_values(state_enumerator_default_values):
+    def _get_state_enumerator_default_values() -> Dict[str, Optional[Union[int, str]]]:
+        return deepcopy(state_enumerator_default_values)
+
+    return _get_state_enumerator_default_values
+
+
+@pytest.fixture
+def create_state_enumerator(get_state_enumerator_default_values, create_state_enumerators):
+    def _create_state_enumerator(values: Optional[Dict[str, str]] = None) -> StateEnumerator:
+        if not values:
+            values = get_state_enumerator_default_values()
+        return create_state_enumerators([values])[0]
+
+    return _create_state_enumerator
+
+
+@pytest.fixture
+def create_state_enumerators():
+    def _create_state_enumerators(
+            values: List[Dict[str, Union[str, int, List[Any]]]]
+    ) -> List[StateEnumerator]:
+        state_enumerators = []
+        for value in values:
+            state_enumerators.append(
+                StateEnumerator(
+                    id=value['id'],
+                    number=value['number'],
+                    text=value['text'],
+                    executive_type_id=value['executive_type_id']
+                )
+            )
+            return state_enumerators
+
+    return _create_state_enumerators
 
 
 @pytest.fixture
