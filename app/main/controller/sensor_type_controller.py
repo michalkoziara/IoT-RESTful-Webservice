@@ -6,26 +6,26 @@ from flask import request
 
 from app import api
 from app.main.service.log_service import LogService
-from app.main.service.sensor_service import SensorService
+from app.main.service.sensor_type_service import SensorTypeService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 _logger = LogService.get_instance()
 
-_sensor_service_instance = SensorService.get_instance()
+_sensor_type_service = SensorTypeService.get_instance()
 
 
-@api.route('/hubs/<product_key>/sensors/<device_key>', methods=['GET'])
-def get_sensor_type(product_key: str, device_key: str):
+@api.route('/hubs/<product_key>/sensor-types/<type_name>', methods=['GET'])
+def get_sensor_type(product_key: str, type_name: str):
     auth_header = request.headers.get('Authorization')
 
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
     result_values = None
 
     if error_message is None:
-        result, result_values = _sensor_service_instance.get_sensor_info(
-            device_key,
+        result, result_values = _sensor_type_service.get_sensor_type_info(
             product_key,
+            type_name,
             user_info['user_id']
         )
     else:
@@ -52,5 +52,3 @@ def get_sensor_type(product_key: str, device_key: str):
         response=json.dumps(response),
         status=status,
         mimetype='application/json')
-
-
