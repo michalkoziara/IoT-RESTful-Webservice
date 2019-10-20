@@ -112,7 +112,7 @@ def test_create_user_should_return_success_message_when_valid_parameters():
                 result = user_service_instance.create_user('username', 'email', 'password')
 
     assert result
-    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
 
 
 @pytest.mark.parametrize("username, email, password", [

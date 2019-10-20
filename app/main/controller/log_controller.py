@@ -10,6 +10,7 @@ from app import api
 from app.main.service.log_service import LogService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _logger = LogService.get_instance()
 
@@ -23,7 +24,7 @@ def create_log(product_key: str):
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
+        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
         _logger.log_exception(
             dict(
                 type='Error',
@@ -38,7 +39,7 @@ def create_log(product_key: str):
 
             if 'type' not in request_dict or 'creationDate' not in request_dict:
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
+                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
                 _logger.log_exception(
                     dict(
                         type='Error',
@@ -64,11 +65,12 @@ def create_log(product_key: str):
     if status is None:
         result = _logger.log_exception(request_dict, product_key)
 
-        if result is True:
-            status = 201
+        if result == Constants.RESPONSE_MESSAGE_CREATED:
+            status = response_message_codes[result]
         else:
-            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-            status = 400
+            response = dict(errorMessage=result)
+            status = response_message_codes[result]
+
             _logger.log_exception(
                 dict(
                     type='Error',
@@ -102,12 +104,12 @@ def get_logs(product_key):
     else:
         result = error_message
 
-    if result is True:
+    if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-        status = 400
+        response = dict(errorMessage=result)
+        status = response_message_codes[result]
         _logger.log_exception(
             dict(
                 type='Error',

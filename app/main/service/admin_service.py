@@ -66,4 +66,4 @@ class AdminService:
         if not self._admin_repository_instance.save(admin):
             return Constants.RESPONSE_MESSAGE_ERROR
 
-        return Constants.RESPONSE_MESSAGE_OK
+        return Constants.RESPONSE_MESSAGE_CREATED

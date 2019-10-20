@@ -16,7 +16,9 @@ from app.main.util.constants import Constants
 def test_get_changed_devices_for_device_group_should_return_device_keys_when_valid_product_key(
         get_device_group_default_values,
         create_device_group,
+        get_executive_device_default_values,
         create_executive_devices,
+        get_sensor_default_values,
         create_sensors):
     hub_service_instance = HubService.get_instance()
 
@@ -29,43 +31,17 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
 
     device_group = create_device_group(device_group_values)
 
-    sensors = create_sensors(
-        [
-            {
-                'id': 1,
-                'name': 'name',
-                'is_updated': True,
-                'is_active': True,
-                'is_assigned': False,
-                'device_key': test_sensor_key,
-                'sensor_type_id': None,
-                'user_group_id': None,
-                'device_group_id': device_group.id,
-                'sensor_readings': []
-            }
-        ]
-    )
+    sensor_values = get_sensor_default_values()
+    sensor_values['device_group_id'] = device_group.id
+    sensor_values['device_key'] = test_sensor_key
 
-    executive_devices = create_executive_devices(
-        [
-            {
-                'id': 1,
-                'name': 'name',
-                'state': 'state',
-                'is_updated': True,
-                'is_active': True,
-                'is_assigned': False,
-                'is_formula_used': False,
-                'positive_state': None,
-                'negative_state': None,
-                'device_key': test_executive_device_key,
-                'executive_type_id': None,
-                'device_group_id': device_group.id,
-                'user_group_id': None,
-                'formula_id': None
-            }
-        ]
-    )
+    sensors = create_sensors([sensor_values])
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['device_group_id'] = device_group.id
+    executive_device_values['device_key'] = test_executive_device_key
+
+    executive_devices = create_executive_devices([executive_device_values])
 
     with patch.object(
             DeviceGroupRepository,
@@ -87,7 +63,7 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
 
                 result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
 
-    assert result is True
+    assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
     assert result_values['isUpdated']
     assert result_values['changedDevices']
@@ -96,12 +72,12 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
     assert result_values['changedDevices'][1] == test_sensor_key
 
 
-def test_get_changed_devices_for_device_group_should_not_return_device_keys_when_valid_product_key():
+def test_get_changed_devices_for_device_group_should_not_return_device_keys_when_no_product_key():
     hub_service_instance = HubService.get_instance()
 
     result, result_values = hub_service_instance.get_changed_devices_for_device_group(None)
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
     assert result_values is None
 
 
@@ -118,7 +94,7 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
 
         result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
     assert result_values is None
 
 
@@ -154,7 +130,7 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
 
                 result, result_values = hub_service_instance.get_changed_devices_for_device_group(test_product_key)
 
-    assert result is True
+    assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
     assert not result_values['isUpdated']
     assert not result_values['changedDevices']
@@ -195,7 +171,7 @@ def test_add_device_to_device_group_should_result_true_when_given_valid_keys(
                     test_device_key
                 )
 
-    assert result is True
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
 
 
 @pytest.mark.parametrize("test_product_key, test_device_key", [
@@ -211,7 +187,7 @@ def test_add_device_to_device_group_should_result_false_when_given_invalid_keys(
         test_device_key
     )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
 
 def test_add_device_to_device_group_should_result_false_when_no_device_group():
@@ -231,7 +207,7 @@ def test_add_device_to_device_group_should_result_false_when_no_device_group():
             test_device_key
         )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
 
 def test_add_device_to_device_group_should_result_false_when_no_unconfigured_device(
@@ -264,7 +240,7 @@ def test_add_device_to_device_group_should_result_false_when_no_unconfigured_dev
                 test_device_key
             )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
 
 
 def test_set_devices_states_and_sensors_readings_should_return_update_info_when_called_with_right_parameters(
@@ -424,7 +400,7 @@ def test_set_devices_states_and_sensors_readings_should_return_sensors_readings_
     assert result == Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST
 
 
-def test_add_device_to_device_group_should_result_false_when_save_failed(
+def test_add_device_to_device_group_should_result_error_message_when_save_failed(
         get_device_group_default_values,
         create_device_group,
         create_unconfigured_device):
@@ -460,7 +436,7 @@ def test_add_device_to_device_group_should_result_false_when_save_failed(
                     test_device_key
                 )
 
-    assert result is False
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
 
 
 if __name__ == '__main__':

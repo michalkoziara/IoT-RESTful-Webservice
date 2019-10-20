@@ -29,7 +29,7 @@ class LogService:
 
     def log_exception(self, log_values: Dict[str, str], product_key: str) -> bool:
         if Constants.LOGGER_LEVEL_OFF == 'ALL':
-            return False
+            return Constants.RESPONSE_MESSAGE_LOGGER_LEVEL_OFF
 
         if (product_key is None or
                 'creationDate' not in log_values or
@@ -37,10 +37,12 @@ class LogService:
                 'type' not in log_values or
                 (log_values['type'] != 'Debug' and
                  log_values['type'] != 'Error' and
-                 log_values['type'] != 'Info') or
-                (Constants.LOGGER_LEVEL_OFF is not None and
-                 log_values['type'] in Constants.LOGGER_LEVEL_OFF)):
-            return False
+                 log_values['type'] != 'Info')):
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+        if (Constants.LOGGER_LEVEL_OFF is not None and
+                 log_values['type'] in Constants.LOGGER_LEVEL_OFF):
+            return Constants.RESPONSE_MESSAGE_LOGGER_LEVEL_OFF
 
         try:
             creation_date = datetime.datetime.strptime(
@@ -48,13 +50,13 @@ class LogService:
                 '%Y-%m-%dT%H:%M:%S.%fZ')
         except ValueError:
             print(log_values)
-            return False
+            return Constants.RESPONSE_MESSAGE_ERROR
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
             print(log_values)
-            return False
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
         log = Log(
             type=log_values['type'],
@@ -74,15 +76,19 @@ class LogService:
         if 'time' in log_values:
             log.time = log_values['time']
 
-        return self._log_repository_instance.save(log)
+        if not self._log_repository_instance.save(log):
+            print(log_values)
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def get_log_values_for_device_group(
             self,
             product_key: str,
-            admin_id: str) -> Tuple[bool, Optional[List[dict]]]:
+            admin_id: str) -> Tuple[str, Optional[List[dict]]]:
 
         if not admin_id or not product_key:
-            return False, None
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_admin_id_and_product_key(
             admin_id,
@@ -90,12 +96,9 @@ class LogService:
         )
 
         if device_group is None:
-            return False, None
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         logs = self._log_repository_instance.get_logs_by_device_group_id(device_group.id)
-
-        if logs is None:
-            return False, None
 
         log_values = []
         for log in logs:
@@ -110,4 +113,4 @@ class LogService:
                 }
             )
 
-        return True, log_values
+        return Constants.RESPONSE_MESSAGE_OK, log_values

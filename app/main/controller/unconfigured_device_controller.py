@@ -9,6 +9,7 @@ from app.main.service.log_service import LogService
 from app.main.service.unconfigured_device_service import UnconfiguredDeviceService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
 
@@ -32,10 +33,10 @@ def get_unconfigured_devices(product_key):
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
         response = dict(errorMessage=result)
-        status = 400
+        status = response_message_codes[result]
         _logger.log_exception(
             dict(
                 type='Error',

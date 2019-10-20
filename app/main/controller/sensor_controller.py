@@ -9,6 +9,7 @@ from app.main.service.log_service import LogService
 from app.main.service.sensor_service import SensorService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _logger = LogService.get_instance()
 
@@ -33,10 +34,10 @@ def get_sensor(product_key: str, device_key: str):
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
         response = dict(errorMessage=result)
-        status = 400
+        status = response_message_codes[result]
         request_dict = None
         _logger.log_exception(
             dict(
@@ -72,10 +73,10 @@ def get_sensor_readings(product_key: str, device_key: str):
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
         response = dict(errorMessage=result)
-        status = 400
+        status = response_message_codes[result]
         request_dict = None
         _logger.log_exception(
             dict(

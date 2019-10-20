@@ -73,4 +73,4 @@ class UserService:
         if not self._user_repository_instance.save(user):
             return Constants.RESPONSE_MESSAGE_ERROR
 
-        return Constants.RESPONSE_MESSAGE_OK
+        return Constants.RESPONSE_MESSAGE_CREATED

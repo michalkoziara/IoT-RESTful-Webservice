@@ -8,6 +8,7 @@ from app import api
 from app.main.service.admin_service import AdminService
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _admin_service_instance = AdminService.get_instance()
 _logger = LogService.get_instance()
@@ -26,7 +27,7 @@ def register_admin():
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
+        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
     else:
         try:
             request_dict = request.get_json()
@@ -39,7 +40,7 @@ def register_admin():
                 product_password = request_dict['productPassword']
             except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
+                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
         except BadRequest as e:
             response = dict(errorMessage=e.description)
             status = e.code
@@ -47,17 +48,11 @@ def register_admin():
     if status is None:
         result = _admin_service_instance.create_admin(username, email, password, product_key, product_password)
 
-        if result == Constants.RESPONSE_MESSAGE_OK:
-            status = 201
-        elif result == Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS:
-            response = dict(errorMessage=result)
-            status = 409
-        elif result == Constants.RESPONSE_MESSAGE_ERROR:
-            response = dict(errorMessage=result)
-            status = 500
+        if result == Constants.RESPONSE_MESSAGE_CREATED:
+            status = response_message_codes[result]
         else:
             response = dict(errorMessage=result)
-            status = 400
+            status = response_message_codes[result]
 
     return Response(
         response=json.dumps(response),

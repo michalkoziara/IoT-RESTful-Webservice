@@ -11,6 +11,7 @@ from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _device_group_service_instance = DeviceGroupService.get_instance()
 _logger = LogService.get_instance()
@@ -29,7 +30,7 @@ def modify_device_group(product_key: str):
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
+        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
         _logger.log_exception(
             dict(
                 type='Error',
@@ -46,7 +47,7 @@ def modify_device_group(product_key: str):
                 new_name = request_dict['name']
             except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
+                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
                 _logger.log_exception(
                     dict(
                         type='Error',
@@ -84,17 +85,10 @@ def modify_device_group(product_key: str):
 
         if result == Constants.RESPONSE_MESSAGE_OK:
             response = dict(name=new_name)
-            status = 200
+            status = response_message_codes[result]
         else:
-            if result == Constants.RESPONSE_MESSAGE_ERROR:
-                response = dict(errorMessage=result)
-                status = 500
-            elif result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES:
-                response = dict(errorMessage=result)
-                status = 403
-            else:
-                response = dict(errorMessage=result)
-                status = 400
+            response = dict(errorMessage=result)
+            status = response_message_codes[result]
 
             _logger.log_exception(
                 dict(

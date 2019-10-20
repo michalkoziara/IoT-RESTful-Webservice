@@ -141,7 +141,7 @@ def test_get_logs_should_return_error_message_when_bad_request(
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
-    error_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
+    error_message = Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
     assert error_message == response_data['errorMessage']
 

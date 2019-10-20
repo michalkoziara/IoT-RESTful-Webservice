@@ -8,6 +8,7 @@ from app.main.service.user_group_service import UserGroupService
 from app.main.service.log_service import LogService
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _logger = LogService.get_instance()
 _user_group_service_instance = UserGroupService.get_instance()
@@ -31,17 +32,16 @@ def get_list_of_executive_devices(product_key: str, user_group_name: str):
 
     if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
         response = dict(errorMessage=result)
-        status = 400
-        request_dict = None
+        status = response_message_codes[result]
+
         _logger.log_exception(
             dict(
                 type='Error',
                 creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 errorMessage=response['errorMessage'],
-                payload=json.dumps(request_dict)
             ),
             product_key
         )

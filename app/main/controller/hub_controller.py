@@ -10,6 +10,7 @@ from app import api
 from app.main.service.hub_service import HubService
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
+from app.main.util.response_message_codes import response_message_codes
 
 _hub_service_instance = HubService.get_instance()
 
@@ -21,12 +22,13 @@ def get_states(product_key):
     # TODO add hub device authentication
     result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
 
-    if result is True:
+    if result == Constants.RESPONSE_MESSAGE_OK:
         response = result_values
-        status = 200
+        status = response_message_codes[result]
     else:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-        status = 400
+        response = dict(errorMessage=result)
+        status = response_message_codes[result]
+
         _logger.log_exception(
             dict(
                 type='Error',
@@ -52,7 +54,7 @@ def create_device(product_key: str):
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
+        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
         _logger.log_exception(
             dict(
                 type='Error',
@@ -69,7 +71,7 @@ def create_device(product_key: str):
                 device_key = request_dict['deviceKey']
             except (KeyError, TypeError):
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
+                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
                 _logger.log_exception(
                     dict(
                         type='Error',
@@ -96,11 +98,12 @@ def create_device(product_key: str):
     if status is None:
         result = _hub_service_instance.add_device_to_device_group(product_key, device_key)
 
-        if result is True:
-            status = 201
+        if result == Constants.RESPONSE_MESSAGE_CREATED:
+            status = response_message_codes[result]
         else:
-            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_CONFLICTING_DATA)
-            status = 409
+            response = dict(errorMessage=result)
+            status = response_message_codes[result]
+
             _logger.log_exception(
                 dict(
                     type='Error',
@@ -126,7 +129,7 @@ def set_sensors_readings_and_devices_states(product_key):
 
     if not request.is_json:
         response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
+        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
         _logger.log_exception(
             dict(
                 type='Error',
@@ -141,7 +144,7 @@ def set_sensors_readings_and_devices_states(product_key):
 
             if 'sensors' not in request_dict or 'devices' not in request_dict:
                 response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
+                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
                 _logger.log_exception(
                     dict(
                         type='Error',
@@ -176,12 +179,11 @@ def set_sensors_readings_and_devices_states(product_key):
 
         if result in [Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES,
                       Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA]:
-            status = 201
-            response = {"errorMessage": result}
-
+            status = response_message_codes[result]
+            response = dict(errorMessage=result)
         else:
             response = dict(errorMessage=result)
-            status = 400
+            status = response_message_codes[result]
             _logger.log_exception(
                 dict(
                     type='Error',
