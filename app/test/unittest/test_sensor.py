@@ -23,8 +23,7 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
     sensor = create_sensor()
     user_group = create_user_group()
 
-
-test_user_id = 1
+    test_user_id = 1
 
     with patch.object(
             DeviceGroupRepository,

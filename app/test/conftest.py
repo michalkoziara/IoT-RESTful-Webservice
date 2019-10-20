@@ -301,26 +301,26 @@ def sensor_reading_enumerator_default_values(sensor_type_default_values) -> Dict
 
 
 @pytest.fixture
-def get_sensor_reading_enumerator_default_values(sensor_type_default_values):
-    def _get_sensor_type_default_values() -> Dict[str, Optional[Union[int, str]]]:
-        return deepcopy(sensor_type_default_values)
+def get_sensor_reading_enumerator_default_values(sensor_reading_enumerator_default_values):
+    def _get_sensor_reading_enumerator_default_values() -> Dict[str, Optional[Union[int, str]]]:
+        return deepcopy(sensor_reading_enumerator_default_values)
 
-    return _get_sensor_type_default_values
+    return _get_sensor_reading_enumerator_default_values
 
 
 @pytest.fixture
-def create_sensor_reading_enumerator(get_sensor_reading_enumerator_default_values):
+def create_sensor_reading_enumerator(get_sensor_reading_enumerator_default_values, create_sensor_reading_enumerators):
     def _create_sensor_reading_enumerator(values: Optional[Dict[str, str]] = None) -> ReadingEnumerator:
         if not values:
             values = get_sensor_reading_enumerator_default_values()
-        return create_sensor_reading_enumerator([values])[0]
+        return create_sensor_reading_enumerators([values])[0]
 
     return _create_sensor_reading_enumerator
 
 
 @pytest.fixture
-def create_sensor_reading_enumerator():
-    def _create_sensor_reading_enumerator(
+def create_sensor_reading_enumerators():
+    def _create_sensor_reading_enumerators(
             values: List[Dict[str, Union[str, int, List[Any]]]]
     ) -> List[ReadingEnumerator]:
         sensor_reading_enumerators = []
@@ -335,7 +335,7 @@ def create_sensor_reading_enumerator():
             )
             return sensor_reading_enumerators
 
-    return _create_sensor_reading_enumerator
+    return _create_sensor_reading_enumerators
 
 
 #################
