@@ -46,7 +46,7 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
         data=json.dumps({'userId': user.id}),
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
         }
     )
 
@@ -80,7 +80,7 @@ def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid
         data=json.dumps({'userId': user.id}),
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
         }
     )
 

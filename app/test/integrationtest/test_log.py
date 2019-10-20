@@ -3,6 +3,7 @@ import json
 import pytest
 
 from app.main.model.log import Log
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 
@@ -106,32 +107,35 @@ def test_get_logs_should_return_error_message_when_bad_request(
         client,
         get_device_group_default_values,
         insert_device_group,
-        get_user_default_values,
-        insert_user,
+        get_admin_default_values,
+        insert_admin,
         get_log_default_values,
         insert_log):
     content_type = 'application/json'
 
     product_key = 'product_key'
 
-    user_default_values = get_user_default_values()
-    user_default_values['is_admin'] = True
-    admin = insert_user(user_default_values)
-
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = product_key
-    device_group_values['user_id'] = admin.id
 
     test_device_group = insert_device_group(device_group_values)
+
+    admin_values = get_admin_default_values()
+    admin_values['device_group'] = test_device_group
+
+    admin = insert_admin(admin_values)
 
     log_default_values = get_log_default_values()
     log_default_values['device_group_id'] = test_device_group.id
     insert_log(log_default_values)
 
-    response = client.get('/api/hubs/' + 'not' + product_key + '/logs',
-                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    response = client.get(
+        '/api/hubs/' + 'not' + product_key + '/logs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 400
@@ -146,32 +150,35 @@ def test_get_logs_should_return_logs_when_valid_request(
         client,
         get_device_group_default_values,
         insert_device_group,
-        get_user_default_values,
-        insert_user,
+        get_admin_default_values,
+        insert_admin,
         get_log_default_values,
         insert_log):
     content_type = 'application/json'
 
     product_key = 'product_key'
 
-    user_default_values = get_user_default_values()
-    user_default_values['is_admin'] = True
-    admin = insert_user(user_default_values)
-
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = product_key
-    device_group_values['user_id'] = admin.id
 
     test_device_group = insert_device_group(device_group_values)
+
+    admin_values = get_admin_default_values()
+    admin_values['device_group'] = test_device_group
+
+    admin = insert_admin(admin_values)
 
     log_default_values = get_log_default_values()
     log_default_values['device_group_id'] = test_device_group.id
     log = insert_log(log_default_values)
 
-    response = client.get('/api/hubs/' + product_key + '/logs',
-                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    response = client.get(
+        '/api/hubs/' + product_key + '/logs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 200

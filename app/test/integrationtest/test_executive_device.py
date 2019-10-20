@@ -30,7 +30,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
         }
     )
 
@@ -81,7 +81,7 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, False)
         }
     )
 
@@ -118,7 +118,7 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_devic
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + '1',
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, False)
         }
     )
 
@@ -154,7 +154,7 @@ def test_get_executive_device_info_should_return_device_key_not_found_when_produ
         '/api/hubs/' + 'test' + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, False)
         }
     )
 
@@ -187,7 +187,7 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, False)
         }
     )
 
@@ -227,7 +227,7 @@ def test_get_executive_device_info_should_return_device_key_not_found_error_when
         '/api/hubs/' + second_device_group.product_key + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id + 1, False)
         }
     )
 

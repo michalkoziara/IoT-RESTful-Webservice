@@ -18,8 +18,13 @@ class DeviceGroupRepository(BaseRepository):
 
         return cls._instance
 
-    def get_device_group_by_user_id(self, user_id: str) -> DeviceGroup:
-        return DeviceGroup.query.filter(DeviceGroup.user_id == user_id).first()
+    def get_device_group_by_admin_id_and_product_key(self, admin_id: str, product_key: str) -> DeviceGroup:
+        return DeviceGroup.query.filter(
+            and_(
+                DeviceGroup.admin_id == admin_id,
+                DeviceGroup.product_key == product_key
+            )
+        ).first()
 
     def get_device_group_by_product_key(self, product_key: str) -> DeviceGroup:
         return DeviceGroup.query.filter(DeviceGroup.product_key == product_key).first()

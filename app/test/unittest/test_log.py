@@ -2,20 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.log_repository import LogRepository
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
-
-
-@pytest.fixture()
-def default_admin(create_user, get_user_default_values) -> User:
-    user_default_values = get_user_default_values()
-    user_default_values['is_admin'] = True
-    admin = create_user(user_default_values)
-
-    return admin
 
 
 def test_log_exception_should_log_data_when_valid_product_key_and_data(
@@ -185,7 +175,6 @@ def test_log_exception_should_log_data_when_logger_set_off(
 
 
 def test_get_log_values_for_device_group_should_return_log_values_when_valid_product_key(
-        default_admin,
         get_device_group_default_values,
         create_device_group,
         create_log):
@@ -200,15 +189,18 @@ def test_get_log_values_for_device_group_should_return_log_values_when_valid_pro
 
     log = create_log()
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_user_id') as get_device_group_by_user_id_mock:
-        get_device_group_by_user_id_mock.return_value = user_device_group
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = user_device_group
 
         with patch.object(LogRepository, 'get_logs_by_device_group_id') as get_logs_by_device_group_id_mock:
             get_logs_by_device_group_id_mock.return_value = [log]
 
             result, result_values = log_service_instance.get_log_values_for_device_group(
                 test_product_key,
-                default_admin
+                'admin_id'
             )
 
     assert result is True
@@ -221,7 +213,6 @@ def test_get_log_values_for_device_group_should_return_log_values_when_valid_pro
 
 
 def test_get_log_values_for_device_group_should_not_return_values_when_no_log_list(
-        default_admin,
         get_device_group_default_values,
         create_device_group):
     log_service_instance = LogService.get_instance()
@@ -233,15 +224,18 @@ def test_get_log_values_for_device_group_should_not_return_values_when_no_log_li
 
     user_device_group = create_device_group(device_group_values)
 
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_user_id') as get_device_group_by_user_id_mock:
-        get_device_group_by_user_id_mock.return_value = user_device_group
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = user_device_group
 
         with patch.object(LogRepository, 'get_logs_by_device_group_id') as get_logs_by_device_group_id_mock:
             get_logs_by_device_group_id_mock.return_value = None
 
             result, result_values = log_service_instance.get_log_values_for_device_group(
                 test_product_key,
-                default_admin
+                'admin_id'
             )
 
     assert result is False
@@ -258,62 +252,28 @@ def test_get_log_values_for_device_group_should_not_return_values_when_user_is_n
     assert result_values is None
 
 
-def test_get_log_values_for_device_group_should_not_return_values_when_user_is_not_admin(create_user):
+def test_get_log_values_for_device_group_should_not_return_values_when_product_key_is_none():
     log_service_instance = LogService.get_instance()
 
-    test_product_key = 'test product key'
-    user = create_user()
-
-    result, result_values = log_service_instance.get_log_values_for_device_group(test_product_key, user)
+    result, result_values = log_service_instance.get_log_values_for_device_group(None, 'admin_id')
 
     assert result is False
     assert result_values is None
 
 
-def test_get_log_values_for_device_group_should_not_return_values_when_product_key_is_none(default_admin):
+def test_get_log_values_for_device_group_should_not_return_values_when_no_user_device_group():
     log_service_instance = LogService.get_instance()
-
-    result, result_values = log_service_instance.get_log_values_for_device_group(None, default_admin)
-
-    assert result is False
-    assert result_values is None
-
-
-def test_get_log_values_for_device_group_should_not_return_values_when_invalid_user_device_group(
-        default_admin,
-        get_device_group_default_values,
-        create_device_group):
-    log_service_instance = LogService.get_instance()
-
     test_product_key = 'test product key'
 
-    device_group_values = get_device_group_default_values()
-    device_group_values['product_key'] = 'not ' + test_product_key
-
-    user_device_group = create_device_group(device_group_values)
-
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_user_id') as get_device_group_by_user_id_mock:
-        get_device_group_by_user_id_mock.return_value = user_device_group
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = None
 
         result, result_values = log_service_instance.get_log_values_for_device_group(
             test_product_key,
-            default_admin
-        )
-
-    assert result is False
-    assert result_values is None
-
-
-def test_get_log_values_for_device_group_should_not_return_values_when_no_user_device_group(default_admin):
-    log_service_instance = LogService.get_instance()
-    test_product_key = 'test product key'
-
-    with patch.object(DeviceGroupRepository, 'get_device_group_by_user_id') as get_device_group_by_user_id_mock:
-        get_device_group_by_user_id_mock.return_value = None
-
-        result, result_values = log_service_instance.get_log_values_for_device_group(
-            test_product_key,
-            default_admin
+            'admin_id'
         )
 
     assert result is False

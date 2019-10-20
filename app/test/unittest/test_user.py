@@ -4,6 +4,7 @@ import flask_bcrypt
 import jwt
 import pytest
 
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.service.user_service import UserService
 from app.main.util.constants import Constants
@@ -49,7 +50,10 @@ def test_create_auth_token_should_return_invalid_credentials_message_when_no_use
     with patch.object(UserRepository, 'get_user_by_email') as get_user_by_email_mock:
         get_user_by_email_mock.return_value = None
 
-        result, token = user_service_instance.create_auth_token(user.email, user_password)
+        with patch.object(AdminRepository, 'get_admin_by_email') as get_admin_by_email:
+            get_admin_by_email.return_value = None
+
+            result, token = user_service_instance.create_auth_token(user.email, user_password)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
@@ -78,16 +82,34 @@ def test_create_auth_token_should_return_invalid_credentials_message_when_invali
     assert token is None
 
 
+def test_create_auth_token_should_return_invalid_credentials_message_when_checking_hash_failed(create_user):
+    user_service_instance = UserService.get_instance()
+
+    user = create_user()
+
+    with patch.object(UserRepository, 'get_user_by_email') as get_user_by_email_mock:
+        get_user_by_email_mock.return_value = user
+
+        result, token = user_service_instance.create_auth_token(user.email, user.password)
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
+    assert token is None
+
+
 def test_create_user_should_return_success_message_when_valid_parameters():
     user_service_instance = UserService.get_instance()
 
     with patch.object(UserRepository, 'get_user_by_email_or_username') as get_user_by_email_or_username_mock:
         get_user_by_email_or_username_mock.return_value = None
 
-        with patch.object(UserRepository, 'save') as save_mock:
-            save_mock.return_value = True
+        with patch.object(AdminRepository, 'get_admin_by_email_or_username') as get_admin_by_email_or_username_mock:
+            get_admin_by_email_or_username_mock.return_value = None
 
-            result = user_service_instance.create_user('username', 'email', 'password')
+            with patch.object(UserRepository, 'save') as save_mock:
+                save_mock.return_value = True
+
+                result = user_service_instance.create_user('username', 'email', 'password')
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -106,7 +128,7 @@ def test_create_user_should_return_bad_request_message_when_no_parameter(usernam
     assert result == Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
 
-def test_create_user_should_return_user_already_exists_message_when_duplicate_username(create_user):
+def test_create_user_should_return_user_already_exists_message_when_duplicate_user(create_user):
     user_service_instance = UserService.get_instance()
 
     user = create_user()
@@ -120,15 +142,18 @@ def test_create_user_should_return_user_already_exists_message_when_duplicate_us
     assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
 
 
-def test_create_user_should_return_user_already_exists_message_when_duplicate_email(create_user):
+def test_create_user_should_return_user_already_exists_message_when_duplicate_admin(create_admin):
     user_service_instance = UserService.get_instance()
 
-    user = create_user()
+    admin = create_admin()
 
     with patch.object(UserRepository, 'get_user_by_email_or_username') as get_user_by_email_or_username_mock:
-        get_user_by_email_or_username_mock.return_value = user
+        get_user_by_email_or_username_mock.return_value = None
 
-        result = user_service_instance.create_user('test username', user.email, 'password')
+        with patch.object(AdminRepository, 'get_admin_by_email_or_username') as get_admin_by_email_or_username_mock:
+            get_admin_by_email_or_username_mock.return_value = admin
+
+            result = user_service_instance.create_user(admin.username, 'test email', 'password')
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_EXISTS
@@ -140,10 +165,13 @@ def test_create_user_should_return_error_message_when_save_failed():
     with patch.object(UserRepository, 'get_user_by_email_or_username') as get_user_by_email_or_username_mock:
         get_user_by_email_or_username_mock.return_value = None
 
-        with patch.object(UserRepository, 'save') as save_mock:
-            save_mock.return_value = False
+        with patch.object(AdminRepository, 'get_admin_by_email_or_username') as get_admin_by_email_or_username_mock:
+            get_admin_by_email_or_username_mock.return_value = None
 
-            result = user_service_instance.create_user('username', 'email', 'password')
+            with patch.object(UserRepository, 'save') as save_mock:
+                save_mock.return_value = False
+
+                result = user_service_instance.create_user('username', 'email', 'password')
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_ERROR

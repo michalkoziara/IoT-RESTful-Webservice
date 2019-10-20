@@ -5,7 +5,6 @@ from typing import Optional
 from typing import Tuple
 
 from app.main.model.log import Log
-from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.log_repository import LogRepository
 from app.main.util.constants import Constants
@@ -80,17 +79,20 @@ class LogService:
     def get_log_values_for_device_group(
             self,
             product_key: str,
-            user: User) -> Tuple[bool, Optional[List[dict]]]:
+            admin_id: str) -> Tuple[bool, Optional[List[dict]]]:
 
-        if user is None or product_key is None or user.is_admin is False:
+        if not admin_id or not product_key:
             return False, None
 
-        user_device_group = self._device_group_repository_instance.get_device_group_by_user_id(user.id)
+        device_group = self._device_group_repository_instance.get_device_group_by_admin_id_and_product_key(
+            admin_id,
+            product_key
+        )
 
-        if user_device_group is None or user_device_group.product_key != product_key:
+        if device_group is None:
             return False, None
 
-        logs = self._log_repository_instance.get_logs_by_device_group_id(user_device_group.id)
+        logs = self._log_repository_instance.get_logs_by_device_group_id(device_group.id)
 
         if logs is None:
             return False, None

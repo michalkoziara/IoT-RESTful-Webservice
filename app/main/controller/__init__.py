@@ -1,3 +1,4 @@
+import app.main.controller.admin_controller
 import app.main.controller.device_group_controller
 import app.main.controller.executive_device_controller
 import app.main.controller.hub_controller

@@ -3,6 +3,12 @@ RESTful Webservice for IoT devices management.
 
 ## CLI commands
 
+Create database migration file  
+``python manage.py db migrate``
+
+Update database with latest migration file   
+``python manage.py db upgrade``
+
 Run application  
 ``python manage.py run``
 

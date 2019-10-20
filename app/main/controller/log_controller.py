@@ -7,8 +7,8 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from app import api
-from app.main.model.user import User
 from app.main.service.log_service import LogService
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 _logger = LogService.get_instance()
@@ -16,6 +16,7 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>/logs', methods=['POST'])
 def create_log(product_key: str):
+    # TODO add hub device authentication
     response = None
     status = None
     request_dict = None
@@ -86,12 +87,20 @@ def create_log(product_key: str):
 
 @api.route('/hubs/<product_key>/logs', methods=['GET'])
 def get_logs(product_key):
-    request_dict = request.get_json()  # TODO Replace user request with admin token
-    user = User.query.get(request_dict['userId'])
+    auth_header = request.headers.get('Authorization')
 
-    result, result_values = _logger.get_log_values_for_device_group(
-        product_key,
-        user)
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        if user_info['is_admin']:
+            result, result_values = _logger.get_log_values_for_device_group(
+                product_key,
+                user_info['user_id'])
+        else:
+            result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    else:
+        result = error_message
 
     if result is True:
         response = result_values
@@ -103,8 +112,7 @@ def get_logs(product_key):
             dict(
                 type='Error',
                 creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-                payload=json.dumps(request_dict)
+                errorMessage=response['errorMessage']
             ),
             product_key
         )
