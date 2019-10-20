@@ -16,5 +16,3 @@ def create_app(config_name):
     db.init_app(app)
 
     return app
-
-

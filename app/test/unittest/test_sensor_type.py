@@ -69,31 +69,26 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request_and_r
         ) as get_user_by_id_mock:
             get_user_by_id_mock.return_value = user
 
-            with patch(
-                    'app.main.util.utils.is_user_in_one_of_devices_group_user_group'
-            ) as is_user_in_one_of_devices_group_user_group:
-                is_user_in_one_of_devices_group_user_group.return_value = True
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_type_by_device_group_id_and_name'
+            ) as get_sensor_type_by_device_group_id_and_name_mock:
+                get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
 
                 with patch.object(
-                        SensorTypeRepository,
-                        'get_sensor_type_by_device_group_id_and_name'
-                ) as get_sensor_type_by_device_group_id_and_name_mock:
-                    get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
+                        ReadingEnumeratorRepository,
+                        'get_reading_enumerators_by_sensor_type_id'
+                ) as get_reading_enumerators_by_sensor_type_id_mock:
+                    get_reading_enumerators_by_sensor_type_id_mock.return_value = [
+                        first_enumerator,
+                        second_enumerator
+                    ]
 
-                    with patch.object(
-                            ReadingEnumeratorRepository,
-                            'get_reading_enumerators_by_sensor_type_id'
-                    ) as get_reading_enumerators_by_sensor_type_id_mock:
-                        get_reading_enumerators_by_sensor_type_id_mock.return_value = [
-                            first_enumerator,
-                            second_enumerator
-                        ]
-
-                        result, result_values = sensor_type_service_instance.get_sensor_type_info(
-                            device_group.product_key,
-                            user_group.name,
-                            test_user_id
-                        )
+                    result, result_values = sensor_type_service_instance.get_sensor_type_info(
+                        device_group.product_key,
+                        user_group.name,
+                        test_user_id
+                    )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_values
@@ -150,22 +145,17 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request_and_r
         ) as get_user_by_id_mock:
             get_user_by_id_mock.return_value = user
 
-            with patch(
-                    'app.main.util.utils.is_user_in_one_of_devices_group_user_group'
-            ) as is_user_in_one_of_devices_group_user_group:
-                is_user_in_one_of_devices_group_user_group.return_value = True
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_type_by_device_group_id_and_name'
+            ) as get_sensor_type_by_device_group_id_and_name_mock:
+                get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
 
-                with patch.object(
-                        SensorTypeRepository,
-                        'get_sensor_type_by_device_group_id_and_name'
-                ) as get_sensor_type_by_device_group_id_and_name_mock:
-                    get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
-
-                    result, result_values = sensor_type_service_instance.get_sensor_type_info(
-                        device_group.product_key,
-                        user_group.name,
-                        test_user_id
-                    )
+                result, result_values = sensor_type_service_instance.get_sensor_type_info(
+                    device_group.product_key,
+                    user_group.name,
+                    test_user_id
+                )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_values
@@ -200,22 +190,17 @@ def test_get_sensor_type_info_should_return_error_message_when_sensor_type_not_i
         ) as get_user_by_id_mock:
             get_user_by_id_mock.return_value = user
 
-            with patch(
-                    'app.main.util.utils.is_user_in_one_of_devices_group_user_group'
-            ) as is_user_in_one_of_devices_group_user_group:
-                is_user_in_one_of_devices_group_user_group.return_value = True
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_type_by_device_group_id_and_name'
+            ) as get_sensor_type_by_device_group_id_and_name_mock:
+                get_sensor_type_by_device_group_id_and_name_mock.return_value = None
 
-                with patch.object(
-                        SensorTypeRepository,
-                        'get_sensor_type_by_device_group_id_and_name'
-                ) as get_sensor_type_by_device_group_id_and_name_mock:
-                    get_sensor_type_by_device_group_id_and_name_mock.return_value = None
-
-                    result, result_values = sensor_type_service_instance.get_sensor_type_info(
-                        device_group.product_key,
-                        user_group.name,
-                        test_user_id
-                    )
+                result, result_values = sensor_type_service_instance.get_sensor_type_info(
+                    device_group.product_key,
+                    user_group.name,
+                    test_user_id
+                )
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
     assert result_values is None
@@ -246,16 +231,11 @@ def test_get_sensor_type_info_should_return_error_message_when_user_not_in_any_u
         ) as get_user_by_id_mock:
             get_user_by_id_mock.return_value = user
 
-            with patch(
-                    'app.main.util.utils.is_user_in_one_of_devices_group_user_group'
-            ) as is_user_in_one_of_devices_group_user_group_mock:
-                is_user_in_one_of_devices_group_user_group_mock.side_effect = False
-
-                result, result_values = sensor_type_service_instance.get_sensor_type_info(
-                    device_group.product_key,
-                    user_group.name,
-                    test_user_id
-                )
+            result, result_values = sensor_type_service_instance.get_sensor_type_info(
+                device_group.product_key,
+                user_group.name,
+                test_user_id
+            )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
