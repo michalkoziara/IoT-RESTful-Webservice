@@ -1,14 +1,10 @@
-import datetime
-import json
-
-from flask import Response
 from flask import request
 
 from app import api
 from app.main.service.log_service import LogService
 from app.main.service.executive_type_service import ExecutiveTypeService
 from app.main.util.auth_utils import Auth
-from app.main.util.constants import Constants
+from app.main.util.response_utils import ResponseUtils
 
 _logger = LogService.get_instance()
 
@@ -31,24 +27,9 @@ def get_executive_type(product_key: str, type_name: str):
     else:
         result = error_message
 
-    if result == Constants.RESPONSE_MESSAGE_OK:
-        response = result_values
-        status = 200
-    else:
-        response = dict(errorMessage=result)
-        status = 400
-        request_dict = None
-        _logger.log_exception(
-            dict(
-                type='Error',
-                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-                payload=json.dumps(request_dict)
-            ),
-            product_key
-        )
-
-    return Response(
-        response=json.dumps(response),
-        status=status,
-        mimetype='application/json')
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
