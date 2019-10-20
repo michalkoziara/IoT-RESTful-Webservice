@@ -30,7 +30,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
         '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/executive_devices',
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, user.is_admin)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
         }
     )
 
