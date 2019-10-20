@@ -44,7 +44,7 @@ class UserGroupService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        user_group = self._user_group_repository.get_user_group_by_name_device_group_id(
+        user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
             user_group_name,
             device_group.id)
 
