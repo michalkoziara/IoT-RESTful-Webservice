@@ -247,7 +247,7 @@ def sensor_reading_default_values(sensor_default_values) -> Dict[str, Optional[U
         'id': 1,
         'value': 0.5,
         'date': datetime(2015, 6, 5, 8, 10, 10, 10),
-        'sensor_id': sensor_default_values['id'],
+        'sensor_id': sensor_default_values['id']
     }
 
 
@@ -279,6 +279,7 @@ def create_sensor_readings():
                     id=value['id'],
                     value=value['value'],
                     date=value['date'],
+                    sensor_id=value['sensor_id']
                 )
             )
         return sensor_readings
