@@ -1,5 +1,5 @@
-from app.main.model.user import User
 from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.util.constants import Constants
 
 
 class DeviceGroupService:
@@ -17,17 +17,23 @@ class DeviceGroupService:
     def __init__(self):
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
 
-    def change_name(self, product_key: str, new_name: str, user: User) -> bool:
-        if (user is None or
+    def change_name(self, product_key: str, new_name: str, admin_id: str) -> bool:
+        if (admin_id is None or
                 new_name is None or
-                product_key is None or
-                user.is_admin is False):
-            return False
+                product_key is None):
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
-        user_device_group = self._device_group_repository_instance.get_device_group_by_user_id(user.id)
+        device_group = self._device_group_repository_instance.get_device_group_by_admin_id_and_product_key(
+            admin_id,
+            product_key
+        )
 
-        if user_device_group is not None and user_device_group.product_key == product_key:
-            user_device_group.name = new_name
-            return self._device_group_repository_instance.save(user_device_group)
+        if device_group is None:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
-        return False
+        device_group.name = new_name
+
+        if not self._device_group_repository_instance.update_database():
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_OK

@@ -10,7 +10,7 @@ class DeviceGroup(db.Model):
     password = db.Column(db.String(255), nullable=False)
     product_key = db.Column(db.String(255), nullable=False, unique=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=True)
 
     executive_devices = db.relationship('ExecutiveDevice', backref='device_group', lazy=True)
     executive_types = db.relationship('ExecutiveType', backref='device_group', lazy=True)
