@@ -35,3 +35,8 @@ class ExecutiveDeviceRepository(BaseRepository):
                 ExecutiveDevice.device_key == device_key
             )
         ).first()
+
+    def get_executive_devices_by_user_group_id(self, user_group_id: str) -> List[ExecutiveDevice]:
+        return ExecutiveDevice.query.filter(
+            ExecutiveDevice.user_group_id == user_group_id
+        ).all()
