@@ -2,6 +2,8 @@ import os
 
 
 class Constants:
+
+
     RESPONSE_MESSAGE_WRONG_DATA = "Hub device send wrong data"
     RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA = "Hub device send partially wrong data"
     LOGGER_LEVEL_OFF = os.environ.get('LOGGER_LEVEL_OFF')
@@ -27,6 +29,8 @@ class Constants:
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
     RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED = 'Sensor type name not defined.'
     RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND = 'Sensor type name not found.'
+    RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED = 'Executive device type name not defined.'
+    RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
     RESPONSE_MESSAGE_SIGNATURE_EXPIRED = 'Signature expired.'
     RESPONSE_MESSAGE_INVALID_TOKEN = 'Invalid token.'

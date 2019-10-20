@@ -4,15 +4,15 @@ from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.util.auth_utils import Auth
 
 
-def test_get_sensor_type_info_should_return_sensor_info_when_valid_request(
+def test_get_executive_type_info_should_return_sensor_info_when_valid_request(
         client,
         insert_device_group,
         insert_user,
         get_user_group_default_values,
         insert_user_group,
-        get_sensor_type_default_values,
-        insert_sensor_type,
-        insert_sensor_reading_enumerator):
+        get_executive_type_default_values,
+        insert_executive_type,
+        insert_state_enumerator):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -23,11 +23,11 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request(
     device_group.user_groups = [user_group]
     DeviceGroupRepository.get_instance().update_database()
 
-    sensor_type = insert_sensor_type()
-    reading_enumerator = insert_sensor_reading_enumerator()
+    executive_type = insert_executive_type()
+    state_enumerator = insert_state_enumerator()
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/sensor-types/' + sensor_type.name,
+        '/api/hubs/' + device_group.product_key + '/executive-types/' + executive_type.name,
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -35,14 +35,14 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request(
     )
 
     expected_returned_values = {
-        'name': sensor_type.name,
-        'readingType': sensor_type.reading_type,
-        'rangeMin': sensor_type.range_min,
-        'rangeMax': sensor_type.range_max,
+        'name': executive_type.name,
+        'stateType': executive_type.state_type,
+        'stateRangeMin': executive_type.state_range_min,
+        'stateRangeMax': executive_type.state_range_max,
         'enumerator': [
             {
-                'number': reading_enumerator.number,
-                'text': reading_enumerator.text
+                'number': state_enumerator.number,
+                'text': state_enumerator.text
             }
         ]
     }

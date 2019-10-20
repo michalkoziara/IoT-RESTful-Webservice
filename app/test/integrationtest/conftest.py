@@ -7,7 +7,7 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
-from app.main.model import ReadingEnumerator
+from app.main.model import ReadingEnumerator, StateEnumerator
 from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
@@ -177,6 +177,26 @@ def insert_sensor_reading_enumerators(create_sensor_reading_enumerators, create_
         )
 
     return _insert_sensor_reading_enumerators
+
+
+@pytest.fixture
+def insert_state_enumerator(create_state_enumerator, create_record):
+    def _insert_state_enumerator(values: Optional[Dict[str, str]] = None) -> StateEnumerator:
+        return create_record(
+            create_state_enumerator(values)
+        )
+
+    return _insert_state_enumerator
+
+
+@pytest.fixture
+def insert_state_enumerators(create_state_enumerators, create_multiple_records):
+    def _insert_state_enumerators(values: List[Dict[str, str]]) -> List[StateEnumerator]:
+        return create_multiple_records(
+            create_state_enumerators(values)
+        )
+
+    return _insert_state_enumerators
 
 
 @pytest.fixture
