@@ -38,7 +38,7 @@ class SensorTypeService:
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
 
-    def get_sensor_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[bool, Optional[dict]]:
+    def get_sensor_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[str, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None

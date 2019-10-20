@@ -293,7 +293,7 @@ def test_get_sensor_type_info_should_return_error_message_when_device_group_not_
 @pytest.mark.parametrize("product_key, type_name, user_id, expected_result", [
     ('product_key', 'type_name', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
     ('product_key', None, 'user_id', Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED),
-    (None, 'type_name', 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND),
+    (None, 'type_name', 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
 ])
 def test_get_sensor_type_info_should_return_error_message_when_one_of_parameters_is_None(product_key, type_name,
                                                                                          user_id, expected_result):
