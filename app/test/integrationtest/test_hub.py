@@ -268,7 +268,6 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
     assert response.status_code == 201
 
     response_data = json.loads(response.data.decode())
-    assert Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES == response_data['errorMessage']
     assert executive_device.state == str(device_state_to_set)
     created_sensor_reading = sensor_reading_repository_instance.get_sensor_readings_by_sensor_id(sensor.id)[0]
     assert created_sensor_reading.value == sensor_reading_value_to_be_set
@@ -336,7 +335,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
                            )
 
     assert response is not None
-    assert response.status_code == 201
+    assert response.status_code == 400
     response_data = json.loads(response.data.decode())
     assert Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA == response_data['errorMessage']
     assert executive_device.state == str(device_state_to_set)

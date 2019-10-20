@@ -1,16 +1,13 @@
-import datetime
 import json
-import traceback
 
 from flask import Response
 from flask import request
-from werkzeug.exceptions import BadRequest
 
 from app import api
 from app.main.service.hub_service import HubService
 from app.main.service.log_service import LogService
 from app.main.util.constants import Constants
-from app.main.util.response_message_codes import response_message_codes
+from app.main.util.response_utils import ResponseUtils
 
 _hub_service_instance = HubService.get_instance()
 
@@ -22,152 +19,58 @@ def get_states(product_key):
     # TODO add hub device authentication
     result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
 
-    if result == Constants.RESPONSE_MESSAGE_OK:
-        response = result_values
-        status = response_message_codes[result]
-    else:
-        response = dict(errorMessage=result)
-        status = response_message_codes[result]
-
-        _logger.log_exception(
-            dict(
-                type='Error',
-                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage']
-            ),
-            product_key
-        )
-
-    return Response(
-        response=json.dumps(response),
-        status=status,
-        mimetype='application/json')
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
 
 
 @api.route('/hubs/<product_key>/devices', methods=['POST'])
 def create_device(product_key: str):
     # TODO add hub device authentication
-    status = None
-    request_dict = None
-    device_key = None
-    response = None
-
-    if not request.is_json:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
-        _logger.log_exception(
-            dict(
-                type='Error',
-                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-            ),
-            product_key
-        )
-    else:
-        try:
-            request_dict = request.get_json()
-
-            try:
-                device_key = request_dict['deviceKey']
-            except (KeyError, TypeError):
-                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
-                _logger.log_exception(
-                    dict(
-                        type='Error',
-                        creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        errorMessage=response['errorMessage'],
-                        stackTrace=traceback.format_exc(),
-                        payload=json.dumps(request_dict)
-                    ),
-                    product_key
-                )
-        except BadRequest as e:
-            response = dict(errorMessage=e.description)
-            status = e.code
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    stackTrace=traceback.format_exc()
-                ),
-                product_key
-            )
+    response_message, status = ResponseUtils.check_request_data(
+        request=request,
+        data_keys=['deviceKey'],
+        product_key=product_key,
+        is_logged=True,
+        with_payload=True
+    )
 
     if status is None:
+        request_dict = request.get_json()
+        device_key = request_dict['deviceKey']
+
         result = _hub_service_instance.add_device_to_device_group(product_key, device_key)
 
-        if result == Constants.RESPONSE_MESSAGE_CREATED:
-            status = response_message_codes[result]
-        else:
-            response = dict(errorMessage=result)
-            status = response_message_codes[result]
-
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    payload=json.dumps(request_dict)
-                ),
-                product_key
-            )
-
-    return Response(
-        response=json.dumps(response),
-        status=status,
-        mimetype='application/json')
+        return ResponseUtils.create_response(
+            result=result,
+            product_key=product_key,
+            is_logged=True,
+            payload=request_dict,
+            success_message=Constants.RESPONSE_MESSAGE_CREATED
+        )
+    else:
+        return Response(
+            response=json.dumps(dict(errorMessage=response_message)),
+            status=status,
+            mimetype='application/json')
 
 
 @api.route('/hubs/<product_key>/states', methods=['POST'])
 def set_sensors_readings_and_devices_states(product_key):
     # TODO add hub device authentication
-    response = None
-    status = None
-    request_dict = None
-
-    if not request.is_json:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_MIMETYPE]
-        _logger.log_exception(
-            dict(
-                type='Error',
-                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-            ),
-            product_key
-        )
-    else:
-        try:
-            request_dict = request.get_json()
-
-            if 'sensors' not in request_dict or 'devices' not in request_dict:
-                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
-                _logger.log_exception(
-                    dict(
-                        type='Error',
-                        creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        errorMessage=response['errorMessage']
-                    ),
-                    product_key
-                )
-
-        except BadRequest as e:
-            response = dict(errorMessage=e.description)
-            status = e.code
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    stackTrace=traceback.format_exc()
-                ),
-                product_key
-            )
+    response_message, status = ResponseUtils.check_request_data(
+        request=request,
+        data_keys=['sensors', 'devices'],
+        product_key=product_key,
+        is_logged=True
+    )
 
     if status is None:
+        request_dict = request.get_json()
+
         sensors_readings = request_dict['sensors']
         devices_states = request_dict['devices']
 
@@ -177,23 +80,14 @@ def set_sensors_readings_and_devices_states(product_key):
             devices_states
         )
 
-        if result in [Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES,
-                      Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA]:
-            status = response_message_codes[result]
-            response = dict(errorMessage=result)
-        else:
-            response = dict(errorMessage=result)
-            status = response_message_codes[result]
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage']
-                ),
-                product_key
-            )
-
-    return Response(
-        response=json.dumps(response),
-        status=status,
-        mimetype='application/json')
+        return ResponseUtils.create_response(
+            result=result,
+            product_key=product_key,
+            is_logged=True,
+            success_message=Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
+        )
+    else:
+        return Response(
+            response=json.dumps(dict(errorMessage=response_message)),
+            status=status,
+            mimetype='application/json')
