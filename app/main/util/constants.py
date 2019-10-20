@@ -25,6 +25,8 @@ class Constants:
     RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES = 'User does not have necessary privileges.'
     RESPONSE_MESSAGE_INVALID_CREDENTIALS = 'User credentials are invalid.'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
+    RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED = 'Sensor type name not defined.'
+    RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND = 'Sensor type name not found.'
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
     RESPONSE_MESSAGE_SIGNATURE_EXPIRED = 'Signature expired.'
     RESPONSE_MESSAGE_INVALID_TOKEN = 'Invalid token.'

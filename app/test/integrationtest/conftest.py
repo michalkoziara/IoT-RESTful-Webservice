@@ -7,14 +7,15 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
+from app.main.model import ReadingEnumerator
 from app.main.model.admin import Admin
-from app.main.model.sensor_reading import SensorReading
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
 from app.main.model.log import Log
 from app.main.model.sensor import Sensor
+from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
@@ -156,6 +157,26 @@ def insert_sensor_types(create_sensor_types, create_multiple_records):
         )
 
     return _insert_sensor_types
+
+
+@pytest.fixture
+def insert_sensor_reading_enumerator(create_sensor_reading_enumerator, create_record):
+    def _insert_sensor_reading_enumerator(values: Optional[Dict[str, str]] = None) -> ReadingEnumerator:
+        return create_record(
+            create_sensor_reading_enumerator(values)
+        )
+
+    return _insert_sensor_reading_enumerator
+
+
+@pytest.fixture
+def insert_sensor_reading_enumerators(create_sensor_reading_enumerators, create_multiple_records):
+    def _insert_sensor_reading_enumerators(values: List[Dict[str, str]]) -> List[ReadingEnumerator]:
+        return create_multiple_records(
+            create_sensor_reading_enumerators(values)
+        )
+
+    return _insert_sensor_reading_enumerators
 
 
 @pytest.fixture

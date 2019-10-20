@@ -8,8 +8,8 @@ from typing import Union
 
 import pytest
 
+from app.main.model import ReadingEnumerator
 from app.main.model.admin import Admin
-from app.main.model.user_group import UserGroup
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
@@ -20,6 +20,7 @@ from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.model.user import User
+from app.main.model.user_group import UserGroup
 
 
 @pytest.fixture
@@ -289,6 +290,54 @@ def create_sensor_types():
 
 
 @pytest.fixture
+def sensor_reading_enumerator_default_values(sensor_type_default_values) -> Dict[str, Optional[Union[int, str]]]:
+    return {
+        'id': 1,
+        'number': 1,
+        'text': 'reading enumerator ',
+        'sensor_type_id': sensor_type_default_values['id']
+    }
+
+
+@pytest.fixture
+def get_sensor_reading_enumerator_default_values(sensor_reading_enumerator_default_values):
+    def _get_sensor_reading_enumerator_default_values() -> Dict[str, Optional[Union[int, str]]]:
+        return deepcopy(sensor_reading_enumerator_default_values)
+
+    return _get_sensor_reading_enumerator_default_values
+
+
+@pytest.fixture
+def create_sensor_reading_enumerator(get_sensor_reading_enumerator_default_values, create_sensor_reading_enumerators):
+    def _create_sensor_reading_enumerator(values: Optional[Dict[str, str]] = None) -> ReadingEnumerator:
+        if not values:
+            values = get_sensor_reading_enumerator_default_values()
+        return create_sensor_reading_enumerators([values])[0]
+
+    return _create_sensor_reading_enumerator
+
+
+@pytest.fixture
+def create_sensor_reading_enumerators():
+    def _create_sensor_reading_enumerators(
+            values: List[Dict[str, Union[str, int, List[Any]]]]
+    ) -> List[ReadingEnumerator]:
+        sensor_reading_enumerators = []
+        for value in values:
+            sensor_reading_enumerators.append(
+                ReadingEnumerator(
+                    id=value['id'],
+                    number=value['number'],
+                    text=value['text'],
+                    sensor_type_id=value['sensor_type_id']
+                )
+            )
+            return sensor_reading_enumerators
+
+    return _create_sensor_reading_enumerators
+
+
+@pytest.fixture
 def sensor_reading_default_values(sensor_default_values) -> Dict[str, Optional[Union[int, str]]]:
     return {
         'id': 1,
@@ -546,7 +595,8 @@ def create_unconfigured_device(create_unconfigured_devices, get_unconfigured_dev
 
 @pytest.fixture
 def create_unconfigured_devices():
-    def _create_unconfigured_devices(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[UnconfiguredDevice]:
+    def _create_unconfigured_devices(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[
+        UnconfiguredDevice]:
         unconfigured_devices = []
         for value in values:
             unconfigured_devices.append(
