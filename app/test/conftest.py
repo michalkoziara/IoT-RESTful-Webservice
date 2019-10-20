@@ -8,7 +8,8 @@ from typing import Union
 
 import pytest
 
-from app.main.model import ReadingEnumerator, StateEnumerator
+from app.main.model.state_enumerator import StateEnumerator
+from app.main.model.reading_enumerator import ReadingEnumerator
 from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
