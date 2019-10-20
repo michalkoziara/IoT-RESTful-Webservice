@@ -38,7 +38,5 @@ class ExecutiveDeviceRepository(BaseRepository):
 
     def get_executive_devices_by_user_group_id(self, user_group_id: str) -> List[ExecutiveDevice]:
         return ExecutiveDevice.query.filter(
-            and_(
-                ExecutiveDevice.user_group_id == user_group_id
-            )
+            ExecutiveDevice.user_group_id == user_group_id
         ).all()

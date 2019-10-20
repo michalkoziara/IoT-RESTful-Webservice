@@ -65,10 +65,11 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
                               'get_user_by_id') as get_user_by_id_mock:
                 get_user_by_id_mock.return_value = user
 
-                with patch.object(ExecutiveDeviceRepository,
-                                  'get_executive_devices_by_user_group_id') as \
+                with patch.object(ExecutiveDeviceRepository, 'get_executive_devices_by_user_group_id') as \
                         get_executive_devices_by_user_group_id_mock:
-                    get_executive_devices_by_user_group_id_mock.return_value = [first_device, second_device]
+                    get_executive_devices_by_user_group_id_mock.return_value = [
+                        first_device,
+                        second_device]
                     with patch.object(FormulaRepository,
                                       'get_formula_by_id') as get_formula_by_id_mock:
                         get_formula_by_id_mock.return_value = formula
@@ -128,20 +129,17 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     with patch.object(DeviceGroupRepository, 'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        with patch.object(UserGroupRepository,
-                          'get_user_group_by_name_device_group_id') as get_user_group_by_name_device_group_id_mock:
+        with patch.object(UserGroupRepository, 'get_user_group_by_name_device_group_id') as \
+                get_user_group_by_name_device_group_id_mock:
             get_user_group_by_name_device_group_id_mock.return_value = user_group
 
-            with patch.object(UserRepository,
-                              'get_user_by_id') as get_user_by_id_mock:
+            with patch.object(UserRepository, 'get_user_by_id') as get_user_by_id_mock:
                 get_user_by_id_mock.return_value = user
 
-                with patch.object(ExecutiveDeviceRepository,
-                                  'get_executive_devices_by_user_group_id') as \
+                with patch.object(ExecutiveDeviceRepository, 'get_executive_devices_by_user_group_id') as \
                         get_executive_devices_by_user_group_id_mock:
                     get_executive_devices_by_user_group_id_mock.return_value = [first_device, second_device]
-                    with patch.object(FormulaRepository,
-                                      'get_formula_by_id') as get_formula_by_id_mock:
+                    with patch.object(FormulaRepository, 'get_formula_by_id') as get_formula_by_id_mock:
                         get_formula_by_id_mock.return_value = None
 
                         result, result_values = user_group_service.get_list_of_executive_devices(
@@ -173,8 +171,7 @@ def test_get_list_of_executive_devices_should_return_empty_list_of_devices_infos
                           'get_user_group_by_name_device_group_id') as get_user_group_by_name_device_group_id_mock:
             get_user_group_by_name_device_group_id_mock.return_value = user_group
 
-            with patch.object(UserRepository,
-                              'get_user_by_id') as get_user_by_id_mock:
+            with patch.object(UserRepository, 'get_user_by_id') as get_user_by_id_mock:
                 get_user_by_id_mock.return_value = user
 
                 with patch.object(ExecutiveDeviceRepository,

@@ -31,7 +31,7 @@ class UserGroupRepository(BaseRepository):
             )
         ).first()
 
-    def get_user_group_by_name_device_group_id(self, name: str, device_group_id: str) -> UserGroup:
+    def get_user_group_by_name_and_device_group_id(self, name: str, device_group_id: str) -> UserGroup:
         return UserGroup.query.filter(
             and_(
                 UserGroup.name == name,
