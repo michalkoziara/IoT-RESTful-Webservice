@@ -49,9 +49,6 @@ class SensorTypeService:
         if not user_id:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        if not user_id:
-            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
-
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
