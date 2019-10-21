@@ -413,5 +413,87 @@ def test_set_devices_states_and_sensors_readings_should_return_error_message_whe
     assert Constants.RESPONSE_MESSAGE_BAD_MIMETYPE == response_data['errorMessage']
 
 
+def test_get_devices_configurations_should_return_devices_configurations_when_valid_request(
+        client,
+        insert_device_group,
+        get_executive_device_default_values,
+        insert_executive_device,
+        get_executive_type_default_values,
+        insert_executive_type,
+        get_sensor_type_default_values,
+        insert_sensor_type,
+        insert_sensor,
+        insert_state_enumerator,
+        insert_sensor_reading_enumerator,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_type'] = 'Decimal'
+    executive_type_values['state_range_min'] = 0
+    executive_type_values['state_range_max'] = 1.0
+
+    insert_executive_type(executive_type_values)
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['is_formula_used'] = True
+    executive_device = insert_executive_device(executive_device_values)
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type_values['range_min'] = -1
+    sensor_type_values['range_max'] = 2
+
+    insert_sensor_type(sensor_type_values)
+    sensor = insert_sensor()
+
+    insert_sensor_reading_enumerator()
+    insert_state_enumerator()
+    insert_formula()
+
+    response = client.post(
+        'api/hubs/' + device_group.product_key + '/devices/config',
+        data=json.dumps(
+            {
+                "devices": [executive_device.device_key, sensor.device_key]
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['sensors']
+    assert response_data['devices']
+    assert len(response_data['sensors']) == 1
+    assert len(response_data['devices']) == 1
+    assert response_data['sensors'][0]['deviceKey'] == sensor.device_key
+    assert response_data['devices'][0]['deviceKey'] == executive_device.device_key
+    assert response_data['sensors'][0]['readingType'] == sensor_type_values['reading_type']
+    assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
+
+
+def test_get_devices_configurations_should_return_error_message_when_invalid_request(client):
+    content_type = 'application/json'
+
+    response = client.post(
+        'api/hubs/' + 'invalid' + '/devices/config',
+        data=json.dumps('invalid'),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+
 if __name__ == '__main__':
     pytest.main(['app/integrationtest/{}.py'.format(__file__)])
