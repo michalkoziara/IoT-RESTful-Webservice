@@ -151,7 +151,7 @@ def test_get_list_of_executive_devices_should_return_error_message_when_wrong_to
     ('Decimal', 1, 1),
     ('Boolean', 1, True)
 ])
-def test_get_list_of_executive_devices_should_return_device_info_when_valid_request_and_state_type_not_enum(
+def test_get_list_of_sensors_should_return_sensors_info_when_valid_request_and_state_type_not_enum(
         reading_type, reading, reading_value,
         client,
         insert_device_group,
@@ -207,7 +207,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     assert device_info['sensorReadingValue'] == reading_value
 
 
-def test_get_list_of_executive_devices_should_return_device_info_when_valid_request_and_state_type_is_enum(
+def test_get_list_of_sensors_should_return_sensors_info_when_valid_request_and_state_type_is_enum(
         client,
         insert_device_group,
         get_sensor_default_values,
@@ -251,7 +251,6 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
         }
     )
 
-
     assert response is not None
     assert response.status_code == 200
     assert response.content_type == content_type
@@ -266,7 +265,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     assert device_info['sensorReadingValue'] == reading_enumerator.text
 
 
-def test_get_list_of_executive_devices_should_return_error_message_when_wrong_token(
+def test_get_list_of_sensors_should_return_error_message_when_wrong_token(
         client):
     content_type = 'application/json'
 
