@@ -7,6 +7,8 @@ from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
+from app.main.service.executive_device_service import ExecutiveDeviceService
+from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
 
 
@@ -22,6 +24,7 @@ class UserGroupService:
     _sensor_reading_repository = None
     _sensor_type_repository = None
     _reading_enumerator_repository = None
+    _executive_device_service = None
 
     @classmethod
     def get_instance(cls):
@@ -32,6 +35,7 @@ class UserGroupService:
 
     def __init__(self):
 
+        self._sensor_service = SensorService.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
@@ -41,6 +45,7 @@ class UserGroupService:
         self._sensor_reading_repository = SensorReadingRepository.get_instance()
         self._sensor_type_repository = SensorTypeRepository.get_instance()
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
+        self._executive_device_service = ExecutiveDeviceService.get_instance()
 
     def get_list_of_executive_devices(self, product_key: str, user_group_name: str, user_id: str):
 
@@ -129,34 +134,13 @@ class UserGroupService:
         list_of_sensors_info = []
 
         for sensor in sensors:
+            sensor_reading_value = self._sensor_service.get_senor_reading_value(sensor)
+
             sensor_info = {
                 "name": sensor.name,
                 "isActive": sensor.is_active,
+                'sensorReadingValue': sensor_reading_value
             }
-            sensor_type = self._sensor_type_repository.get_sensor_type_by_id(sensor.sensor_type_id)
-            reading_type = sensor_type.reading_type
-            last_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id)
-            current_reading = None
-            if last_reading is not None:
-                current_reading = last_reading.value
-
-            sensor_reading_value = None
-
-            if current_reading:
-                if reading_type == 'Enum':
-                    sensor_reading_value = \
-                        self._reading_enumerator_repository.get_reading_enumerator_by_sensor_type_id_and_number(
-                            sensor_type.id,
-                            int(current_reading)).text
-                elif reading_type == 'Decimal':
-                    sensor_reading_value = float(current_reading)
-                elif reading_type == 'Boolean':
-                    if current_reading == 1:
-                        sensor_reading_value = True
-                    else:
-                        sensor_reading_value = False
-
-            sensor_info['sensorReadingValue'] = sensor_reading_value
 
             list_of_sensors_info.append(sensor_info)
 

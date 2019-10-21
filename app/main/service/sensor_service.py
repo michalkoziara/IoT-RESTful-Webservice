@@ -2,7 +2,7 @@
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import SensorReading, SensorType
+from app.main.model import SensorReading, SensorType, Sensor
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
@@ -20,6 +20,7 @@ class SensorService:
     _executive_device_repository_instance = None
     _sensor_repository_instance = None
     _sensor_type_repository_instance = None
+    _sensor_reading_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -29,6 +30,7 @@ class SensorService:
         return cls._instance
 
     def __init__(self):
+        self._sensor_reading_repository = SensorReadingRepository.get_instance()
         self._reading_enumerator_repository_instance = ReadingEnumeratorRepository.get_instance()
         self._sensor_reading_repository_instance = SensorReadingRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
@@ -160,6 +162,27 @@ class SensorService:
             return False
 
         return True
+
+    def get_senor_reading_value(self, sensor: Sensor):
+        sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
+        reading_type = sensor_type.reading_type
+
+        last_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
+        sensor_reading_value = None
+        if reading_type == 'Enum':
+            sensor_reading_value = \
+                self._reading_enumerator_repository_instance.get_reading_enumerator_by_sensor_type_id_and_number(
+                    sensor_type.id,
+                    int(last_reading)).text
+        elif reading_type == 'Decimal':
+            sensor_reading_value = float(last_reading)
+        elif reading_type == 'Boolean':
+            if last_reading == 1:
+                sensor_reading_value = True
+            else:
+                sensor_reading_value = False
+
+        return sensor_reading_value
 
     def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
