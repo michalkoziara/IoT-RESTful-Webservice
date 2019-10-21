@@ -168,21 +168,21 @@ class SensorService:
         reading_type = sensor_type.reading_type
 
         last_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
-        sensor_reading_value = None
+        reading_value = None
         if reading_type == 'Enum':
-            sensor_reading_value = \
+            reading_value = \
                 self._reading_enumerator_repository_instance.get_reading_enumerator_by_sensor_type_id_and_number(
                     sensor_type.id,
                     int(last_reading)).text
         elif reading_type == 'Decimal':
-            sensor_reading_value = float(last_reading)
+            reading_value = float(last_reading)
         elif reading_type == 'Boolean':
-            if last_reading == 1:
-                sensor_reading_value = True
+            if int(last_reading) == 1:
+                reading_value = True
             else:
-                sensor_reading_value = False
+                reading_value = False
 
-        return sensor_reading_value
+        return reading_value
 
     def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':

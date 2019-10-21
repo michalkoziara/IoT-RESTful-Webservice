@@ -6,6 +6,7 @@ from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
+from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.sensor_service import SensorService
 from app.main.service.user_group_service import UserGroupService
 from app.main.util.constants import Constants
@@ -42,14 +43,14 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     expected_output_values = [
         {
             "name": first_device.name,
-            "state": first_device.state,
+            "state": 1,
             "isActive": first_device.is_active,
             "formulaName": formula.name,
             "isFormulaUsed": first_device.is_formula_used
         },
         {
             "name": second_device.name,
-            "state": second_device.state,
+            "state": 1,
             "isActive": second_device.is_active,
             "formulaName": formula.name,
             "isFormulaUsed": second_device.is_formula_used
@@ -78,11 +79,15 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
                                       'get_formula_by_id') as get_formula_by_id_mock:
                         get_formula_by_id_mock.return_value = formula
 
-                        result, result_values = user_group_service.get_list_of_executive_devices(
-                            device_group.product_key,
-                            user_group.name,
-                            user.id
-                        )
+                        with patch.object(ExecutiveDeviceService,
+                                          'get_executive_device_state_value') as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = 1
+
+                            result, result_values = user_group_service.get_list_of_executive_devices(
+                                device_group.product_key,
+                                user_group.name,
+                                user.id
+                            )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_output_values
@@ -116,14 +121,14 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     expected_output_values = [
         {
             "name": first_device.name,
-            "state": first_device.state,
+            "state": 1,
             "isActive": first_device.is_active,
             "formulaName": None,
             "isFormulaUsed": first_device.is_formula_used
         },
         {
             "name": second_device.name,
-            "state": second_device.state,
+            "state": 1,
             "isActive": second_device.is_active,
             "formulaName": None,
             "isFormulaUsed": second_device.is_formula_used
@@ -150,11 +155,15 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
                     with patch.object(FormulaRepository, 'get_formula_by_id') as get_formula_by_id_mock:
                         get_formula_by_id_mock.return_value = None
 
-                        result, result_values = user_group_service.get_list_of_executive_devices(
-                            device_group.product_key,
-                            user_group.name,
-                            user.id
-                        )
+                        with patch.object(ExecutiveDeviceService,
+                                          'get_executive_device_state_value') as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = 1
+
+                            result, result_values = user_group_service.get_list_of_executive_devices(
+                                device_group.product_key,
+                                user_group.name,
+                                user.id
+                            )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_output_values
