@@ -50,5 +50,4 @@ class SensorRepository(BaseRepository):
                         DeviceGroup.product_key == product_key
                     )
                 )
-            )
-        
+            )).all()
