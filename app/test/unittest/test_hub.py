@@ -4,7 +4,10 @@ import pytest
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
+from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.sensor_repository import SensorRepository
+from app.main.repository.sensor_type_repository import SensorTypeRepository
+from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.hub_service import HubService
@@ -437,6 +440,152 @@ def test_add_device_to_device_group_should_result_error_message_when_save_failed
                 )
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
+
+
+def test_get_devices_informations_should_return_device_informations_when_valid_product_key_and_device_keys(
+        get_executive_device_default_values,
+        create_executive_devices,
+        get_sensor_default_values,
+        create_sensors,
+        get_sensor_type_default_values,
+        create_sensor_types,
+        get_executive_type_default_values,
+        create_executive_types,
+        get_state_enumerator_default_values,
+        create_state_enumerators,
+        get_sensor_reading_enumerator_default_values,
+        create_sensor_reading_enumerators,
+        get_formula_default_values,
+        create_formulas):
+    hub_service_instance = HubService.get_instance()
+
+    sensor_values = get_sensor_default_values()
+    sensors = create_sensors([sensor_values])
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['is_formula_used'] = True
+    executive_devices = create_executive_devices([executive_device_values])
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_enumerators'] = create_sensor_reading_enumerators(
+        [get_sensor_reading_enumerator_default_values()]
+    )
+    sensor_types = create_sensor_types([sensor_type_values])
+
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['state_enumerators'] = create_state_enumerators(
+        [get_state_enumerator_default_values()]
+    )
+    executive_types = create_executive_types([executive_type_values])
+
+    formula_values = get_formula_default_values()
+    formulas = create_formulas([formula_values])
+
+    with patch.object(
+            SensorRepository,
+            'get_sensors_by_product_key_and_device_keys'
+    ) as get_sensors_by_product_key_and_device_keys_mock:
+        get_sensors_by_product_key_and_device_keys_mock.return_value = sensors
+
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_types_by_ids'
+        ) as get_sensor_types_by_ids_mock:
+            get_sensor_types_by_ids_mock.return_value = sensor_types
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_devices_by_product_key_and_device_keys'
+            ) as get_executive_devices_by_product_key_and_device_keys_mock:
+                get_executive_devices_by_product_key_and_device_keys_mock.return_value = executive_devices
+
+                with patch.object(
+                        ExecutiveTypeRepository,
+                        'get_executive_types_by_ids'
+                ) as get_executive_types_by_ids_mock:
+                    get_executive_types_by_ids_mock.return_value = executive_types
+
+                    with patch.object(
+                            FormulaRepository,
+                            'get_formulas_by_ids'
+                    ) as get_formulas_by_ids_mock:
+                        get_formulas_by_ids_mock.return_value = formulas
+
+                        result, result_values = hub_service_instance.get_devices_informations(
+                            'product_key',
+                            [
+                                sensors[0].device_key,
+                                executive_devices[0].device_key
+                            ]
+                        )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values
+    assert result_values['sensors']
+    assert result_values['devices']
+    assert len(result_values['sensors']) == 1
+    assert len(result_values['devices']) == 1
+    assert result_values['sensors'][0]['deviceKey'] == sensors[0].device_key
+    assert result_values['devices'][0]['deviceKey'] == executive_devices[0].device_key
+    assert result_values['devices'][0]['rule'] == get_formula_default_values()['rule']
+    assert result_values['sensors'][0]['readingType'] == sensor_type_values['reading_type']
+    assert result_values['devices'][0]['stateType'] == executive_type_values['state_type']
+
+    assert result_values['devices'][0]['enumerator']
+    assert len(result_values['devices'][0]['enumerator']) == 1
+    state_enumerator = result_values['devices'][0]['enumerator'][0]
+
+    assert state_enumerator['number'] == get_state_enumerator_default_values()['number']
+    assert state_enumerator['text'] == get_state_enumerator_default_values()['text']
+
+    assert result_values['sensors'][0]['enumerator']
+    assert len(result_values['sensors'][0]['enumerator']) == 1
+    reading_enumerator = result_values['sensors'][0]['enumerator'][0]
+
+    assert reading_enumerator['number'] == get_sensor_reading_enumerator_default_values()['number']
+    assert reading_enumerator['text'] == get_sensor_reading_enumerator_default_values()['text']
+
+
+def test_get_devices_informations_should_return_empty_lists_when_valid_product_key_and_device_keys_but_no_data():
+    hub_service_instance = HubService.get_instance()
+
+    with patch.object(
+            SensorRepository,
+            'get_sensors_by_product_key_and_device_keys'
+    ) as get_sensors_by_product_key_and_device_keys_mock:
+        get_sensors_by_product_key_and_device_keys_mock.return_value = None
+
+        with patch.object(
+                ExecutiveDeviceRepository,
+                'get_executive_devices_by_product_key_and_device_keys'
+        ) as get_executive_devices_by_product_key_and_device_keys_mock:
+            get_executive_devices_by_product_key_and_device_keys_mock.return_value = None
+
+            result, result_values = hub_service_instance.get_devices_informations(
+                'product_key',
+                ['test']
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values
+    assert len(result_values['sensors']) == 0
+    assert len(result_values['devices']) == 0
+
+
+@pytest.mark.parametrize("product_key, devices, error_message", [
+    ("test product key", None, Constants.RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST),
+    ("test product key", [], Constants.RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST),
+    (None, ['admin id'], Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)])
+def test_get_devices_informations_should_return_error_message_when_no_parameter(product_key, devices, error_message):
+    hub_service_instance = HubService.get_instance()
+
+    result, result_values = hub_service_instance.get_devices_informations(
+        product_key,
+        devices
+    )
+
+    assert result == error_message
+    assert not result_values
 
 
 if __name__ == '__main__':
