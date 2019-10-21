@@ -34,6 +34,7 @@ class Constants:
     RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND = 'Devices states not found'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST = 'Sensors readings must be a list of dictionaries'
     RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST = 'Devices states must be a list of dictionaries'
+    RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST = 'Devices keys must be non-empty list.'
     RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES = 'States of devices and readings of sensors were updated'
     RESPONSE_MESSAGE_WRONG_DATA = 'Hub send wrong data'
     RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA = 'Hub send partially wrong data'

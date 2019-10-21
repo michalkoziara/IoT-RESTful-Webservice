@@ -91,3 +91,38 @@ def set_sensors_readings_and_devices_states(product_key):
             response=json.dumps(dict(errorMessage=response_message)),
             status=status,
             mimetype='application/json')
+
+
+@api.route('/hubs/<product_key>/devices/config', methods=['POST'])
+def get_devices_configurations(product_key):
+    # TODO add hub device authentication
+    response_message, status = ResponseUtils.check_request_data(
+        request=request,
+        data_keys=['devices'],
+        product_key=product_key,
+        is_logged=True,
+        with_payload=True
+    )
+
+    if status is None:
+        request_dict = request.get_json()
+
+        devices = request_dict['devices']
+
+        result, result_values = _hub_service_instance.get_devices_informations(
+            product_key,
+            devices
+        )
+
+        return ResponseUtils.create_response(
+            result=result,
+            result_values=result_values,
+            product_key=product_key,
+            is_logged=True,
+            payload=request_dict
+        )
+    else:
+        return Response(
+            response=json.dumps(dict(errorMessage=response_message)),
+            status=status,
+            mimetype='application/json')

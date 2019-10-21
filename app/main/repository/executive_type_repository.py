@@ -1,4 +1,6 @@
 # pylint: disable=no-self-use
+from typing import List
+
 from sqlalchemy import and_
 
 from app.main.model.executive_type import ExecutiveType
@@ -25,3 +27,6 @@ class ExecutiveTypeRepository(BaseRepository):
                 ExecutiveType.name == name
             )
         ).first()
+
+    def get_executive_types_by_ids(self, ids: List) -> List[ExecutiveType]:
+        return ExecutiveType.query.filter(ExecutiveType.id.in_(ids)).all()

@@ -11,7 +11,7 @@ class ExecutiveDevice(db.Model):
     is_updated = db.Column(db.Boolean, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
     is_assigned = db.Column(db.Boolean, nullable=False)
-    is_formula_used  = db.Column(db.Boolean, nullable=False)
+    is_formula_used = db.Column(db.Boolean, nullable=False)
     positive_state = db.Column(db.String(255))
     negative_state = db.Column(db.String(255))
     device_key = db.Column(db.String(255), nullable=False, unique=True)
@@ -20,4 +20,3 @@ class ExecutiveDevice(db.Model):
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)
     formula_id = db.Column(db.Integer, db.ForeignKey('formula.id'), nullable=True)
-    #todo add is_formula_used to executive device model

@@ -3,6 +3,7 @@ from typing import List
 
 from sqlalchemy import and_
 
+from app.main.model.device_group import DeviceGroup
 from app.main.model.sensor import Sensor
 from app.main.repository.base_repository import BaseRepository
 
@@ -35,5 +36,19 @@ class SensorRepository(BaseRepository):
 
     def get_sensors_by_user_group_id(self, user_group_id: str) -> List[Sensor]:
         return Sensor.query.filter(
-            Sensor.user_group_id == user_group_id
-        ).all()
+            Sensor.user_group_id == user_group_id).all()
+
+    def get_sensors_by_product_key_and_device_keys(
+            self,
+            product_key: str,
+            device_keys: List) -> List[Sensor]:
+        return Sensor.query.filter(
+            and_(
+                Sensor.device_key.in_(device_keys),
+                Sensor.device_group_id.in_(
+                    DeviceGroup.query.with_entities(DeviceGroup.id).filter(
+                        DeviceGroup.product_key == product_key
+                    )
+                )
+            )
+        
