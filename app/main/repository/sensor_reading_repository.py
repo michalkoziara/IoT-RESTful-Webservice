@@ -1,6 +1,8 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from sqlalchemy import desc
+
 from app.main.model.sensor_reading import SensorReading
 from app.main.repository.base_repository import BaseRepository
 
@@ -18,4 +20,9 @@ class SensorReadingRepository(BaseRepository):
     def get_sensor_readings_by_sensor_id(self, sensor_id: str) -> List[SensorReading]:
         return SensorReading.query.filter(
             SensorReading.sensor_id == sensor_id
-        ).order_by(SensorReading.date).all()
+        ).order_by(desc(SensorReading.date)).all()
+
+    def get_last_reading_for_sensor_by_sensor_id(self, sensor_id: str) -> SensorReading:
+        return SensorReading.query.filter(
+            SensorReading.sensor_id == sensor_id
+        ).order_by(desc(SensorReading.date)).first()

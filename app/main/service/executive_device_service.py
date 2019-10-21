@@ -2,7 +2,8 @@
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import SensorType
+from app.main.model.sensor_type import SensorType
+from app.main.model.executive_device import ExecutiveDevice
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -129,6 +130,28 @@ class ExecutiveDeviceService:
         executive_device.is_active = is_active
         executive_device.state = state
         return self._executive_device_repository_instance.update_database()
+
+    def get_executive_device_state_value(self, executive_device: ExecutiveDevice):
+        executive_device_type = self._executive_type_repository_instance.get_executive_type_by_id(
+            executive_device.executive_type_id)
+        state_type = executive_device_type.state_type
+
+        state = executive_device.state
+        state_value = None
+        if state_type == 'Enum':
+            state_value = \
+                self._state_enumerator_repository_instance.get_state_enumerator_by_executive_type_id_and_number(
+                    executive_device_type.id,
+                    int(state)).text
+        elif state_type == 'Decimal':
+            state_value = float(state)
+        elif state_type == 'Boolean':
+            if int(state) == 1:
+                state_value = True
+            else:
+                state_value = False
+
+        return state_value
 
     def _state_in_range(self, state: str, sensor_type: SensorType) -> bool:
         if sensor_type.state_type == 'Enum':
