@@ -19,3 +19,8 @@ class SensorReadingRepository(BaseRepository):
         return SensorReading.query.filter(
             SensorReading.sensor_id == sensor_id
         ).order_by(SensorReading.date).all()
+
+    def get_last_reading_for_sensor_by_sensor_id(self, sensor_id: str) -> List[SensorReading]:
+        return SensorReading.query.filter(
+            SensorReading.sensor_id == sensor_id
+        ).order_by(SensorReading.date).first()
