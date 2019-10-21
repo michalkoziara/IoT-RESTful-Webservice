@@ -447,7 +447,7 @@ def test_get_list_of_sensors_should_return_error_message_when_user_not_in_user_g
     assert result_values is None
 
 
-def test_get_list_of_executive_devices_should_return_error_message_when_no_user_found(
+def test_get_list_of_sensors_should_return_error_message_when_no_user_found(
         create_device_group,
         create_user_group):
     user_group_service = UserGroupService.get_instance()
