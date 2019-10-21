@@ -86,7 +86,7 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
     )
 
     assert response is not None
-    assert response.status_code == 400
+    assert response.status_code == 403
     assert response.content_type == content_type
 
     response_data = json.loads(response.data.decode())
@@ -192,7 +192,7 @@ def test_get_executive_device_info_should_return_user_does_not_have_privileges_e
     )
 
     assert response is not None
-    assert response.status_code == 400
+    assert response.status_code == 403
     assert response.content_type == content_type
 
     response_data = json.loads(response.data.decode())

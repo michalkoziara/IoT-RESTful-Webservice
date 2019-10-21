@@ -4,8 +4,6 @@ import pytest
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
-from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
-from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.service.executive_type_service import ExecutiveTypeService

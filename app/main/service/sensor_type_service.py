@@ -9,7 +9,7 @@ from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
-from app.main.util.utils import is_user_in_one_of_devices_group_user_group
+from app.main.util.utils import is_user_in_one_of_user_groups_in_device_group
 
 
 class SensorTypeService:
@@ -59,7 +59,7 @@ class SensorTypeService:
         if not user:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        if not is_user_in_one_of_devices_group_user_group(user, device_group):
+        if not is_user_in_one_of_user_groups_in_device_group(user, device_group):
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(

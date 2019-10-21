@@ -43,7 +43,7 @@ def test_create_admin_should_return_success_message_when_valid_parameters(
                     )
 
     assert result
-    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
 
 
 @pytest.mark.parametrize("username, email, password, product_key, product_password", [

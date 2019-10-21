@@ -29,14 +29,17 @@ class DeviceGroupRepository(BaseRepository):
     def get_device_group_by_product_key(self, product_key: str) -> DeviceGroup:
         return DeviceGroup.query.filter(DeviceGroup.product_key == product_key).first()
 
-    def get_device_groups_by_user_id_and_master_user_group(self, user_id: str) -> List[DeviceGroup]:
+    def get_device_group_by_user_id_and_product_key(self, user_id: str, product_key: str) -> DeviceGroup:
         return DeviceGroup.query.filter(
-            DeviceGroup.id.in_(
-                UserGroup.query.with_entities(UserGroup.device_group_id).filter(
-                    and_(
-                        UserGroup.name == 'Master',
-                        UserGroup.users.any(id=user_id)
+            and_(
+                DeviceGroup.id.in_(
+                    UserGroup.query.with_entities(UserGroup.device_group_id).filter(
+                        and_(
+                            UserGroup.name == 'Master',
+                            UserGroup.users.any(id=user_id)
+                        )
                     )
-                )
+                ),
+                DeviceGroup.product_key == product_key
             )
-        ).all()
+        ).first()

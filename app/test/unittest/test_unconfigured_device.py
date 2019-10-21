@@ -11,7 +11,7 @@ from app.main.util.constants import Constants
 def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys_when_valid_product_key(
         create_user,
         get_device_group_default_values,
-        create_device_groups,
+        create_device_group,
         unconfigured_device_default_values,
         create_unconfigured_devices):
     unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
@@ -24,19 +24,19 @@ def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = test_product_key
 
-    user_device_groups = create_device_groups([device_group_values])
+    device_group = create_device_group(device_group_values)
 
     unconfigured_device_values = unconfigured_device_default_values
     unconfigured_device_values['device_key'] = test_device_key
-    unconfigured_device_values['device_group_id'] = user_device_groups[0].id
+    unconfigured_device_values['device_group_id'] = device_group.id
 
     unconfigured_devices = create_unconfigured_devices([unconfigured_device_values])
 
     with patch.object(
             DeviceGroupRepository,
-            'get_device_groups_by_user_id_and_master_user_group'
-    ) as get_device_groups_by_user_id_and_master_user_group_mock:
-        get_device_groups_by_user_id_and_master_user_group_mock.return_value = user_device_groups
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = device_group
 
         with patch.object(
                 UnconfiguredDeviceRepository,
@@ -54,7 +54,7 @@ def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys
     assert result_values[0] == test_device_key
 
 
-def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_(
+def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_none_parameter(
         create_user,
         create_device_groups,
         create_unconfigured_devices):
@@ -71,72 +71,26 @@ def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_
     assert result_values is None
 
 
-def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_no_user_device_group(
+def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_no_valid_device_group(
         create_user):
     unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
 
     test_product_key = 'test product key'
 
     user = create_user()
-    user_device_groups = []
 
     with patch.object(
             DeviceGroupRepository,
-            'get_device_groups_by_user_id_and_master_user_group'
-    ) as get_device_groups_by_user_id_and_master_user_group_mock:
-        get_device_groups_by_user_id_and_master_user_group_mock.return_value = user_device_groups
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = None
 
         result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
             test_product_key,
             user.id
         )
 
-    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
-    assert result_values is None
-
-
-def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_invalid_product_key(
-        create_user,
-        get_device_group_default_values,
-        create_device_groups,
-        unconfigured_device_default_values,
-        create_unconfigured_devices):
-    unconfigured_device_service_instance = UnconfiguredDeviceService.get_instance()
-
-    test_product_key = 'test product key'
-    test_device_key = 'test device key'
-
-    user = create_user()
-
-    device_group_values = get_device_group_default_values()
-    device_group_values['product_key'] = 'other ' + test_product_key
-
-    user_device_groups = create_device_groups([device_group_values])
-
-    unconfigured_device_values = unconfigured_device_default_values
-    unconfigured_device_values['device_key'] = test_device_key
-    unconfigured_device_values['device_group_id'] = user_device_groups[0].id
-
-    unconfigured_devices = create_unconfigured_devices([unconfigured_device_values])
-
-    with patch.object(
-            DeviceGroupRepository,
-            'get_device_groups_by_user_id_and_master_user_group'
-    ) as get_device_groups_by_user_id_and_master_user_group_mock:
-        get_device_groups_by_user_id_and_master_user_group_mock.return_value = user_device_groups
-
-        with patch.object(
-                UnconfiguredDeviceRepository,
-                'get_unconfigured_devices_by_device_group_id'
-        )  as get_unconfigured_devices_by_device_group_id_mock:
-            get_unconfigured_devices_by_device_group_id_mock.return_value = unconfigured_devices
-
-            result, result_values = unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
-                test_product_key,
-                user.id
-            )
-
-    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
     assert result_values is None
 
 

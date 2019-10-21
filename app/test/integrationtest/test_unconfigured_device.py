@@ -77,7 +77,6 @@ def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid
 
     response = client.get(
         '/api/hubs/' + 'not' + product_key + '/non-configured-devices',
-        data=json.dumps({'userId': user.id}),
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -89,7 +88,7 @@ def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid
     assert response.content_type == content_type
 
     response_data = json.loads(response.data.decode())
-    error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    error_message = Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
     assert error_message == response_data['errorMessage']
 

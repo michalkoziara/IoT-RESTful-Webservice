@@ -47,15 +47,15 @@ class HubService:
 
     def get_changed_devices_for_device_group(
             self,
-            product_key: str) -> Tuple[bool, Optional[Dict[str, Union[bool, List[str]]]]]:
+            product_key: str) -> Tuple[str, Optional[Dict[str, Union[bool, List[str]]]]]:
 
         if product_key is None:
-            return False, None
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
-            return False, None
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         executive_devices = self._executive_device_repository_instance.get_updated_executive_devices_by_device_group_id(
             device_group.id
@@ -83,27 +83,30 @@ class HubService:
                 'changedDevices': []
             }
 
-        return True, devices
+        return Constants.RESPONSE_MESSAGE_OK, devices
 
     def add_device_to_device_group(self, product_key: str, device_key: str) -> bool:
         if product_key is None or device_key is None:
-            return False
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if device_group is None:
-            return False
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
         unconfigured_device = self._unconfigured_device_repository_instance.get_unconfigured_device_by_device_key(
             device_key
         )
 
         if unconfigured_device is None:
-            return False
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
 
         unconfigured_device.device_group_id = device_group.id
 
-        return self._unconfigured_device_repository_instance.save(unconfigured_device)
+        if not self._unconfigured_device_repository_instance.save(unconfigured_device):
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def set_devices_states_and_sensors_readings(self,
                                                 product_key: str,
