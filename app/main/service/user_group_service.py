@@ -151,7 +151,7 @@ class UserGroupService:
                 elif reading_type == 'Decimal':
                     sensor_reading_value = float(current_reading)
                 elif reading_type == 'Boolean':
-                    if current_reading == '1':  # TODO check how reading value data will be stored in DB
+                    if current_reading == 1:
                         sensor_reading_value = True
                     else:
                         sensor_reading_value = False
