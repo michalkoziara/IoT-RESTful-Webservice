@@ -144,7 +144,7 @@ class ExecutiveDeviceService:
                     executive_device_type.id,
                     int(state)).text
         elif state_type == 'Decimal':
-            state_value = state
+            state_value = float(state)
         elif state_type == 'Boolean':
             if int(state) == 1:
                 state_value = True
