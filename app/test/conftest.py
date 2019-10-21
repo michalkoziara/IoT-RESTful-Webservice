@@ -228,7 +228,8 @@ def create_executive_types():
                     state_type=value['state_type'],
                     state_range_min=value['state_range_min'],
                     state_range_max=value['state_range_max'],
-                    device_group_id=value['device_group_id']
+                    device_group_id=value['device_group_id'],
+                    state_enumerators=value['state_enumerators']
                 )
             )
             return executive_types
