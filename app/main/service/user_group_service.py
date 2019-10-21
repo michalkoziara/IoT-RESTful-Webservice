@@ -135,7 +135,10 @@ class UserGroupService:
             }
             sensor_type = self._sensor_type_repository.get_sensor_type_by_id(sensor.sensor_type_id)
             reading_type = sensor_type.reading_type
-            current_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
+            last_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id)
+            current_reading = None
+            if last_reading is not None:
+                current_reading = last_reading.value
 
             sensor_reading_value = None
 
@@ -144,11 +147,11 @@ class UserGroupService:
                     sensor_reading_value = \
                         self._reading_enumerator_repository.get_reading_enumerator_by_sensor_type_id_and_number(
                             sensor_type.id,
-                            int(current_reading))
+                            int(current_reading)).text
                 elif reading_type == 'Decimal':
                     sensor_reading_value = float(current_reading)
                 elif reading_type == 'Boolean':
-                    if current_reading == 'True':  # TODO check how reading value data will be stored in DB
+                    if current_reading == '1':  # TODO check how reading value data will be stored in DB
                         sensor_reading_value = True
                     else:
                         sensor_reading_value = False

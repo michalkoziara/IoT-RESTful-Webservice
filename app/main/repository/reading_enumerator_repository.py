@@ -28,4 +28,4 @@ class ReadingEnumeratorRepository(BaseRepository):
             and_(
                 ReadingEnumerator.sensor_type_id == sensor_type_id,
                 ReadingEnumerator.number == number
-            )).all()
+            )).first()
