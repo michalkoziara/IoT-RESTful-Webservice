@@ -2,7 +2,8 @@
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import SensorType, ExecutiveDevice
+from app.main.model.sensor_type import SensorType
+from app.main.model.executive_device import ExecutiveDevice
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository

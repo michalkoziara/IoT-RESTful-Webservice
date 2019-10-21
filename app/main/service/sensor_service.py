@@ -2,7 +2,9 @@
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import SensorReading, SensorType, Sensor
+from app.main.model.sensor_reading import SensorReading
+from app.main.model.sensor_type import SensorType
+from app.main.model.sensor import Sensor
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
