@@ -90,7 +90,7 @@ class UserGroupService:
                 formula_name = None
             list_of_executive_devices_info.append({
                 "name": executive_device.name,
-                "state": executive_device.state,
+                "state": self._executive_device_service.get_executive_device_state_value(executive_device),
                 "isActive": executive_device.is_active,
                 "formulaName": formula_name,
                 "isFormulaUsed": executive_device.is_formula_used
