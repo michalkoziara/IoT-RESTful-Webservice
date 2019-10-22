@@ -6,6 +6,7 @@ from flask import request
 from app import api
 from app.main.service.user_service import UserService
 from app.main.service.log_service import LogService
+from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 
 _user_service_instance = UserService.get_instance()
@@ -49,7 +50,10 @@ def register_user():
 
         result = _user_service_instance.create_user(username, email, password)
 
-        return ResponseUtils.create_response(result=result)
+        return ResponseUtils.create_response(
+            result=result,
+            success_message=Constants.RESPONSE_MESSAGE_CREATED
+        )
     else:
         return Response(
             response=json.dumps(dict(errorMessage=response_message)),
