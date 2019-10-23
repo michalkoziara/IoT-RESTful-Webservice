@@ -54,16 +54,22 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
                     ) as get_user_group_by_user_id_and_executive_device_device_key_mock:
                         get_user_group_by_user_id_and_executive_device_device_key_mock.return_value = user_group
 
-                        result, result_values = executive_device_service_instance.get_executive_device_info(
-                            executive_device.device_key,
-                            device_group.product_key,
-                            test_user_id
-                        )
+                        with patch.object(
+                                ExecutiveDeviceService,
+                                'get_executive_device_state_value'
+                        ) as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = "test"
+
+                            result, result_values = executive_device_service_instance.get_executive_device_info(
+                                executive_device.device_key,
+                                device_group.product_key,
+                                test_user_id
+                            )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
     assert result_values['name'] == executive_device.name
-    assert result_values['state'] == executive_device.state
+    assert result_values['state'] == "test"
     assert result_values['isUpdated'] == executive_device.is_updated
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
@@ -119,16 +125,22 @@ def test_get_executive_device_info_should_return_device_info_when_user_is_not_in
                     ) as get_user_group_by_user_id_and_executive_device_device_key_mock:
                         get_user_group_by_user_id_and_executive_device_device_key_mock.return_value = None
 
-                        result, result_values = executive_device_service_instance.get_executive_device_info(
-                            executive_device.device_key,
-                            device_group.product_key,
-                            test_user_id
-                        )
+                        with patch.object(
+                                ExecutiveDeviceService,
+                                'get_executive_device_state_value'
+                        ) as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = "test"
+
+                            result, result_values = executive_device_service_instance.get_executive_device_info(
+                                executive_device.device_key,
+                                device_group.product_key,
+                                test_user_id
+                            )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
     assert result_values['name'] == executive_device.name
-    assert result_values['state'] == executive_device.state
+    assert result_values['state'] == "test"
     assert result_values['isUpdated'] == executive_device.is_updated
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned

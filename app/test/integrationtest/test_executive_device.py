@@ -12,7 +12,9 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
         get_user_group_default_values,
         create_user_group,
         insert_executive_type,
-        insert_formula):
+        insert_formula,
+        get_state_enumerator_default_values,
+        insert_state_enumerator):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -25,6 +27,8 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     executive_type = insert_executive_type()
     formula = insert_formula()
     executive_device = insert_executive_device()
+
+    state_enumerator = insert_state_enumerator()
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
@@ -42,7 +46,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     assert response_data is not None
 
     assert response_data['name'] == executive_device.name
-    assert response_data['state'] == executive_device.state
+    assert response_data['state'] == state_enumerator.text
     assert response_data['isUpdated'] == executive_device.is_updated
     assert response_data['isActive'] == executive_device.is_active
     assert response_data['isAssigned'] == executive_device.is_assigned

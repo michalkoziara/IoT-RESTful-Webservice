@@ -12,7 +12,9 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
         insert_user,
         get_user_group_default_values,
         insert_user_group,
-        insert_sensor_type):
+        insert_sensor_type,
+        insert_sensor_reading,
+        get_sensor_type_default_values):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -21,10 +23,13 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
     user_group_values = get_user_group_default_values()
     user_group_values['users'] = [user]
 
-    user_group = insert_user_group(user_group_values)
-
-    sensor_type = insert_sensor_type()
+    insert_user_group(user_group_values)
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type = insert_sensor_type(sensor_type_values)
     sensor = insert_sensor()
+
+    sensor_reading = insert_sensor_reading()
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
@@ -48,7 +53,8 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
     assert response_data['isAssigned'] == sensor.is_assigned
     assert response_data['deviceKey'] == sensor.device_key
     assert response_data['sensorTypeName'] == sensor_type.name
-    assert response_data['sensorUserGroup'] == user_group.name
+    assert response_data['sensorTypeName'] == sensor_type.name
+    assert response_data['readingValue'] == sensor_reading.value
 
 
 def test_get_sensor_info_should_not_return_sensor_info_when_bad_product_key(
@@ -123,6 +129,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_bad_device_key(
 def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
         client,
         insert_device_group,
+        get_sensor_type_default_values,
+        insert_sensor_type,
         insert_sensor,
         insert_user,
         get_user_group_default_values,
@@ -139,6 +147,10 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     user_group_values['users'] = [user]
 
     user_group = insert_user_group(user_group_values)
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    insert_sensor_type(sensor_type_values)
 
     sensor = insert_sensor()
 
@@ -181,4 +193,4 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     response_data = json.loads(response.data.decode())
     assert response_data is not None
     assert response_data['sensorName'] == sensor.name
-    assert response_data['List'] == expected_values
+    assert response_data['values'] == expected_values
