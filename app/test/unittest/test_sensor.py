@@ -45,11 +45,14 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
                 with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
-                    result, result_values = sensor_service_instance.get_sensor_info(
-                        sensor.device_key,
-                        device_group.product_key,
-                        test_user_id
-                    )
+                    with patch.object(SensorService, 'get_senor_reading_value') as get_senor_reading_value_mock:
+                        get_senor_reading_value_mock.return_value = 1
+
+                        result, result_values = sensor_service_instance.get_sensor_info(
+                            sensor.device_key,
+                            device_group.product_key,
+                            test_user_id
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
@@ -60,6 +63,7 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
     assert result_values['deviceKey'] == sensor.device_key
     assert result_values['sensorTypeName'] == sensor_type.name
     assert result_values['sensorUserGroup'] == user_group.name
+    assert result_values['readingValue'] == 1
 
 
 def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_user_group(
@@ -96,11 +100,14 @@ def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_use
                                   'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
                     get_sensor_type_by_id_mock.return_value = sensor_type
 
-                    result, result_values = sensor_service_instance.get_sensor_info(
-                        sensor.device_key,
-                        device_group.product_key,
-                        test_user_id
-                    )
+                    with patch.object(SensorService, 'get_senor_reading_value') as get_senor_reading_value_mock:
+                        get_senor_reading_value_mock.return_value = 1
+
+                        result, result_values = sensor_service_instance.get_sensor_info(
+                            sensor.device_key,
+                            device_group.product_key,
+                            test_user_id
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
@@ -111,6 +118,7 @@ def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_use
     assert result_values['deviceKey'] == sensor.device_key
     assert result_values['sensorTypeName'] == sensor_type.name
     assert result_values['sensorUserGroup'] is None
+    assert result_values['readingValue'] == 1
 
 
 def test_get_sensor_info_should_not_return_sensor_info_when_no_user_id(
@@ -292,7 +300,6 @@ def test_get_sensor_info_should_not_return_sensor_info_when_device_group_does_no
 def test_get_sensor_readings_should_return_sensors_readings_when_called_with_right_parameters(
         create_sensor,
         create_sensor_reading,
-        get_sensor_reading_default_values,
         create_device_group,
         create_user_group):
     sensor_service_instance = SensorService.get_instance()
@@ -301,9 +308,8 @@ def test_get_sensor_readings_should_return_sensors_readings_when_called_with_rig
     user_group = create_user_group()
     sensor = create_sensor()
     first_reading = create_sensor_reading()
-    second_reading_values = get_sensor_reading_default_values()
-    second_reading_values['value'] = 0
-    second_reading = create_sensor_reading(second_reading_values)
+
+    second_reading = create_sensor_reading()
 
     test_user_id = "1"
 
@@ -323,7 +329,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_called_with_rig
 
     expected_returned_dict = {
         'sensorName': sensor.name,
-        'List': readings_list_values
+        'values': readings_list_values
     }
 
     with patch.object(
@@ -349,10 +355,12 @@ def test_get_sensor_readings_should_return_sensors_readings_when_called_with_rig
                 ) as get_sensor_readings_by_sensor_id_mock:
                     get_sensor_readings_by_sensor_id_mock.return_value = readings_list
 
-                    result, result_values = sensor_service_instance.get_sensor_readings(
-                        sensor.device_key,
-                        device_group.product_key,
-                        test_user_id)
+                    with patch.object(SensorService, 'get_senor_reading_value') as get_senor_reading_value_mock:
+                        get_senor_reading_value_mock.return_value = 0.5
+                        result, result_values = sensor_service_instance.get_sensor_readings(
+                            sensor.device_key,
+                            device_group.product_key,
+                            test_user_id)
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_returned_dict
@@ -372,7 +380,7 @@ def test_get_sensor_readings_should_return_empty_list_of_readings_when_sensor_do
 
     expected_returned_dict = {
         'sensorName': sensor.name,
-        'List': []
+        'values': []
     }
 
     with patch.object(
@@ -428,11 +436,11 @@ def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_a
     readings_list_values = [
 
         {
-            'value': first_reading.value,
+            'value': 1,
             'date': str(first_reading.date)
         },
         {
-            'value': second_reading.value,
+            'value': 1,
             'date': str(second_reading.date)
         }
 
@@ -440,7 +448,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_a
 
     expected_returned_dict = {
         'sensorName': sensor.name,
-        'List': readings_list_values
+        'values': readings_list_values
     }
 
     with patch.object(
@@ -466,7 +474,10 @@ def test_get_sensor_readings_should_return_sensors_readings_when_sensor_is_not_a
                 ) as get_sensor_readings_by_sensor_id_mock:
                     get_sensor_readings_by_sensor_id_mock.return_value = readings_list
 
-                    result, result_values = sensor_service_instance.get_sensor_readings(
+                    with patch.object(SensorService, 'get_senor_reading_value') as get_senor_reading_value_mock:
+                        get_senor_reading_value_mock.return_value = 1
+
+                        result, result_values = sensor_service_instance.get_sensor_readings(
                         sensor.device_key,
                         device_group.product_key,
                         test_user_id)

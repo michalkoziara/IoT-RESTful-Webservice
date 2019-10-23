@@ -71,7 +71,7 @@ class ExecutiveDeviceService:
 
         executive_device_info = {}
         executive_device_info['name'] = executive_device.name
-        executive_device_info['state'] = executive_device.state
+        executive_device_info['state'] = self.get_executive_device_state_value(executive_device)
         executive_device_info['isUpdated'] = executive_device.is_updated
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
@@ -137,6 +137,8 @@ class ExecutiveDeviceService:
         state_type = executive_device_type.state_type
 
         state = executive_device.state
+        if not state:
+            return None
         state_value = None
         if state_type == 'Enum':
             state_value = \

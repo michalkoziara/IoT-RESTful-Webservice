@@ -2,9 +2,9 @@
 from typing import Optional
 from typing import Tuple
 
+from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
-from app.main.model.sensor import Sensor
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
@@ -80,10 +80,12 @@ class SensorService:
         senor_info['deviceKey'] = sensor.device_key
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
         senor_info['sensorTypeName'] = sensor_type.name
+
         if user_group:
             senor_info['sensorUserGroup'] = user_group.name
         else:
             senor_info['sensorUserGroup'] = None
+        senor_info['readingValue'] = self.get_senor_reading_value(sensor)
 
         return Constants.RESPONSE_MESSAGE_OK, senor_info
 
@@ -122,13 +124,13 @@ class SensorService:
         sensor_readings_values = []
         for sensor_reading in sensor_readings:
             sensor_readings_values.append({
-                'value': sensor_reading.value,
+                'value': self.get_senor_reading_value(sensor, sensor_reading),
                 'date': str(sensor_reading.date)
             })
 
         sensor_readings_response = {
             'sensorName': sensor.name,
-            'List': sensor_readings_values
+            'values': sensor_readings_values
         }
 
         return Constants.RESPONSE_MESSAGE_OK, sensor_readings_response
@@ -165,26 +167,32 @@ class SensorService:
 
         return True
 
-    def get_senor_reading_value(self, sensor: Sensor):
+    def get_senor_reading_value(self, sensor: Sensor, sensor_reading: SensorReading = None):
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
         reading_type = sensor_type.reading_type
 
-        last_reading = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
-        reading_value = None
+        if not sensor_reading:
+            reading_value = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
+            if not reading_value:
+                return None
+        else:
+            reading_value = sensor_reading.value
+
+        reading_return_value = None
         if reading_type == 'Enum':
-            reading_value = \
+            reading_return_value = \
                 self._reading_enumerator_repository_instance.get_reading_enumerator_by_sensor_type_id_and_number(
                     sensor_type.id,
-                    int(last_reading)).text
+                    int(reading_value)).text
         elif reading_type == 'Decimal':
-            reading_value = float(last_reading)
+            reading_return_value = float(reading_value)
         elif reading_type == 'Boolean':
-            if int(last_reading) == 1:
-                reading_value = True
+            if int(reading_value) == 1:
+                reading_return_value = True
             else:
-                reading_value = False
+                reading_return_value = False
 
-        return reading_value
+        return reading_return_value
 
     def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
