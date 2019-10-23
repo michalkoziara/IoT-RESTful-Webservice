@@ -15,13 +15,12 @@ _logger = LogService.get_instance()
 
 @api.route('/admins', methods=['POST'])
 def register_admin():
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['username', 'email', 'password', 'productKey', 'productPassword']
     )
 
     if status is None:
-        request_dict = request.get_json()
         username = request_dict['username']
         email = request_dict['email']
         password = request_dict['password']

@@ -30,7 +30,7 @@ def get_states(product_key):
 @api.route('/hubs/<product_key>/devices', methods=['POST'])
 def create_device(product_key: str):
     # TODO add hub device authentication
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['deviceKey'],
         product_key=product_key,
@@ -39,7 +39,6 @@ def create_device(product_key: str):
     )
 
     if status is None:
-        request_dict = request.get_json()
         device_key = request_dict['deviceKey']
 
         result = _hub_service_instance.add_device_to_device_group(product_key, device_key)
@@ -61,7 +60,7 @@ def create_device(product_key: str):
 @api.route('/hubs/<product_key>/states', methods=['POST'])
 def set_sensors_readings_and_devices_states(product_key):
     # TODO add hub device authentication
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['sensors', 'devices'],
         product_key=product_key,
@@ -69,8 +68,6 @@ def set_sensors_readings_and_devices_states(product_key):
     )
 
     if status is None:
-        request_dict = request.get_json()
-
         sensors_readings = request_dict['sensors']
         devices_states = request_dict['devices']
 
@@ -96,7 +93,7 @@ def set_sensors_readings_and_devices_states(product_key):
 @api.route('/hubs/<product_key>/devices/config', methods=['POST'])
 def get_devices_configurations(product_key):
     # TODO add hub device authentication
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['devices'],
         product_key=product_key,
@@ -105,8 +102,6 @@ def get_devices_configurations(product_key):
     )
 
     if status is None:
-        request_dict = request.get_json()
-
         devices = request_dict['devices']
 
         result, result_values = _hub_service_instance.get_devices_informations(

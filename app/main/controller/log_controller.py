@@ -15,7 +15,7 @@ _logger = LogService.get_instance()
 @api.route('/hubs/<product_key>/logs', methods=['POST'])
 def create_log(product_key: str):
     # TODO add hub device authentication
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['type', 'creationDate'],
         product_key=product_key,
@@ -24,8 +24,6 @@ def create_log(product_key: str):
     )
 
     if status is None:
-        request_dict = request.get_json()
-
         result = _logger.log_exception(request_dict, product_key)
 
         return ResponseUtils.create_response(
