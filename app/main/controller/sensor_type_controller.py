@@ -33,3 +33,26 @@ def get_sensor_type(product_key: str, type_name: str):
         product_key=product_key,
         is_logged=True
     )
+
+
+@api.route('/hubs/<product_key>/sensor-types', methods=['GET'])
+def get_sensor_types(product_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        result, result_values = _sensor_type_service.get_list_of_types_names(
+            product_key,
+            user_info['user_id']
+        )
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
