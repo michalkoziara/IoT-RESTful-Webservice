@@ -126,4 +126,4 @@ def test_get_list_of_types_names_should_return_error_message_when_admin_is_not_a
 
     response_data = json.loads(response.data.decode())
     assert response_data is not None
-    assert response_data['errorMessage'] ==  Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
