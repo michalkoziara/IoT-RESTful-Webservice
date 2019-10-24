@@ -110,6 +110,9 @@ class SensorTypeService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
+        if admin_id != device_group.admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
         admin = self._admin_repository.get_admin_by_id(admin_id)
 
         if not admin:
