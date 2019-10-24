@@ -36,6 +36,9 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
     second_user_group = create_user_group(second_user_group_values)
     third_user_group = create_user_group(third_user_group_values)
 
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+    first_user_group.users = [user]
+
     expected_output_values = ['first', 'second', 'third']
 
     with patch.object(
@@ -60,6 +63,54 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
                 )
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_output_values
+
+
+def test_get_list_of_user_groups_should_return_error_message_when_user_not_in_any_user_group(
+        create_device_group,
+        create_user,
+        get_user_group_default_values,
+        create_user_group,
+):
+    user_group_service = UserGroupService.get_instance()
+    device_group = create_device_group()
+    user = create_user()
+
+    first_user_group_values = get_user_group_default_values()
+    second_user_group_values = get_user_group_default_values()
+    third_user_group_values = get_user_group_default_values()
+
+    first_user_group_values['name'] = 'first'
+    second_user_group_values['name'] = 'second'
+    third_user_group_values['name'] = 'third'
+
+    first_user_group = create_user_group(first_user_group_values)
+    second_user_group = create_user_group(second_user_group_values)
+    third_user_group = create_user_group(third_user_group_values)
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id') as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_groups_by_device_group_id'
+                              ) as get_user_groups_by_device_group_id_mock:
+                get_user_groups_by_device_group_id_mock.return_value = [first_user_group,
+                                                                        second_user_group,
+                                                                        third_user_group]
+                result, result_values = user_group_service.get_list_of_user_groups(
+                    device_group.product_key,
+                    user.id
+                )
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
 
 
 def test_get_list_of_user_groups_should_return_empty_list_when_valid_request_and_no_user_groups_in_device_group(

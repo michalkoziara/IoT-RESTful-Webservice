@@ -36,6 +36,11 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
     second_user_group = insert_user_group(second_user_group_values)
     third_user_group = insert_user_group(third_user_group_values)
 
+    first_user_group.users = [user]
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
 
     expected_output_values = ['first', 'second', 'third']

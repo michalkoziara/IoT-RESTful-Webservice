@@ -1,6 +1,9 @@
 from app.main.model import User, DeviceGroup
 
 
+# TODO make those functions methods
+
+
 def is_bool(value) -> bool:
     return isinstance(value, bool)
 

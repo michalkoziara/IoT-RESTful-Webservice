@@ -10,6 +10,7 @@ from app.main.repository.user_repository import UserRepository
 from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
+from app.main.util.utils import is_user_in_one_of_user_groups_in_device_group
 
 
 class UserGroupService:
@@ -65,7 +66,15 @@ class UserGroupService:
         if not user:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
+        user_has_priviliges = is_user_in_one_of_user_groups_in_device_group(user, device_group)
+
         user_groups = self._user_group_repository.get_user_groups_by_device_group_id(device_group.id)
+
+        if not user_has_priviliges:
+            if not user_groups:
+                return Constants.RESPONSE_MESSAGE_OK, []
+            else:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         names = []
 
