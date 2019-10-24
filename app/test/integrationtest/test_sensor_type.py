@@ -59,20 +59,13 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request(
 def test_get_list_of_types_names_should_return_list_of_sensor_types_names_when_valid_request(
         client,
         insert_device_group,
-        insert_user,
-        get_user_group_default_values,
-        insert_user_group,
+        insert_admin,
         get_sensor_type_default_values,
         insert_sensor_type):
     content_type = 'application/json'
 
     device_group = insert_device_group()
-    user = insert_user()
-    user_group_values = get_user_group_default_values()
-    user_group_values['users'] = [user]
-    user_group = insert_user_group(user_group_values)
-    device_group.user_groups = [user_group]
-    DeviceGroupRepository.get_instance().update_database()
+    admin = insert_admin()
 
     first_sensor_type_values = get_sensor_type_default_values()
     first_sensor_type_values['name'] = 'first_sensor_type'
@@ -94,7 +87,7 @@ def test_get_list_of_types_names_should_return_list_of_sensor_types_names_when_v
         '/api/hubs/' + device_group.product_key + '/sensor-types',
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
         }
     )
 
