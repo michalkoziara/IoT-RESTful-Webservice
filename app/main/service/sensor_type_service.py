@@ -1,7 +1,9 @@
 # pylint: disable=no-self-use
+from typing import List
 from typing import Optional
 from typing import Tuple
 
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_repository import SensorRepository
@@ -37,6 +39,7 @@ class SensorTypeService:
         self._sensor_type_repository_instance = SensorTypeRepository.get_instance()
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
+        self._admin_repository = AdminRepository.get_instance()
 
     def get_sensor_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[str, Optional[dict]]:
 
@@ -49,7 +52,8 @@ class SensorTypeService:
         if not user_id:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -91,3 +95,35 @@ class SensorTypeService:
             senor_type_info['enumerator'] = possible_readings
 
         return Constants.RESPONSE_MESSAGE_OK, senor_type_info
+
+    def get_list_of_types_names(self, product_key: str, admin_id: str) -> Tuple[str, Optional[List[str]]]:
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if admin_id != device_group.admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        admin = self._admin_repository.get_admin_by_id(admin_id)
+
+        if not admin:
+            return Constants.RESPONSE_MESSAGE_ADMIN_NOT_DEFINED, None
+
+        sensor_types = self._sensor_type_repository_instance.get_sensor_types_by_device_group_id(
+            device_group.id)
+
+        names = []
+
+        for sensor_type in sensor_types:
+            names.append(sensor_type.name)
+
+        return Constants.RESPONSE_MESSAGE_OK, names

@@ -30,3 +30,8 @@ class SensorTypeRepository(BaseRepository):
                 SensorType.name == name
             )
         ).first()
+
+    def get_sensor_types_by_device_group_id(self, device_group_id: str)-> List[SensorType]:
+        return SensorType.query.filter(
+            SensorType.device_group_id == device_group_id
+        ).all()
