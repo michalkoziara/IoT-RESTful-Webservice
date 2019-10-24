@@ -33,3 +33,4 @@ def get_executive_device(product_key: str, device_key: str):
         product_key=product_key,
         is_logged=True
     )
+
