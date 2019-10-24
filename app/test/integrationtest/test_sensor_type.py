@@ -66,7 +66,6 @@ def test_get_list_of_types_names_should_return_list_of_sensor_types_names_when_v
         insert_sensor_type):
     content_type = 'application/json'
 
-    get_device_group_default_values
     device_group = insert_device_group()
     admin = insert_admin()
 
