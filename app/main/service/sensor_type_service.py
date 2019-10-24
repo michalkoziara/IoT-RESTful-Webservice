@@ -10,6 +10,7 @@ from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
+from app.main.repository.admin_repository import AdminRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_user_in_one_of_user_groups_in_device_group
 
@@ -23,6 +24,7 @@ class SensorTypeService:
     _reading_enumerator_repository = None
     _reading_enumerator_repository = None
     _user_repository = None
+    _admin_repository = None
     _user_group_repository = None
 
     @classmethod
