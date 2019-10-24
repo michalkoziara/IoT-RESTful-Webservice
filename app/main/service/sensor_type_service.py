@@ -1,7 +1,7 @@
 # pylint: disable=no-self-use
+from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import List
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
