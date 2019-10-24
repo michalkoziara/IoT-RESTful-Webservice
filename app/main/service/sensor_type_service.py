@@ -23,6 +23,7 @@ class SensorTypeService:
     _reading_enumerator_repository = None
     _reading_enumerator_repository = None
     _user_repository = None
+    _admin_repository = None
     _user_group_repository = None
 
     @classmethod

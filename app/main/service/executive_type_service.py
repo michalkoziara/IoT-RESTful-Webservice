@@ -1,7 +1,8 @@
 # pylint: disable=no-self-use
-from typing import Optional
+from typing import Optional, List
 from typing import Tuple
 
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
@@ -19,6 +20,7 @@ class ExecutiveTypeService:
     _state_enumerator_repository = None
     _user_repository = None
     _user_group_repository = None
+    _admin_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -32,6 +34,7 @@ class ExecutiveTypeService:
         self._executive_type_repository = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
+        self._admin_repository = AdminRepository.get_instance()
         self._state_enumerator_repository = StateEnumeratorRepository.get_instance()
 
     def get_executive_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[str, Optional[dict]]:
@@ -87,3 +90,35 @@ class ExecutiveTypeService:
             senor_type_info['enumerator'] = possible_states
 
         return Constants.RESPONSE_MESSAGE_OK, senor_type_info
+
+    def get_list_of_types_names(self, product_key: str, admin_id: str) -> Tuple[str, Optional[List[str]]]:
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if admin_id != device_group.admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        admin = self._admin_repository.get_admin_by_id(admin_id)
+
+        if not admin:
+            return Constants.RESPONSE_MESSAGE_ADMIN_NOT_DEFINED, None
+
+        executive_types = self._executive_type_repository.get_executive_types_by_device_group_id(
+            device_group.id)
+
+        names = []
+
+        for executive_type in executive_types:
+            names.append(executive_type.name)
+
+        return Constants.RESPONSE_MESSAGE_OK, names
