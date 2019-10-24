@@ -27,6 +27,7 @@ class Constants:
     RESPONSE_MESSAGE_INVALID_CREDENTIALS = 'User credentials are invalid.'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
+    RESPONSE_MESSAGE_ADMIN_NOT_DEFINED = 'Admin not defined.'
     RESPONSE_MESSAGE_SIGNATURE_EXPIRED = 'Signature expired.'
     RESPONSE_MESSAGE_INVALID_TOKEN = 'Invalid token.'
     RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES = 'States of devices and readings of sensors were updated'

@@ -26,3 +26,5 @@ class AdminRepository(BaseRepository):
             )
         ).first()
 
+    def get_admin_by_id(self, admin_id: int) -> Admin:
+        return Admin.query.filter(Admin.id == admin_id).first()

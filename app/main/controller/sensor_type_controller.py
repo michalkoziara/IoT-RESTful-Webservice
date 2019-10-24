@@ -4,6 +4,7 @@ from app import api
 from app.main.service.log_service import LogService
 from app.main.service.sensor_type_service import SensorTypeService
 from app.main.util.auth_utils import Auth
+from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 
 _logger = LogService.get_instance()
@@ -43,10 +44,13 @@ def get_sensor_types(product_key: str):
     result_values = None
 
     if error_message is None:
-        result, result_values = _sensor_type_service.get_list_of_types_names(
-            product_key,
-            user_info['user_id']
-        )
+        if user_info['is_admin']:
+            result, result_values = _sensor_type_service.get_list_of_types_names(
+                product_key,
+                user_info['user_id']
+            )
+        else:
+            result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     else:
         result = error_message
 
