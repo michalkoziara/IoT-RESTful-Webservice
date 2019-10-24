@@ -47,6 +47,33 @@ class UserGroupService:
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._executive_device_service = ExecutiveDeviceService.get_instance()
 
+    def get_list_of_user_groups(self, product_key: str, user_id: str):
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        user = self._user_repository.get_user_by_id(user_id)
+
+        if not user:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        user_groups = self._user_group_repository.get_user_groups_by_device_group_id(device_group.id)
+
+        names = []
+
+        for user_group in user_groups:
+            names.append(user_group.name)
+
+        return Constants.RESPONSE_MESSAGE_OK, names
+
     def get_list_of_executive_devices(self, product_key: str, user_group_name: str, user_id: str):
 
         if not product_key:
