@@ -412,11 +412,34 @@ def test_get_list_of_types_names_should_return_error_message_when_admin_not_foun
 
             result, result_values = executive_type_service_instance.get_list_of_types_names(
                 device_group.product_key,
-                'admin.id'
+                device_group.admin_id
             )
 
     assert result == Constants.RESPONSE_MESSAGE_ADMIN_NOT_DEFINED
     assert result_values is None
+
+def test_get_list_of_types_names_should_return_error_message_when_admin_not_assigned_to_device_group(
+        create_device_group,
+        create_user_group,
+        create_user):
+    executive_type_service_instance = ExecutiveTypeService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        result, result_values = executive_type_service_instance.get_list_of_types_names(
+            device_group.product_key,
+            device_group.admin_id + 1
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
 
 
 def test_get_list_of_types_names_should_return_error_message_when_device_group_not_found():
