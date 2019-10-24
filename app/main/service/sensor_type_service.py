@@ -119,9 +119,6 @@ class SensorTypeService:
         sensor_types = self._sensor_type_repository_instance.get_sensor_types_by_device_group_id(
             device_group.id)
 
-        if not sensor_types:
-            return Constants.RESPONSE_MESSAGE_SENSOR_TYPES_NOT_FOUND, None
-
         names = []
 
         for sensor_type in sensor_types:
