@@ -31,7 +31,7 @@ class ExecutiveTypeRepository(BaseRepository):
     def get_executive_types_by_ids(self, ids: List) -> List[ExecutiveType]:
         return ExecutiveType.query.filter(ExecutiveType.id.in_(ids)).all()
 
-    def get_sensor_types_by_device_group_id(self, device_group_id: str) -> List[ExecutiveType]:
+    def get_executive_types_by_device_group_id(self, device_group_id: str) -> List[ExecutiveType]:
         return ExecutiveType.query.filter(
             ExecutiveType.device_group_id == device_group_id
         ).all()
