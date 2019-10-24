@@ -307,3 +307,203 @@ def test_get_sensor_type_info_should_return_error_message_when_one_of_parameters
 
     assert result == expected_result
     assert result_values is None
+
+
+def test_get_list_of_types_names_should_return_list_of_sensor_types_names_when_valid_request(
+        create_sensor_type,
+        create_device_group,
+        create_user_group,
+        create_user):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+    device_group = create_device_group()
+    user_group = create_user_group()
+    user = create_user()
+    user_group.users = [user]
+
+    device_group.user_groups = [user_group]
+
+    first_sensor_type = create_sensor_type()
+    second_sensor_type = create_sensor_type()
+    third_sensor_type = create_sensor_type()
+
+    first_sensor_type.name = "sensor type 1"
+    second_sensor_type.name = "sensor type 2"
+    third_sensor_type.name = "sensor type 3"
+
+    expected_returned_values = ["sensor type 1", "sensor type 2", "sensor type 3"]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserRepository,
+                'get_user_by_id'
+        ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_types_by_device_group_id'
+            ) as get_sensor_types_by_device_group_id_mock:
+                get_sensor_types_by_device_group_id_mock.return_value = [first_sensor_type, second_sensor_type,
+                                                                         third_sensor_type]
+
+                result, result_values = sensor_type_service_instance.get_list_of_types_names(
+                    device_group.product_key,
+                    user.id
+                )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_returned_values
+
+
+def test_get_list_of_types_names_should_return_empty_list_when_valid_request_and_no_sensor_types_in_device_group(
+        create_sensor_type,
+        create_device_group,
+        create_user_group,
+        create_user):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+    device_group = create_device_group()
+    user_group = create_user_group()
+    user = create_user()
+    user_group.users = [user]
+
+    device_group.user_groups = [user_group]
+
+    expected_returned_values = []
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserRepository,
+                'get_user_by_id'
+        ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_types_by_device_group_id'
+            ) as get_sensor_types_by_device_group_id_mock:
+                get_sensor_types_by_device_group_id_mock.return_value = []
+
+                result, result_values = sensor_type_service_instance.get_list_of_types_names(
+                    device_group.product_key,
+                    user.id
+                )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_returned_values
+
+
+def test_get_list_of_types_names_should_return_error_message_when_user_not_in_any_devices_group_user_groups(
+        create_sensor_type,
+        create_device_group,
+        create_user_group,
+        create_user):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+    device_group = create_device_group()
+    user_group = create_user_group()
+    user = create_user()
+
+    device_group.user_groups = [user_group]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserRepository,
+                'get_user_by_id'
+        ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            result, result_values = sensor_type_service_instance.get_list_of_types_names(
+                device_group.product_key,
+                user.id
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
+
+def test_get_list_of_types_names_should_return_error_message_when_user_not_found(
+        create_device_group,
+        create_user_group,
+        create_user):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+    device_group = create_device_group()
+    user_group = create_user_group()
+
+    device_group.user_groups = [user_group]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserRepository,
+                'get_user_by_id'
+        ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = None
+
+            result, result_values = sensor_type_service_instance.get_list_of_types_names(
+                device_group.product_key,
+                'user.id'
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+    assert result_values is None
+
+
+def test_get_list_of_types_names_should_return_error_message_when_device_group_not_found():
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = sensor_type_service_instance.get_list_of_types_names(
+            'device_group.product_key',
+            'user.id'
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+    assert result_values is None
+
+
+@pytest.mark.parametrize("product_key, user_id, expected_result", [
+    ('product_key', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    (None, 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_get_list_of_types_names_should_return_error_message_when_one_of_parameters_is_none(
+        product_key,
+        user_id,
+        expected_result):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = sensor_type_service_instance.get_list_of_types_names(
+            product_key,
+            user_id
+        )
+
+    assert result == expected_result
+    assert result_values is None
