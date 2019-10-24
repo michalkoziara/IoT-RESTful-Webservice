@@ -32,9 +32,6 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
     second_user_group_values['name'] = 'second'
     third_user_group_values['name'] = 'third'
 
-    second_user_group_values['id'] += 1
-    third_user_group_values['id'] += 2
-
     first_user_group = create_user_group(first_user_group_values)
     second_user_group = create_user_group(second_user_group_values)
     third_user_group = create_user_group(third_user_group_values)
