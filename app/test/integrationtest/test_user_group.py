@@ -18,19 +18,18 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
     device_group = insert_device_group()
     user = insert_user()
 
-    user_group_values = get_user_group_default_values()
-    user_group_values['users'] = [user]
-
     first_user_group_values = get_user_group_default_values()
     second_user_group_values = get_user_group_default_values()
     third_user_group_values = get_user_group_default_values()
 
-    first_user_group_values['name'] = 'first'
+    first_user_group_values['name'] = 'Master'
     second_user_group_values['name'] = 'second'
     third_user_group_values['name'] = 'third'
 
     second_user_group_values['id'] += 1
     third_user_group_values['id'] += 2
+
+    first_user_group_values['users'] = [user]
 
     first_user_group = insert_user_group(first_user_group_values)
     second_user_group = insert_user_group(second_user_group_values)
@@ -40,10 +39,7 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
 
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
 
-
-    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
-
-    expected_output_values = ['first', 'second', 'third']
+    expected_output_values = ['Master', 'second', 'third']
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/user_groups',
