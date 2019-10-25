@@ -1,5 +1,5 @@
 # pylint: disable=no-self-use
-from typing import Optional
+from typing import Optional, List
 from typing import Tuple
 
 from app.main.model.sensor import Sensor
@@ -88,6 +88,47 @@ class SensorService:
         senor_info['readingValue'] = self.get_senor_reading_value(sensor)
 
         return Constants.RESPONSE_MESSAGE_OK, senor_info
+
+    def get_list_of_unassinged_sensors(self, product_key: str,
+                                       user_id: str,
+                                       is_admin: bool
+                                       ) -> Tuple[bool, Optional[List[dict]]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if is_admin:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        else:
+
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
+
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        values = []
+
+        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_that_are_not_in_user_group(
+            device_group.id)
+
+        for sensor in sensors:
+            sensor_info = {
+                'name': sensor.name,
+                'isActive': sensor.is_active
+            }
+            values.append(sensor_info)
+
+        return Constants.RESPONSE_MESSAGE_OK, values
 
     def get_sensor_readings(self, device_key: str, product_key: str, user_id: str) -> Tuple[
         bool, Optional[dict]]:
