@@ -749,7 +749,7 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors
                     first_sensor,
                     second_sensor]
 
-                result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+                result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
                     device_group.product_key,
                     'test_user_id',
                     False
@@ -802,7 +802,7 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors
                     first_sensor,
                     second_sensor]
 
-                result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+                result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
                     device_group.product_key,
                     device_group.admin_id,
                     True
@@ -837,7 +837,7 @@ def test_get_list_of_unassinged_sensors_should_return_empty_list_when_there_are_
             ) as get_sensors_by_device_group_id_that_are_not_in_user_group_mock:
                 get_sensors_by_device_group_id_that_are_not_in_user_group_mock.return_value = []
 
-                result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+                result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
                     device_group.product_key,
                     'test_user_id',
                     False
@@ -870,7 +870,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_admin_id_is_di
             ) as get_sensors_by_device_group_id_that_are_not_in_user_group_mock:
                 get_sensors_by_device_group_id_that_are_not_in_user_group_mock.return_value = []
 
-                result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+                result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
                     device_group.product_key,
                     'test_user_id',
                     True
@@ -897,7 +897,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_user_not_in_de
         ) as get_device_group_by_user_id_and_product_key_mock:
             get_device_group_by_user_id_and_product_key_mock.return_value = None
 
-            result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+            result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
                 device_group.product_key,
                 'test_user_id',
                 False
@@ -918,7 +918,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_device_group_n
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
-        result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+        result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
             'device_group.product_key',
             'test_user_id',
             False
@@ -945,7 +945,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_one_of_paramet
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
-        result, result_values = sensor_service_instance.get_list_of_unassinged_sensors(
+        result, result_values = sensor_service_instance.get_list_of_unassigned_sensors(
             product_key,
             user_id,
             is_admin
