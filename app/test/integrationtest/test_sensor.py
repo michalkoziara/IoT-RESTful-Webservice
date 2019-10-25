@@ -336,7 +336,6 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_sensors_info_when_
     assert response_data == expected_output_values
 
 
-
 def test_get_get_list_of_unassinged_sensors_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
         client,
         insert_device_group,
