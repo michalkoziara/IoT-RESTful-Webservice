@@ -706,7 +706,7 @@ def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range
     assert not sensor_service_instance._is_decimal_reading_in_range(value, sensor_type)
 
 
-def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors_when_user_is_not_admin_and_right_parameters_are_passed(
+def test_get_list_of_unassigned_sensors_should_return_list_of_unassigned_sensors_when_user_is_not_admin_and_right_parameters_are_passed(
         get_sensor_default_values,
         create_sensor,
         create_device_group):
@@ -759,7 +759,7 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors
     assert result_values == expected_output_values
 
 
-def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors_when_user_is_admin_and_right_parameters_are_passed(
+def test_get_list_of_unassigned_sensors_should_return_list_of_unassigned_sensors_when_user_is_admin_and_right_parameters_are_passed(
         get_sensor_default_values,
         create_sensor,
         create_device_group):
@@ -812,7 +812,7 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_unassinged_sensors
     assert result_values == expected_output_values
 
 
-def test_get_list_of_unassinged_sensors_should_return_empty_list_when_there_are_not_any_unassinged_sensors(
+def test_get_list_of_unassigned_sensors_should_return_empty_list_when_there_are_not_any_unassigned_sensors(
         create_device_group):
     sensor_service_instance = SensorService.get_instance()
 
@@ -847,7 +847,7 @@ def test_get_list_of_unassinged_sensors_should_return_empty_list_when_there_are_
     assert result_values == expected_output_values
 
 
-def test_get_list_of_unassinged_sensors_should_error_message_when_admin_id_is_different_than_user_id_and_user_is_admin(
+def test_get_list_of_unassigned_sensors_should_error_message_when_admin_id_is_different_than_user_id_and_user_is_admin(
         create_device_group):
     sensor_service_instance = SensorService.get_instance()
 
@@ -880,7 +880,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_admin_id_is_di
     assert result_values is None
 
 
-def test_get_list_of_unassinged_sensors_should_error_message_when_user_not_in_device_group(
+def test_get_list_of_unassigned_sensors_should_error_message_when_user_not_in_device_group(
         create_device_group):
     sensor_service_instance = SensorService.get_instance()
 
@@ -907,7 +907,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_user_not_in_de
     assert result_values is None
 
 
-def test_get_list_of_unassinged_sensors_should_error_message_when_device_group_not_found(
+def test_get_list_of_unassigned_sensors_should_error_message_when_device_group_not_found(
         get_sensor_default_values,
         create_sensor,
         create_device_group):
@@ -933,7 +933,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_device_group_n
     ('product_key', 'user_id', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
     (None, 'user_id', False, Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
 ])
-def test_get_list_of_unassinged_sensors_should_error_message_when_one_of_parameters_is_none(
+def test_get_list_of_unassigned_sensors_should_error_message_when_one_of_parameters_is_none(
         product_key, user_id, is_admin, expected_result,
         get_sensor_default_values,
         create_sensor,
