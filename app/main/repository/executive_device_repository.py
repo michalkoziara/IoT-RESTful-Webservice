@@ -3,8 +3,8 @@ from typing import List
 
 from sqlalchemy import and_
 
-from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.device_group import DeviceGroup
+from app.main.model.executive_device import ExecutiveDevice
 from app.main.repository.base_repository import BaseRepository
 
 
@@ -54,5 +54,14 @@ class ExecutiveDeviceRepository(BaseRepository):
                         DeviceGroup.product_key == product_key
                     )
                 )
+            )
+        ).all()
+
+    def get_executive_devices_by_device_group_id_that_are_not_in_user_group(
+            self, device_group_id: str) -> List[ExecutiveDevice]:
+        return ExecutiveDevice.query.filter(
+            and_(
+                ExecutiveDevice.device_group_id == device_group_id,
+                ExecutiveDevice.user_group_id == None  # equality operator required by SQLAlchemy
             )
         ).all()

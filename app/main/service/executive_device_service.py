@@ -98,10 +98,11 @@ class ExecutiveDeviceService:
 
         return Constants.RESPONSE_MESSAGE_OK, executive_device_info
 
-    def get_list_of_unassigned_executive_devices(self, product_key: str,
-                                                 user_id: str,
-                                                 is_admin: bool
-                                                 ) -> Tuple[bool, Optional[List[dict]]]:
+    def get_list_of_unassigned_executive_devices(
+            self, product_key: str,
+            user_id: str,
+            is_admin: bool
+    ) -> Tuple[bool, Optional[List[dict]]]:
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
@@ -126,15 +127,16 @@ class ExecutiveDeviceService:
                 return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
         values = []
 
-        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_that_are_not_in_user_group(
+        executive_devices = self._executive_device_repository_instance \
+            .get_executive_devices_by_device_group_id_that_are_not_in_user_group(
             device_group.id)
 
-        for sensor in sensors:
-            sensor_info = {
-                'name': sensor.name,
-                'isActive': sensor.is_active
+        for executive_device in executive_devices:
+            executive_device_info = {
+                'name': executive_device.name,
+                'isActive': executive_device.is_active
             }
-            values.append(sensor_info)
+            values.append(executive_device_info)
 
         return Constants.RESPONSE_MESSAGE_OK, values
 
