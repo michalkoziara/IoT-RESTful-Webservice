@@ -5,6 +5,79 @@ import pytest
 from app.main.util.auth_utils import Auth
 
 
+def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
+        client,
+        insert_device_group,
+        insert_user,
+        insert_user_group,
+        get_user_group_default_values
+
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    first_user_group_values = get_user_group_default_values()
+    second_user_group_values = get_user_group_default_values()
+    third_user_group_values = get_user_group_default_values()
+
+    first_user_group_values['name'] = 'Master'
+    second_user_group_values['name'] = 'second'
+    third_user_group_values['name'] = 'third'
+
+    second_user_group_values['id'] += 1
+    third_user_group_values['id'] += 2
+
+    first_user_group_values['users'] = [user]
+
+    first_user_group = insert_user_group(first_user_group_values)
+    second_user_group = insert_user_group(second_user_group_values)
+    third_user_group = insert_user_group(third_user_group_values)
+
+    first_user_group.users = [user]
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+    expected_output_values = ['Master', 'second', 'third']
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/user_groups',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
+def test_get_list_of_user_groups_should_return_error_message_when_wrong_token(
+        client):
+    content_type = 'application/json'
+
+    response = client.get(
+        '/api/hubs/' + 'device_group_product_key/user_groups',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer test'
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 400
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data['errorMessage'] == "Invalid token."
+
+
 @pytest.mark.parametrize("state_type, state, state_value", [
     ('Decimal', 1, 1),
     ('Boolean', 1, True)
@@ -142,9 +215,6 @@ def test_get_list_of_executive_devices_should_return_error_message_when_wrong_to
 
     response_data = json.loads(response.data.decode())
     assert response_data['errorMessage'] == "Invalid token."
-
-
-#################
 
 
 @pytest.mark.parametrize("reading_type, reading, reading_value", [

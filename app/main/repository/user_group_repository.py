@@ -1,4 +1,6 @@
 # pylint: disable=no-self-use
+from typing import List
+
 from sqlalchemy import and_
 
 from app.main.model.user_group import UserGroup
@@ -46,3 +48,8 @@ class UserGroupRepository(BaseRepository):
                 UserGroup.users.any(id=user_id)
             )
         ).first()
+
+    def get_user_groups_by_device_group_id(self, device_group_id: str) -> List[UserGroup]:
+        return UserGroup.query.filter(
+            UserGroup.device_group_id == device_group_id
+        ).all()
