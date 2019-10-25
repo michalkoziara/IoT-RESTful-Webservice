@@ -907,7 +907,7 @@ def test_get_list_of_unassinged_sensors_should_error_message_when_user_not_in_de
     assert result_values is None
 
 
-def test_get_list_of_unassinged_sensors_should_error_message_when_user_not_in_device_group(
+def test_get_list_of_unassinged_sensors_should_error_message_when_device_group_not_found(
         get_sensor_default_values,
         create_sensor,
         create_device_group):
