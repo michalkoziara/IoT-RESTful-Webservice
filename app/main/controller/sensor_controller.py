@@ -81,7 +81,7 @@ def add_sensor_to_device_group(product_key: str):
             sensor_name = request_dict['sensorName']
             sensor_type_name = request_dict['sensorTypeName']
 
-            result, result_values = _sensor_service_instance.get_list_of_unassigned_sensors(
+            result, result_values = _sensor_service_instance.add_sensor_to_device_group(
                 product_key,
                 user_info['user_id'],
                 user_info['is_admin'],

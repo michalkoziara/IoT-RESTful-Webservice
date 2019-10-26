@@ -10,6 +10,7 @@ from app.main.repository.reading_enumerator_repository import ReadingEnumeratorR
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
+from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_bool
@@ -23,6 +24,7 @@ class SensorService:
     _sensor_repository_instance = None
     _sensor_type_repository_instance = None
     _sensor_reading_repository = None
+    _unconfigured_device_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -39,6 +41,7 @@ class SensorService:
         self._sensor_repository_instance = SensorRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
         self._sensor_type_repository_instance = SensorTypeRepository.get_instance()
+        self._unconfigured_device_repository = UnconfiguredDeviceRepository.get_instance()
 
     def get_sensor_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
 
@@ -141,7 +144,7 @@ class SensorService:
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        if not admin_id or is_admin is None:
+        if admin_id is None or is_admin is None:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
         if not device_key or not password or not sensor_name or not sensor_type_name:
@@ -149,13 +152,48 @@ class SensorService:
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
-        if not device_group or device_group.admin_id:
+        if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
         if device_group.admin_id != admin_id or not is_admin:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
+        if password != device_group.password:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
+        uncofigured_device = \
+            self._unconfigured_device_repository.get_unconfigured_device_by_device_key_and_device_group_id(
+                device_key, device_group.id)
+
+        if not uncofigured_device:
+            return Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
+
+        sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(
+            device_group.id,
+            sensor_type_name)
+
+        if not sensor_type:
+            return Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED
+
+        sensor = Sensor(
+            name=sensor_name,
+            is_updated=False,
+            is_active=False,
+            is_assigned=False,
+            device_key=str(device_key),
+            sensor_type_id=sensor_type.id,
+            user_group_id=None,
+            device_group_id=device_group.id,
+            sensor_readings=[]
+        )
+
+        self._sensor_repository_instance.save_and_not_commit(sensor)
+        self._sensor_repository_instance.delete_and_not_commit(uncofigured_device)
+
+        if not self._sensor_repository_instance.update_database():
+            return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA, None
+
+        return Constants.RESPONSE_MESSAGE_CREATED, None
 
     def get_sensor_readings(self, device_key: str, product_key: str, user_id: str) -> Tuple[
         bool, Optional[dict]]:
