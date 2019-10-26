@@ -129,6 +129,34 @@ class SensorService:
 
         return Constants.RESPONSE_MESSAGE_OK, values
 
+    def add_sensor_to_device_group(
+            self,
+            product_key: str,
+            admin_id: str,
+            is_admin: bool,
+            device_key: str,
+            password: str,
+            sensor_name: str,
+            sensor_type_name: str) -> Tuple[bool, Optional[dict]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not admin_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        if not device_key or not password or not sensor_name or not sensor_type_name:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group or device_group.admin_id:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if device_group.admin_id != admin_id or not is_admin:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+
+
     def get_sensor_readings(self, device_key: str, product_key: str, user_id: str) -> Tuple[
         bool, Optional[dict]]:
 
