@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
@@ -991,28 +991,34 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                     'get_sensor_type_by_device_group_id_and_name') as get_sensor_type_by_device_group_id_and_name_mock:
                 get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
 
-                with patch.object(Sensor, '__init__') as sensor_init_mock:
-                    sensor_init_mock.return_value = None
-                    with patch.object(
-                            BaseRepository,
-                            'save_but_do_not_commit') as  save_but_do_not_commit_mock:
+                with patch.object(
+                        SensorRepository,
+                        'get_sensor_by_name_and_user_group_id') as \
+                        get_sensor_by_name_and_user_group_id_mock:
+                    get_sensor_by_name_and_user_group_id_mock.return_value = None
+
+                    with patch.object(Sensor, '__init__') as sensor_init_mock:
+                        sensor_init_mock.return_value = None
                         with patch.object(
                                 BaseRepository,
-                                'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                'save_but_do_not_commit') as  save_but_do_not_commit_mock:
                             with patch.object(
                                     BaseRepository,
-                                    'commit_changes') as commit_changes_mock:
-                                commit_changes_mock.return_value = True
+                                    'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                with patch.object(
+                                        BaseRepository,
+                                        'commit_changes') as commit_changes_mock:
+                                    commit_changes_mock.return_value = True
 
-                                result = sensor_service_instance.add_sensor_to_device_group(
-                                    device_group.product_key,
-                                    admin.id,
-                                    True,
-                                    device_key,
-                                    password,
-                                    sensor_name,
-                                    sensor_type_name
-                                )
+                                    result = sensor_service_instance.add_sensor_to_device_group(
+                                        device_group.product_key,
+                                        admin.id,
+                                        True,
+                                        device_key,
+                                        password,
+                                        sensor_name,
+                                        sensor_type_name
+                                    )
 
     assert result == Constants.RESPONSE_MESSAGE_CREATED
     sensor_init_mock.assert_called_with(device_group_id=device_group.id, device_key=device_key, is_active=False,
@@ -1058,30 +1064,36 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
                     'get_sensor_type_by_device_group_id_and_name') as get_sensor_type_by_device_group_id_and_name_mock:
                 get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
 
-                with patch.object(Sensor, '__init__') as sensor_init_mock:
-                    sensor_init_mock.return_value = None
-                    with patch.object(
-                            BaseRepository,
-                            'save_but_do_not_commit') as  save_but_do_not_commit_mock:
+                with patch.object(
+                        SensorRepository,
+                        'get_sensor_by_name_and_user_group_id') as \
+                        get_sensor_by_name_and_user_group_id_mock:
+                    get_sensor_by_name_and_user_group_id_mock.return_value = None
+
+                    with patch.object(Sensor, '__init__') as sensor_init_mock:
+                        sensor_init_mock.return_value = None
                         with patch.object(
                                 BaseRepository,
-                                'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                'save_but_do_not_commit') as  save_but_do_not_commit_mock:
                             with patch.object(
                                     BaseRepository,
-                                    'commit_changes') as commit_changes_mock:
-                                commit_changes_mock.side_effect = raise_exception
-                                commit_changes_mock.return_value = False
+                                    'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                with patch.object(
+                                        BaseRepository,
+                                        'commit_changes') as commit_changes_mock:
+                                    commit_changes_mock.side_effect = raise_exception
+                                    commit_changes_mock.return_value = False
 
-                                with patch.object(BaseRepository, 'rollback_session'):
-                                    result = sensor_service_instance.add_sensor_to_device_group(
-                                        device_group.product_key,
-                                        admin.id,
-                                        True,
-                                        device_key,
-                                        password,
-                                        sensor_name,
-                                        sensor_type_name
-                                    )
+                                    with patch.object(BaseRepository, 'rollback_session'):
+                                        result = sensor_service_instance.add_sensor_to_device_group(
+                                            device_group.product_key,
+                                            admin.id,
+                                            True,
+                                            device_key,
+                                            password,
+                                            sensor_name,
+                                            sensor_type_name
+                                        )
 
     assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
     sensor_init_mock.assert_called_with(device_group_id=device_group.id, device_key=device_key, is_active=False,
@@ -1123,17 +1135,74 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_type
                     'get_sensor_type_by_device_group_id_and_name') as get_sensor_type_by_device_group_id_and_name_mock:
                 get_sensor_type_by_device_group_id_and_name_mock.return_value = None
 
-                result = sensor_service_instance.add_sensor_to_device_group(
-                    device_group.product_key,
-                    admin.id,
-                    True,
-                    device_key,
-                    password,
-                    sensor_name,
-                    sensor_type_name
-                )
+                with patch.object(
+                        SensorRepository,
+                        'get_sensor_by_name_and_user_group_id') as \
+                        get_sensor_by_name_and_user_group_id_mock:
+                    get_sensor_by_name_and_user_group_id_mock.return_value = None
+
+                    result = sensor_service_instance.add_sensor_to_device_group(
+                        device_group.product_key,
+                        admin.id,
+                        True,
+                        device_key,
+                        password,
+                        sensor_name,
+                        sensor_type_name
+                    )
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED
+
+def test_add_sensor_to_device_group_should_return_error_message_when_sensor_name_already_in_device_group(
+        create_device_group, create_unconfigured_device, create_admin):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = device_group.password
+    sensor_name = 'test_sensor_name'
+    sensor_type_name = 'test_sensor_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id') as \
+                get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            with patch.object(
+                    SensorTypeRepository,
+                    'get_sensor_type_by_device_group_id_and_name') as get_sensor_type_by_device_group_id_and_name_mock:
+                get_sensor_type_by_device_group_id_and_name_mock.return_value = Mock()
+
+                with patch.object(
+                        SensorRepository,
+                        'get_sensor_by_name_and_user_group_id') as \
+                        get_sensor_by_name_and_user_group_id_mock:
+                    get_sensor_by_name_and_user_group_id_mock.return_value = Mock()
+
+                    result = sensor_service_instance.add_sensor_to_device_group(
+                        device_group.product_key,
+                        admin.id,
+                        True,
+                        device_key,
+                        password,
+                        sensor_name,
+                        sensor_type_name
+                    )
+
+    assert result == Constants.RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED
+
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_unconfigured_device_not_found(

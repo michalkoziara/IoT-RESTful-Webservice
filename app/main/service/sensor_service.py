@@ -170,6 +170,13 @@ class SensorService:
         if password != uncofigured_device.password:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
+        sensor_with_the_same_name = self._sensor_repository_instance.get_sensor_by_name_and_user_group_id(
+            sensor_name,
+            device_group.id)
+
+        if sensor_with_the_same_name:
+            return Constants.RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED
+
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(
             device_group.id,
             sensor_type_name)
@@ -194,6 +201,7 @@ class SensorService:
             self._unconfigured_device_repository.commit_changes()
         except SQLAlchemyError:
             self._sensor_repository_instance.rollback_session()
+
             return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
 
         return Constants.RESPONSE_MESSAGE_CREATED
