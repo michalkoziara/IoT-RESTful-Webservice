@@ -1,7 +1,8 @@
 import datetime
-import jwt
 from typing import Optional
 from typing import Tuple
+
+import jwt
 
 from app.main.util.constants import Constants
 
