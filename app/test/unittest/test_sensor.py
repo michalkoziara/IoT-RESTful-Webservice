@@ -1234,3 +1234,72 @@ def test_add_sensor_to_device_group_should_return_error_message_when_admin_id_is
         )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_devcice_group_not_found(
+        create_device_group, create_admin):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = device_group.password
+    sensor_name = 'test_sensor_name'
+    sensor_type_name = 'test_sensor_type_name'
+
+    admin.id += 1
+    assert device_group.admin_id != admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = sensor_service_instance.add_sensor_to_device_group(
+            device_group.product_key,
+            admin.id,
+            True,
+            device_key,
+            password,
+            sensor_name,
+            sensor_type_name
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+@pytest.mark.parametrize(
+    "product_key, admin_id, is_admin, device_key, password, sensor_name, sensor_type_name, expected_result", [
+        (None, 'admin_id', True, "test device_key", 'password', 'test_sensor_name', 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND),
+        ('product_key', None, True, "test device_key", 'password', 'test_sensor_name', 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+        ('product_key', 'admin_id', None, "test device_key", 'password', 'test_sensor_name', 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+        ('product_key', 'admin_id', True, None, 'password', 'test_sensor_name', 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", None, 'test_sensor_name', 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", 'password', None, 'test_sensor_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", 'password', 'test_sensor_name', None,
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+
+    ])
+def test_add_sensor_to_device_group_should_return_error_message_when_device_group_not_found(
+        product_key, admin_id, is_admin, device_key, password, sensor_name, sensor_type_name, expected_result):
+    sensor_service_instance = SensorService.get_instance()
+
+    result = sensor_service_instance.add_sensor_to_device_group(
+        product_key,
+        admin_id,
+        is_admin,
+        device_key,
+        password,
+        sensor_name,
+        sensor_type_name
+    )
+
+    assert result == expected_result
