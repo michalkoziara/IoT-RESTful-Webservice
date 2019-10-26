@@ -44,3 +44,5 @@ class Constants:
     RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST = 'Devices keys must be non-empty list.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED = 'Executive device type name not defined.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
+
+    RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND = 'Unconfigure device not found.'
