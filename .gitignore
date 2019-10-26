@@ -9,7 +9,7 @@ flask_boilerplate_main.db
 # Visual Studio Code
 .vscode
 
-# Byte-compiled / optimized / DLL filesó
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
