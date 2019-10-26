@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.types import Enum
 
 from app.main import db
@@ -19,3 +20,5 @@ class SensorType(db.Model):
 
     sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
     reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)
+
+    UniqueConstraint(device_group_id, name)

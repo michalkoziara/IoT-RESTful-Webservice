@@ -1,3 +1,5 @@
+from sqlalchemy import UniqueConstraint
+
 from app.main import db
 
 
@@ -10,3 +12,5 @@ class StateEnumerator(db.Model):
     text = db.Column(db.String(255), nullable=False)
 
     executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id'), nullable=False)
+
+    UniqueConstraint(executive_type_id, number)
