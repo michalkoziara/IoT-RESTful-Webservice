@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 """empty message
 
 Revision ID: 4ba3698a8641
@@ -7,7 +9,6 @@ Create Date: 2019-10-06 15:30:46.249846
 """
 from alembic import op
 import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision = '4ba3698a8641'
