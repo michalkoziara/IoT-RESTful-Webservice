@@ -1,3 +1,5 @@
+from sqlalchemy import UniqueConstraint
+
 from app.main import db
 
 
@@ -20,3 +22,5 @@ class ExecutiveDevice(db.Model):
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)
     formula_id = db.Column(db.Integer, db.ForeignKey('formula.id'), nullable=True)
+
+    UniqueConstraint('device_group_id', 'name', name='unique_exec_device_name_in_group')

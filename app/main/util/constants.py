@@ -36,6 +36,7 @@ class Constants:
     RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED = 'Sensor type name not defined.'
     RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND = 'Sensor type name not found.'
     RESPONSE_MESSAGE_SENSOR_TYPES_NOT_FOUND = 'Sensor types name not found.'
+    RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED = 'Sensor name already defined in device group.'
 
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND = 'Sensors readings not found'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST = 'Sensors readings must be a list of dictionaries'
@@ -44,3 +45,5 @@ class Constants:
     RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST = 'Devices keys must be non-empty list.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED = 'Executive device type name not defined.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
+
+    RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND = 'Unconfigure device not found.'

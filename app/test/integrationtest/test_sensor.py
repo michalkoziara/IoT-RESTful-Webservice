@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
 
+from sqlalchemy import and_
+
+from app.main.model import Sensor, UnconfiguredDevice
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
@@ -371,3 +374,128 @@ def test_get_get_list_of_unassigned_sensors_should_return_error_message_when_val
     response_data = json.loads(response.data.decode())
     assert response_data is not None
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_sensor_type,
+        insert_unconfigured_device
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    sensor_type = insert_sensor_type()
+
+    unconfigured_device = insert_unconfigured_device()
+
+    assert device_group.sensors == []
+    assert device_group.admin_id == admin.id
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/sensors',
+        data=json.dumps(
+            {
+                "deviceKey": unconfigured_device.device_key,
+                "password": device_group.password,
+                "sensorName": 'test_sensor_name',
+                "sensorTypeName": sensor_type.name
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 201
+    assert response.content_type == content_type
+
+    sensor = Sensor.query.filter(
+        and_(
+            Sensor.device_key == unconfigured_device.device_key,
+            Sensor.device_group_id == device_group.id
+        )
+    ).first()
+
+    deleted_unconfigured_device = UnconfiguredDevice.query.filter(
+        and_(
+            UnconfiguredDevice.device_key == unconfigured_device.device_key,
+            UnconfiguredDevice.device_group_id == device_group.id
+        )
+    ).first()
+
+    assert deleted_unconfigured_device is None
+    assert sensor
+    assert sensor.device_group_id == device_group.id
+    assert sensor.name == 'test_sensor_name'
+    assert sensor.is_updated is False
+    assert sensor.is_active is False
+    assert sensor.is_updated is False
+    assert sensor.is_assigned is False
+    assert sensor.device_key == unconfigured_device.device_key
+    assert sensor.sensor_type_id == sensor_type.id
+    assert sensor.user_group_id is None
+    assert sensor.sensor_readings == []
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_device_key_already_in_sensors_table(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_sensor_type,
+        insert_unconfigured_device,
+        get_sensor_default_values,
+        insert_sensor
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    sensor_type = insert_sensor_type()
+
+    unconfigured_device = insert_unconfigured_device()
+
+    sensor_values = get_sensor_default_values()
+    sensor_values['device_key'] = unconfigured_device.device_key
+    sensor = insert_sensor(sensor_values)
+
+    assert device_group.sensors == [sensor]
+    assert device_group.admin_id == admin.id
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/sensors',
+        data=json.dumps(
+            {
+                "deviceKey": unconfigured_device.device_key,
+                "password": device_group.password,
+                "sensorName": 'test_sensor_name',
+                "sensorTypeName": sensor_type.name
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 409
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
+
+    not_deleted_unconfigured_device = UnconfiguredDevice.query.filter(
+        and_(
+            UnconfiguredDevice.device_key == unconfigured_device.device_key,
+            UnconfiguredDevice.device_group_id == device_group.id
+        )
+    ).first()
+
+    assert not_deleted_unconfigured_device is unconfigured_device
+    assert device_group.sensors == [sensor]

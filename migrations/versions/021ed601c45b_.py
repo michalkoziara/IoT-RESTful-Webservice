@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 """empty message
 
 Revision ID: 021ed601c45b
@@ -5,9 +7,8 @@ Revises: f58b14a037ba
 Create Date: 2019-09-30 22:28:54.740714
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '021ed601c45b'
