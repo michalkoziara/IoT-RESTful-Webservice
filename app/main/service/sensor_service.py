@@ -2,6 +2,8 @@
 from typing import Optional, List
 from typing import Tuple
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
@@ -190,7 +192,7 @@ class SensorService:
             self._sensor_repository_instance.save_but_do_not_commit(sensor)
             self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
             self._unconfigured_device_repository.commit_changes()
-        except:
+        except SQLAlchemyError:
             self._sensor_repository_instance.rollback_session()
             return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
 
