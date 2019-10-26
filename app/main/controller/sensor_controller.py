@@ -60,13 +60,11 @@ def get_unassigned_sensors_in_device_group(product_key: str):
     )
 
 
-###
 @api.route('/hubs/<product_key>/sensors', methods=['POST'])
 def add_sensor_to_device_group(product_key: str):
     auth_header = request.headers.get('Authorization')
 
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
-    result_values = None
 
     response_message, status = ResponseUtils.check_request_data(
         request=request,
@@ -81,7 +79,7 @@ def add_sensor_to_device_group(product_key: str):
             sensor_name = request_dict['sensorName']
             sensor_type_name = request_dict['sensorTypeName']
 
-            result, result_values = _sensor_service_instance.add_sensor_to_device_group(
+            result = _sensor_service_instance.add_sensor_to_device_group(
                 product_key,
                 user_info['user_id'],
                 user_info['is_admin'],
@@ -97,13 +95,9 @@ def add_sensor_to_device_group(product_key: str):
 
     return ResponseUtils.create_response(
         result=result,
-        result_values=result_values,
         product_key=product_key,
         is_logged=True
     )
-
-
-####
 
 
 @api.route('/hubs/<product_key>/sensors/<device_key>/readings', methods=['GET'])

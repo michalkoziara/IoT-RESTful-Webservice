@@ -36,8 +36,14 @@ class BaseRepository:
 
         return result
 
+    def rollback_session(self) -> None:
+        db.session.rollback()
+
     def save_but_do_not_commit(self, model: db.Model) -> None:
         db.session.add(model)
 
     def delete_but_do_not_commit(self, model: db.Model) -> None:
         db.session.delete(model)
+
+    def commit_changes(self)-> None:
+        db.session.commit()
