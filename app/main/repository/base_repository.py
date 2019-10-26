@@ -36,8 +36,8 @@ class BaseRepository:
 
         return result
 
-    def save_and_not_commit(self, model: db.Model) -> None:
+    def save_but_do_not_commit(self, model: db.Model) -> None:
         db.session.add(model)
 
-    def delete_and_not_commit(self, model: db.Model) -> None:
+    def delete_but_do_not_commit(self, model: db.Model) -> None:
         db.session.delete(model)
