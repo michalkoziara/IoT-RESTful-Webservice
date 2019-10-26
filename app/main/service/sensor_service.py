@@ -140,12 +140,12 @@ class SensorService:
             device_key: str,
             password: str,
             sensor_name: str,
-            sensor_type_name: str) -> Tuple[bool, Optional[dict]]:
+            sensor_type_name: str) -> str:
         if not product_key:
-            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
         if admin_id is None or is_admin is None:
-            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
 
         if not device_key or not password or not sensor_name or not sensor_type_name:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST
@@ -153,13 +153,13 @@ class SensorService:
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
-            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
         if device_group.admin_id != admin_id or not is_admin:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if password != device_group.password:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         uncofigured_device = \
             self._unconfigured_device_repository.get_unconfigured_device_by_device_key_and_device_group_id(
@@ -187,13 +187,13 @@ class SensorService:
             sensor_readings=[]
         )
 
-        self._sensor_repository_instance.save_and_not_commit(sensor)
-        self._sensor_repository_instance.delete_and_not_commit(uncofigured_device)
+        self._sensor_repository_instance.save_but_do_not_commit(sensor)
+        self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
 
         if not self._sensor_repository_instance.update_database():
-            return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA, None
+            return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
 
-        return Constants.RESPONSE_MESSAGE_CREATED, None
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def get_sensor_readings(self, device_key: str, product_key: str, user_id: str) -> Tuple[
         bool, Optional[dict]]:
