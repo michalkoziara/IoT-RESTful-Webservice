@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.main.model import Sensor
 from app.main.repository.base_repository import BaseRepository
@@ -1000,8 +1001,8 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                                 'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
                             with patch.object(
                                     BaseRepository,
-                                    'update_database') as update_database_mock:
-                                update_database_mock.return_value = True
+                                    'commit_changes') as commit_changes_mock:
+                                commit_changes_mock.return_value = True
 
                                 result = sensor_service_instance.add_sensor_to_device_group(
                                     device_group.product_key,
@@ -1019,10 +1020,10 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                                         sensor_type_id=sensor_type.id, user_group_id=None)
     save_but_do_not_commit_mock.assert_called_once()
     delete_but_do_not_commit_mock.assert_called_once_with(unconfigured_device)
-    update_database_mock.assert_called_once()
+    commit_changes_mock.assert_called_once()
 
 
-def test_add_sensor_to_device_group_should_return_error_message_when_not_succesfull_db_update(
+def test_add_sensor_to_device_group_should_return_error_message_when_not_successfull_db_update(
         create_device_group, create_unconfigured_device, create_sensor_type, create_admin):
     sensor_service_instance = SensorService.get_instance()
 
@@ -1037,6 +1038,9 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_succesf
     sensor_type_name = 'test_sensor_type_name'
 
     assert device_group.admin_id == admin.id
+
+    def raise_exception():
+        raise SQLAlchemyError()
 
     with patch.object(
             DeviceGroupRepository,
@@ -1064,18 +1068,20 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_succesf
                                 'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
                             with patch.object(
                                     BaseRepository,
-                                    'update_database') as update_database_mock:
-                                update_database_mock.return_value = False
+                                    'commit_changes') as commit_changes_mock:
+                                commit_changes_mock.side_effect = raise_exception
+                                commit_changes_mock.return_value = False
 
-                                result = sensor_service_instance.add_sensor_to_device_group(
-                                    device_group.product_key,
-                                    admin.id,
-                                    True,
-                                    device_key,
-                                    password,
-                                    sensor_name,
-                                    sensor_type_name
-                                )
+                                with patch.object(BaseRepository, 'rollback_session'):
+                                    result = sensor_service_instance.add_sensor_to_device_group(
+                                        device_group.product_key,
+                                        admin.id,
+                                        True,
+                                        device_key,
+                                        password,
+                                        sensor_name,
+                                        sensor_type_name
+                                    )
 
     assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
     sensor_init_mock.assert_called_with(device_group_id=device_group.id, device_key=device_key, is_active=False,

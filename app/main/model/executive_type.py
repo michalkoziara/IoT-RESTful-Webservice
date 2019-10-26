@@ -21,4 +21,4 @@ class ExecutiveType(db.Model):
     executive_devices = db.relationship('ExecutiveDevice', backref='executive_type', lazy=True)
     state_enumerators = db.relationship('StateEnumerator', backref='executive_type', lazy=True)
 
-    UniqueConstraint(device_group_id, name)
+    UniqueConstraint('device_group_id', 'name', name='unique_exec_type_in_device_group')

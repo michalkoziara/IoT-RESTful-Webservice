@@ -21,4 +21,4 @@ class SensorType(db.Model):
     sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
     reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)
 
-    UniqueConstraint(device_group_id, name)
+    UniqueConstraint('device_group_id', 'name', name='unique_sensor_type_in_device_group')

@@ -20,4 +20,4 @@ class Sensor(db.Model):
 
     sensor_readings = db.relationship('SensorReading', backref='sensor', lazy=True)
 
-    UniqueConstraint(device_group_id, name)
+    UniqueConstraint('device_group_id', 'name', name='unique_sensor_name_in_group')

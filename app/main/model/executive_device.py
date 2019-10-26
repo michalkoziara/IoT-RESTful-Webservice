@@ -23,4 +23,4 @@ class ExecutiveDevice(db.Model):
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)
     formula_id = db.Column(db.Integer, db.ForeignKey('formula.id'), nullable=True)
 
-    UniqueConstraint(device_group_id, name)
+    UniqueConstraint('device_group_id', 'name', name='unique_exec_device_name_in_group')

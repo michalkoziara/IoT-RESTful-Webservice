@@ -13,4 +13,4 @@ class StateEnumerator(db.Model):
 
     executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id'), nullable=False)
 
-    UniqueConstraint(executive_type_id, number)
+    UniqueConstraint('executive_type_id', 'number', name='unique_number_in_state_enumerator')

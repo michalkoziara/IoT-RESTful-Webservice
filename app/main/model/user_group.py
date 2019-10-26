@@ -21,4 +21,4 @@ class UserGroup(db.Model):
     users = db.relationship('User', secondary=user_group_member,
                             lazy='subquery', backref=db.backref('user_groups', lazy=True))
 
-    UniqueConstraint(device_group_id, name)
+    UniqueConstraint('device_group_id', 'name', name='unique_name_in_device_group')
