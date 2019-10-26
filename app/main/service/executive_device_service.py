@@ -1,9 +1,9 @@
 # pylint: disable=no-self-use
-from typing import Optional
+from typing import Optional, List
 from typing import Tuple
 
-from app.main.model.sensor_type import SensorType
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.sensor_type import SensorType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -97,6 +97,48 @@ class ExecutiveDeviceService:
             executive_device_info['formulaName'] = None
 
         return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+    def get_list_of_unassigned_executive_devices(
+            self, product_key: str,
+            user_id: str,
+            is_admin: bool
+    ) -> Tuple[bool, Optional[List[dict]]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if is_admin:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        else:
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
+
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        values = []
+
+        executive_devices = self._executive_device_repository_instance \
+            .get_executive_devices_by_device_group_id_that_are_not_in_user_group(
+            device_group.id)
+
+        for executive_device in executive_devices:
+            executive_device_info = {
+                'name': executive_device.name,
+                'isActive': executive_device.is_active
+            }
+            values.append(executive_device_info)
+
+        return Constants.RESPONSE_MESSAGE_OK, values
 
     def set_device_state(self, device_group_id, values: dict):
 

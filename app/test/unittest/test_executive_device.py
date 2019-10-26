@@ -474,3 +474,247 @@ def test_is_decimal_state_in_range_should_return_false_when_value_not_in_range_o
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
     assert not executive_device_service_instance._is_decimal_state_in_range(value, executive_type)
+
+
+#########
+
+
+def test_get_list_of_unassigned_executive_devices_should_return_list_of_unassigned_executive_devices_when_user_is_not_admin_and_right_parameters_are_passed(
+        get_executive_device_default_values,
+        create_executive_device,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    second_executive_device_values = get_executive_device_default_values()
+    second_executive_device_values['id'] += 1
+    second_executive_device_values['name'] = 'second executive device'
+    first_executive_device_values = create_executive_device()
+    second_executive_device_values = create_executive_device(second_executive_device_values)
+
+    expected_output_values = [
+        {
+            'name': first_executive_device_values.name,
+            'isActive': first_executive_device_values.is_active
+        },
+        {
+            'name': second_executive_device_values.name,
+            'isActive': second_executive_device_values.is_active
+        }
+    ]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_devices_by_device_group_id_that_are_not_in_user_group'
+            ) as get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock:
+                get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock.return_value = [
+                    first_executive_device_values,
+                    second_executive_device_values]
+
+                result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+                    device_group.product_key,
+                    'test_user_id',
+                    False
+                )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_output_values
+
+
+def test_get_list_of_unassigned_executive_devices_should_return_list_of_unassigned_executive_devices_when_user_is_admin_and_right_parameters_are_passed(
+        get_executive_device_default_values,
+        create_executive_device,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+    device_group = create_device_group()
+    second_executive_device_values = get_executive_device_default_values()
+    second_executive_device_values['id'] += 1
+    second_executive_device_values['name'] = 'second executive device'
+    first_executive_device_values = create_executive_device()
+    second_executive_device_values = create_executive_device(second_executive_device_values)
+
+    expected_output_values = [
+        {
+            'name': first_executive_device_values.name,
+            'isActive': first_executive_device_values.is_active
+        },
+        {
+            'name': second_executive_device_values.name,
+            'isActive': second_executive_device_values.is_active
+        }
+    ]
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_devices_by_device_group_id_that_are_not_in_user_group'
+            ) as get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock:
+                get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock.return_value = [
+                    first_executive_device_values,
+                    second_executive_device_values]
+
+                result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+                    device_group.product_key,
+                    device_group.admin_id,
+                    True
+                )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_output_values
+
+
+def test_get_list_of_unassigned_executive_devices_should_return_empty_list_when_there_are_not_any_unassigned_executive_devices(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+
+    expected_output_values = []
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_devices_by_device_group_id_that_are_not_in_user_group'
+            ) as get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock:
+                get_executive_devices_by_device_group_id_that_are_not_in_user_group_mock.return_value = []
+
+                result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+                    device_group.product_key,
+                    'test_user_id',
+                    False
+                )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_output_values
+
+
+def test_get_list_of_unassigned_executive_devices_should_error_message_when_admin_id_is_different_than_user_id_and_user_is_admin(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+            result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+                device_group.product_key,
+                'test_user_id',
+                True
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
+
+def test_get_list_of_unassigned_executive_devices_should_error_message_when_user_not_in_device_group(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = None
+
+            result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+                device_group.product_key,
+                'test_user_id',
+                False
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
+
+def test_get_list_of_unassigned_executive_devices_should_error_message_when_device_group_not_found(
+        get_sensor_default_values,
+        create_sensor,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+            'device_group.product_key',
+            'test_user_id',
+            False
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+    assert result_values is None
+
+
+@pytest.mark.parametrize("product_key, user_id, is_admin, expected_result", [
+    ('product_key', None, False, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', 'user_id', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    (None, 'user_id', False, Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_get_list_of_unassigned_executive_devices_should_error_message_when_one_of_parameters_is_none(
+        product_key, user_id, is_admin, expected_result,
+        get_sensor_default_values,
+        create_sensor,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = executive_device_service_instance.get_list_of_unassigned_executive_devices(
+            product_key,
+            user_id,
+            is_admin
+        )
+
+    assert result == expected_result
+    assert result_values is None

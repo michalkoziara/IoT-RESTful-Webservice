@@ -241,3 +241,180 @@ def test_get_executive_device_info_should_return_device_key_not_found_error_when
 
     response_data = json.loads(response.data.decode())
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
+
+
+############
+
+def test_get_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
+        client,
+        insert_device_group,
+        get_executive_device_default_values,
+        insert_executive_device,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    user_group_values['name'] = 'Master'
+
+    user_group = insert_user_group(user_group_values)
+
+    assert user in user_group.users
+
+    first_executive_device_values = get_executive_device_default_values()
+    second_executive_device_values = get_executive_device_default_values()
+    third_executive_device_values = get_executive_device_default_values()
+
+    first_executive_device_values['name'] = 'first'
+    second_executive_device_values['name'] = 'second'
+    third_executive_device_values['name'] = 'second'
+
+    first_executive_device_values['user_group_id'] = user_group.id
+    second_executive_device_values['user_group_id'] = None
+    third_executive_device_values['user_group_id'] = None
+
+    second_executive_device_values['id'] += 1
+    third_executive_device_values['id'] += 2
+
+    second_executive_device_values['device_key'] += '1'
+    third_executive_device_values['device_key'] += '2'
+
+    insert_executive_device(first_executive_device_values)
+    second_executive_device = insert_executive_device(second_executive_device_values)
+    third_executive_device = insert_executive_device(third_executive_device_values)
+
+    expected_output_values = [
+        {
+            'name': second_executive_device.name,
+            'isActive': second_executive_device.is_active
+        },
+        {
+            'name': third_executive_device.name,
+            'isActive': third_executive_device.is_active
+        }
+
+    ]
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/executive-devices',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
+def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_info_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        get_executive_device_default_values,
+        insert_executive_device,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    user_group = insert_user_group()
+
+    first_executive_device_values = get_executive_device_default_values()
+    second_executive_device_values = get_executive_device_default_values()
+    third_executive_device_values = get_executive_device_default_values()
+
+    first_executive_device_values['name'] = 'first'
+    second_executive_device_values['name'] = 'second'
+    third_executive_device_values['name'] = 'second'
+
+    first_executive_device_values['user_group_id'] = user_group.id
+    second_executive_device_values['user_group_id'] = None
+    third_executive_device_values['user_group_id'] = None
+
+    second_executive_device_values['id'] += 1
+    third_executive_device_values['id'] += 2
+
+    second_executive_device_values['device_key'] += '1'
+    third_executive_device_values['device_key'] += '2'
+
+    insert_executive_device(first_executive_device_values)
+    second_executive_device = insert_executive_device(second_executive_device_values)
+    third_executive_device = insert_executive_device(third_executive_device_values)
+
+    expected_output_values = [
+        {
+            'name': second_executive_device.name,
+            'isActive': second_executive_device.is_active
+        },
+        {
+            'name': third_executive_device.name,
+            'isActive': third_executive_device.is_active
+        }
+
+    ]
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/executive-devices',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
+def test_get_get_list_of_unassigned_executive_devices_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_sensor,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['name'] = 'Master'
+
+    user_group = insert_user_group(user_group_values)
+
+    assert user not in user_group.users
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/executive-devices',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 403
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES

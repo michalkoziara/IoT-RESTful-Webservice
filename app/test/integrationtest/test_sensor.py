@@ -196,7 +196,7 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     assert response_data['values'] == expected_values
 
 
-def test_get_get_list_of_unassinged_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
+def test_get_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
         client,
         insert_device_group,
         get_sensor_default_values,
@@ -268,7 +268,7 @@ def test_get_get_list_of_unassinged_sensors_should_return_list_of_sensors_info_w
     assert response_data == expected_output_values
 
 
-def test_get_list_of_unassinged_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_admin(
+def test_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_admin(
         client,
         insert_device_group,
         get_sensor_default_values,
@@ -336,7 +336,7 @@ def test_get_list_of_unassinged_sensors_should_return_list_of_sensors_info_when_
     assert response_data == expected_output_values
 
 
-def test_get_get_list_of_unassinged_sensors_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
+def test_get_get_list_of_unassigned_sensors_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
         client,
         insert_device_group,
         get_sensor_default_values,

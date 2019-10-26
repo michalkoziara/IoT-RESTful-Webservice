@@ -89,7 +89,7 @@ class SensorService:
 
         return Constants.RESPONSE_MESSAGE_OK, senor_info
 
-    def get_list_of_unassinged_sensors(self, product_key: str,
+    def get_list_of_unassigned_sensors(self, product_key: str,
                                        user_id: str,
                                        is_admin: bool
                                        ) -> Tuple[bool, Optional[List[dict]]]:
