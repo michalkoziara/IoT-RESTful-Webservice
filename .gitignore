@@ -1,6 +1,7 @@
 # Flask DB Boilerplate
 flask_boilerplate_test.db
 flask_boilerplate_main.db
+/app/main/util/flask_boilerplate_test.db-journal
 
 # PyCharm
 .idea
@@ -8,7 +9,7 @@ flask_boilerplate_main.db
 # Visual Studio Code
 .vscode
 
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL filesó
 __pycache__/
 *.py[cod]
 *$py.class
@@ -71,6 +72,7 @@ db.sqlite3
 instance/
 .webassets-cache
 
+
 # Scrapy stuff:
 .scrapy
 
@@ -114,4 +116,3 @@ webservice_venv/
 
 # mypy
 .mypy_cache/
-/app/main/util/flask_boilerplate_test.db-journal

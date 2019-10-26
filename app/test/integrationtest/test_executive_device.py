@@ -243,8 +243,6 @@ def test_get_executive_device_info_should_return_device_key_not_found_error_when
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
 
 
-############
-
 def test_get_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
         client,
         insert_device_group,
