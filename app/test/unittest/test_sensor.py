@@ -1170,15 +1170,17 @@ def test_add_sensor_to_device_group_should_return_error_message_when_unconfigure
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_wrong_password_is_passed(
-        create_device_group, create_admin):
+        create_device_group, create_admin, create_unconfigured_device):
     sensor_service_instance = SensorService.get_instance()
 
     device_group = create_device_group()
 
     admin = create_admin()
 
+    unconfigured_device = create_unconfigured_device()
+
     device_key = "test device_key"
-    password = device_group.password + 'test'
+    password = unconfigured_device.password + 'test'
     sensor_name = 'test_sensor_name'
     sensor_type_name = 'test_sensor_type_name'
 
@@ -1189,15 +1191,21 @@ def test_add_sensor_to_device_group_should_return_error_message_when_wrong_passw
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        result = sensor_service_instance.add_sensor_to_device_group(
-            device_group.product_key,
-            admin.id,
-            True,
-            device_key,
-            password,
-            sensor_name,
-            sensor_type_name
-        )
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id') as \
+                get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            result = sensor_service_instance.add_sensor_to_device_group(
+                device_group.product_key,
+                admin.id,
+                True,
+                device_key,
+                password,
+                sensor_name,
+                sensor_type_name
+            )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
