@@ -17,6 +17,16 @@ class BaseRepository:
 
         return result
 
+    def delete(self, model: db.Model) -> bool:
+        try:
+            db.session.delete(model)
+            db.session.commit()
+            result = True
+        except SQLAlchemyError:
+            result = False
+
+        return result
+
     def update_database(self) -> bool:
         try:
             db.session.commit()
@@ -25,3 +35,9 @@ class BaseRepository:
             result = False
 
         return result
+
+    def save_and_not_commit(self, model: db.Model) -> None:
+        db.session.add(model)
+
+    def delete_and_not_commit(self, model: db.Model) -> None:
+        db.session.delete(model)
