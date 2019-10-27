@@ -1368,7 +1368,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_devcice_gro
          Constants.RESPONSE_MESSAGE_BAD_REQUEST),
 
     ])
-def test_add_sensor_to_device_group_should_return_error_message_when_device_group_not_found(
+def test_add_sensor_to_device_group_should_return_error_message_when_one_of_parameters_none(
         product_key, admin_id, is_admin, device_key, password, sensor_name, sensor_type_name, expected_result):
     sensor_service_instance = SensorService.get_instance()
 

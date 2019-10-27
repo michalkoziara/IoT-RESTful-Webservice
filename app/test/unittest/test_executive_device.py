@@ -903,7 +903,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_type
 
     device_group = create_device_group()
     unconfigured_device = create_unconfigured_device()
-    executive_type = create_executive_type()
     admin = create_admin()
 
     device_key = "test device_key"
@@ -1113,7 +1112,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
 
-def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_id_is_different_from_device_group_admin_id(
+def test_add_sensor_to_device_group_should_return_error_message_when_when_device_group_not_found(
         create_device_group, create_unconfigured_device, create_executive_type, create_admin):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
@@ -1160,7 +1159,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_
          Constants.RESPONSE_MESSAGE_BAD_REQUEST),
 
     ])
-def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_id_is_different_from_device_group_admin_id(
+def test_add_sensor_to_device_group_should_return_error_message_when_one_of_parameters_is_none(
         product_key, admin_id, is_admin, device_key, password, device_name, executive_type_name, expected_result
 ):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
