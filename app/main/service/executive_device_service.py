@@ -2,6 +2,8 @@
 from typing import Optional, List
 from typing import Tuple
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.sensor_type import SensorType
 from app.main.repository.device_group_repository import DeviceGroupRepository
@@ -9,6 +11,7 @@ from app.main.repository.executive_device_repository import ExecutiveDeviceRepos
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
+from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_bool
@@ -30,6 +33,7 @@ class ExecutiveDeviceService:
         return cls._instance
 
     def __init__(self):
+        self._unconfigured_device_repository = UnconfiguredDeviceRepository.get_instance()
         self._state_enumerator_repository_instance = StateEnumeratorRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._executive_device_repository_instance = ExecutiveDeviceRepository.get_instance()
@@ -139,6 +143,83 @@ class ExecutiveDeviceService:
             values.append(executive_device_info)
 
         return Constants.RESPONSE_MESSAGE_OK, values
+
+    def add_executive_device_to_device_group(
+            self,
+            product_key: str,
+            admin_id: str,
+            is_admin: bool,
+            device_key: str,
+            password: str,
+            device_name: str,
+            device_type_name: str) -> str:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if admin_id is None or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        if not device_key or not password or not device_name or not device_type_name:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if device_group.admin_id != admin_id or not is_admin:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        uncofigured_device = \
+            self._unconfigured_device_repository.get_unconfigured_device_by_device_key_and_device_group_id(
+                device_key, device_group.id)
+
+        if not uncofigured_device:
+            return Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
+
+        if password != uncofigured_device.password:
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+        device_with_the_same_name = \
+            self._executive_device_repository_instance.get_executive_device_by_name_and_user_group_id(
+                device_name,
+                device_group.id)
+
+        if device_with_the_same_name:
+            return Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+        executive_type = self._executive_type_repository_instance.get_executive_type_by_device_group_id_and_name(
+            device_group.id,
+            device_type_name)
+
+        if not executive_type:
+            return Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED
+
+        executive_device = ExecutiveDevice(
+            name=device_name,
+            state="Not set",  # change state
+            is_updated=False,
+            is_active=False,
+            is_assigned=False,
+            is_formula_used=False,
+            positive_state=None,
+            negative_state=None,
+            device_key=str(device_key),
+            executive_type_id=executive_type.id,
+            user_group_id=None,
+            device_group_id=device_group.id,
+            formula_id=None
+        )
+        try:
+            self._executive_device_repository_instance.save_but_do_not_commit(executive_device)
+            self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
+            self._unconfigured_device_repository.commit_changes()
+        except SQLAlchemyError:
+            self._executive_device_repository_instance.rollback_session()
+
+            return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def set_device_state(self, device_group_id, values: dict):
 
