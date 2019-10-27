@@ -1,3 +1,6 @@
+import random
+import string
+
 from app.main.model import User, DeviceGroup
 
 
@@ -14,3 +17,14 @@ def is_user_in_one_of_user_groups_in_device_group(user: User, device_group: Devi
         return True
     else:
         return False
+
+
+def is_dict_with_keys(object, keys) -> bool:
+    if not is_dict(object) or not all(key in object for key in keys):
+        return False
+    else:
+        return True
+
+
+def get_random_letters(number_of_letters: int) -> str:
+    return ''.join(random.choice(string.ascii_letters) for x in range(number_of_letters))
