@@ -1282,7 +1282,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_wrong_passw
                 sensor_type_name
             )
 
-    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result == Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_admin_id_is_different_from_device_group_admin_id(
@@ -1331,9 +1331,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_devcice_gro
     password = device_group.password
     sensor_name = 'test_sensor_name'
     sensor_type_name = 'test_sensor_type_name'
-
-    admin.id += 1
-    assert device_group.admin_id != admin.id
 
     with patch.object(
             DeviceGroupRepository,

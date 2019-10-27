@@ -168,7 +168,7 @@ class SensorService:
             return Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
 
         if password != uncofigured_device.password:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         sensor_with_the_same_name = self._sensor_repository_instance.get_sensor_by_name_and_user_group_id(
             sensor_name,
