@@ -4,8 +4,8 @@ from typing import Tuple
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.main.model import ExecutiveType
 from app.main.model.executive_device import ExecutiveDevice
-from app.main.model.sensor_type import SensorType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -13,6 +13,7 @@ from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
+from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_bool
 
@@ -24,6 +25,7 @@ class ExecutiveDeviceService:
     _executive_device_repository_instance = None
     _executive_type_repository_instance = None
     _formula_repository = None
+    _user_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -40,6 +42,7 @@ class ExecutiveDeviceService:
         self._formula_repository = FormulaRepository.get_instance()
         self._executive_type_repository_instance = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
+        self._user_repository = UserRepository.get_instance()
 
     def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
 
@@ -254,14 +257,14 @@ class ExecutiveDeviceService:
         executive_device.state = state
         return self._executive_device_repository_instance.update_database()
 
-    def get_executive_device_state_value(self, executive_device: ExecutiveDevice):
+    def get_executive_device_state_value(self, executive_device: ExecutiveDevice, state: str = None):
         executive_device_type = self._executive_type_repository_instance.get_executive_type_by_id(
             executive_device.executive_type_id)
         state_type = executive_device_type.state_type
 
-        state = executive_device.state
-        if not state:
-            return None
+        if state is None:
+            state = executive_device.state
+
         state_value = None
         if state_type == 'Enum':
             state_value = \
@@ -278,26 +281,171 @@ class ExecutiveDeviceService:
 
         return state_value
 
-    def _state_in_range(self, state: str, sensor_type: SensorType) -> bool:
-        if sensor_type.state_type == 'Enum':
-            return self._is_enum_state_right(state, sensor_type)
-        elif sensor_type.state_type == 'Decimal':
-            return self._is_decimal_state_in_range(state, sensor_type)
-        elif sensor_type.state_type == 'Boolean':
+    def modify_executive_device(
+            self,
+            product_key,
+            user_id,
+            is_admin,
+            device_key,
+            name,
+            type_name,
+            state,
+            positive_state,
+            negative_state,
+            formula_name,
+            user_group_name,
+            is_formula_used
+    ):
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not device_key:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        if user_id is None or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        if is_admin:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        if not name or not type_name or not state:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        # Check if user is in device group users groups
+        users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+            user_id,
+            product_key)
+
+        if not users_device_group:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        executive_device = \
+            self._executive_device_repository_instance.get_executive_device_by_device_key_and_device_group_id(
+                device_key, device_group.id)
+
+        if not executive_device:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        user = self._user_repository.get_user_by_id(user_id)
+
+        # Checking is user group could be changed and if user is in both user_groups else every other change could
+        # not be applied:
+        old_user_group = None
+        if executive_device.user_group_id is not None:
+            old_user_group = self._user_group_repository.get_user_group_by_id(executive_device.user_group_id)
+
+            if user not in old_user_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        new_user_group = None
+        if user_group_name is not None:
+            new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
+                user_group_name,
+                device_group.id)
+            if user not in new_user_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        if new_user_group is not None:
+            executive_device.user_group_id = new_user_group.id
+        else:
+            executive_device.user_group_id = None
+
+        new_executive_type = self._executive_type_repository_instance.get_executive_type_by_device_group_id_and_name(
+            device_group.id, type_name)
+        if not new_executive_type:
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+        executive_device.executive_type_id = new_executive_type.id
+
+        if not isinstance(name, str):
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+        executive_device.name = name
+
+        if self._state_in_range(state, new_executive_type):
+            executive_device.state = state
+        else:
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+        if formula_name is not None:
+            if new_user_group is None:
+                return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+            formula = self._formula_repository.get_formula_by_name_and_user_group_id(formula_name, new_user_group.id)
+            if not formula:
+                return Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND, None
+            executive_device.formula_id = formula.id
+
+            if self._state_in_range(positive_state) and self._state_in_range(negative_state):
+                executive_device.positive_state = positive_state
+                executive_device.negative_state = negative_state
+            else:
+                return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+            if is_bool(is_formula_used):
+                executive_device.is_formula_used = is_formula_used
+            else:
+                return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+
+        else:
+            if positive_state is not None or negative_state is not None or is_formula_used is None:
+                return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA, None
+            executive_device.formula_id = None
+            executive_device.positive_state = None
+            executive_device.negative_state = None
+
+        executive_device.is_updated = True
+        executive_device_info = {
+            'changedName': executive_device.name,
+            'changedType': new_executive_type.name,
+        }
+        if formula_name:
+            executive_device_info['changedFormulaName'] = formula.name
+            executive_device_info['changedPositiveState'] = self.get_executive_device_state_value(
+                executive_device,
+                executive_device.positive_state)
+            executive_device_info['changedNegativeState'] = self.get_executive_device_state_value(
+                executive_device,
+                executive_device.negative_state)
+
+        else:
+            executive_device_info['changedFormulaName'] = None
+            executive_device_info['changedPositiveState'] = None
+            executive_device_info['changedNegativeState'] = None
+
+        if new_user_group is not None:
+            executive_device_info['changedUserGroupName'] = new_user_group.name
+        else:
+            executive_device_info['changedUserGroupName'] = None
+
+        return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+    def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
+        if executive_type.state_type == 'Enum':
+            return self._is_enum_state_right(state, executive_type)
+        elif executive_type.state_type == 'Decimal':
+            return self._is_decimal_state_in_range(state, executive_type)
+        elif executive_type.state_type == 'Boolean':
             return is_bool(state)
         else:
             return False
 
-    def _is_enum_state_right(self, state: int, sensor_type: SensorType) -> bool:
+    def _is_enum_state_right(self, state: int, executive_type: ExecutiveType) -> bool:
         if isinstance(state, str):
             return False
         possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_sensor_type_id(
-            sensor_type.id)
+            executive_type.id)
         if state in [possible_state.number for possible_state in possible_states]:
             return True
         return False
 
-    def _is_decimal_state_in_range(self, state, sensor_type: SensorType) -> bool:
+    def _is_decimal_state_in_range(self, state, executive_type: ExecutiveType) -> bool:
         if not isinstance(state, (float, int)):
             return False
-        return sensor_type.state_range_min <= state <= sensor_type.state_range_max
+        return executive_type.state_range_min <= state <= executive_type.state_range_max
