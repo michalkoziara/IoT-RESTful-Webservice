@@ -39,6 +39,7 @@ psycopg2==2.8.2
 py==1.8.0
 pycodestyle==2.5.0
 pycparser==2.19
+pyeda==0.28.0
 PyJWT==1.7.1
 pylint==2.3.1
 pyparsing==2.4.2
