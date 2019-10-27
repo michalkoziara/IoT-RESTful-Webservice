@@ -420,7 +420,7 @@ class ExecutiveDeviceService:
             if user not in new_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
-        if error_message is None:
+        if error_message is not None:
             return False, None, error_message
         else:
             if new_user_group is not None:
@@ -459,8 +459,8 @@ class ExecutiveDeviceService:
         if executive_device_with_the_same_name:
             error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
 
-        if error_message is None:
-            return False, None, error_message
+        if error_message is not None:
+            return False, error_message
         else:
             executive_device.name = name
             return True, None
