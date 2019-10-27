@@ -46,7 +46,7 @@ class ResponseUtils:
                 request_dict = request.get_json()
 
                 if is_custom_check:
-                    if custom_check_metod(request_dict, *args, **kwargs):
+                    if not custom_check_metod(request_dict, *args, **kwargs):
                         result_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
                         status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
 

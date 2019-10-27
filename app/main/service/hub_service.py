@@ -113,7 +113,7 @@ class HubService:
 
         unconfigured_device.device_group_id = device_group.id
 
-        if not self._unconfigured_device_repository_instance.save(unconfigured_device):
+        if not self._unconfigured_device_repository_instance.update_database():
             return Constants.RESPONSE_MESSAGE_ERROR
 
         return Constants.RESPONSE_MESSAGE_CREATED

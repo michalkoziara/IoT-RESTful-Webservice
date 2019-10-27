@@ -431,8 +431,8 @@ def test_add_device_to_device_group_should_result_error_message_when_save_failed
         ) as get_unconfigured_device_by_device_key_mock:
             get_unconfigured_device_by_device_key_mock.return_value = unconfigured_device
 
-            with patch.object(UnconfiguredDeviceRepository, 'save') as save_mock:
-                save_mock.return_value = False
+            with patch.object(UnconfiguredDeviceRepository, 'update_database') as update_database_mock:
+                update_database_mock.return_value = False
 
                 result = hub_service_instance.add_device_to_device_group(
                     test_product_key,
