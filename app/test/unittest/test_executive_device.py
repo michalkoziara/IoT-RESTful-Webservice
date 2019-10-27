@@ -1,11 +1,15 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.main.model import ExecutiveDevice
+from app.main.repository.base_repository import BaseRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.formula_repository import FormulaRepository
+from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.util.constants import Constants
@@ -718,3 +722,457 @@ def test_get_list_of_unassigned_executive_devices_should_error_message_when_one_
 
     assert result == expected_result
     assert result_values is None
+
+
+#############
+
+
+def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    executive_type = create_executive_type()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            with patch.object(
+                    ExecutiveTypeRepository,
+                    'get_executive_type_by_device_group_id_and_name'
+            ) as get_executive_type_by_device_group_id_and_name_mock:
+                get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'get_executive_device_by_name_and_user_group_id'
+                ) as get_executive_device_by_name_and_user_group_id_mock:
+                    get_executive_device_by_name_and_user_group_id_mock.return_value = None
+
+                    with patch.object(ExecutiveDevice, '__init__') as sensor_init_mock:
+                        sensor_init_mock.return_value = None
+                        with patch.object(
+                                BaseRepository,
+                                'save_but_do_not_commit') as  save_but_do_not_commit_mock:
+                            with patch.object(
+                                    BaseRepository,
+                                    'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                with patch.object(
+                                        BaseRepository,
+                                        'commit_changes') as commit_changes_mock:
+                                    commit_changes_mock.return_value = True
+
+                                    result = executive_device_service_instance.add_executive_device_to_device_group(
+                                        device_group.product_key,
+                                        admin.id,
+                                        True,
+                                        device_key,
+                                        password,
+                                        device_name,
+                                        executive_type_name
+                                    )
+
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
+    sensor_init_mock.assert_called_with(
+        name=device_name,
+        state="Not set",
+        is_updated=False,
+        is_active=False,
+        is_assigned=False,
+        is_formula_used=False,
+        positive_state=None,
+        negative_state=None,
+        device_key=device_key,
+        executive_type_id=executive_type.id,
+        user_group_id=None,
+        device_group_id=device_group.id,
+        formula_id=None)
+
+    save_but_do_not_commit_mock.assert_called_once()
+    delete_but_do_not_commit_mock.assert_called_once_with(unconfigured_device)
+    commit_changes_mock.assert_called_once()
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_not_successfull_db_update(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    executive_type = create_executive_type()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    def raise_exception():
+        raise SQLAlchemyError()
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            with patch.object(
+                    ExecutiveTypeRepository,
+                    'get_executive_type_by_device_group_id_and_name'
+            ) as get_executive_type_by_device_group_id_and_name_mock:
+                get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'get_executive_device_by_name_and_user_group_id'
+                ) as get_executive_device_by_name_and_user_group_id_mock:
+                    get_executive_device_by_name_and_user_group_id_mock.return_value = None
+
+                    with patch.object(ExecutiveDevice, '__init__') as sensor_init_mock:
+                        sensor_init_mock.return_value = None
+                        with patch.object(
+                                BaseRepository,
+                                'save_but_do_not_commit') as  save_but_do_not_commit_mock:
+                            with patch.object(
+                                    BaseRepository,
+                                    'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
+                                with patch.object(
+                                        BaseRepository,
+                                        'commit_changes') as commit_changes_mock:
+                                    commit_changes_mock.side_effect = raise_exception
+                                    commit_changes_mock.return_value = False
+                                    with patch.object(BaseRepository, 'rollback_session'):
+                                        result = executive_device_service_instance.add_executive_device_to_device_group(
+                                            device_group.product_key,
+                                            admin.id,
+                                            True,
+                                            device_key,
+                                            password,
+                                            device_name,
+                                            executive_type_name
+                                        )
+
+    assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
+    sensor_init_mock.assert_called_with(
+        name=device_name,
+        state="Not set",
+        is_updated=False,
+        is_active=False,
+        is_assigned=False,
+        is_formula_used=False,
+        positive_state=None,
+        negative_state=None,
+        device_key=device_key,
+        executive_type_id=executive_type.id,
+        user_group_id=None,
+        device_group_id=device_group.id,
+        formula_id=None)
+
+    save_but_do_not_commit_mock.assert_called_once()
+    delete_but_do_not_commit_mock.assert_called_once_with(unconfigured_device)
+    commit_changes_mock.assert_called_once()
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_sensor_type_not_found(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    executive_type = create_executive_type()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            with patch.object(
+                    ExecutiveTypeRepository,
+                    'get_executive_type_by_device_group_id_and_name'
+            ) as get_executive_type_by_device_group_id_and_name_mock:
+                get_executive_type_by_device_group_id_and_name_mock.return_value = None
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'get_executive_device_by_name_and_user_group_id'
+                ) as get_executive_device_by_name_and_user_group_id_mock:
+                    get_executive_device_by_name_and_user_group_id_mock.return_value = None
+
+                    result = executive_device_service_instance.add_executive_device_to_device_group(
+                        device_group.product_key,
+                        admin.id,
+                        True,
+                        device_key,
+                        password,
+                        device_name,
+                        executive_type_name
+                    )
+
+    assert result == Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_device_name_already_in_device_group(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    executive_type = create_executive_type()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            with patch.object(
+                    ExecutiveTypeRepository,
+                    'get_executive_type_by_device_group_id_and_name'
+            ) as get_executive_type_by_device_group_id_and_name_mock:
+                get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'get_executive_device_by_name_and_user_group_id'
+                ) as get_executive_device_by_name_and_user_group_id_mock:
+                    get_executive_device_by_name_and_user_group_id_mock.return_value = Mock()
+
+                    result = executive_device_service_instance.add_executive_device_to_device_group(
+                        device_group.product_key,
+                        admin.id,
+                        True,
+                        device_key,
+                        password,
+                        device_name,
+                        executive_type_name
+                    )
+
+    assert result == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_unconfigured_device_not_found(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = None
+
+            result = executive_device_service_instance.add_executive_device_to_device_group(
+                device_group.product_key,
+                admin.id,
+                True,
+                device_key,
+                password,
+                device_name,
+                executive_type_name
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_wrong_password_is_passed(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password + 'test'
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UnconfiguredDeviceRepository,
+                'get_unconfigured_device_by_device_key_and_device_group_id'
+        ) as get_unconfigured_device_by_device_key_and_device_group_id_mock:
+            get_unconfigured_device_by_device_key_and_device_group_id_mock.return_value = unconfigured_device
+
+            result = executive_device_service_instance.add_executive_device_to_device_group(
+                device_group.product_key,
+                admin.id,
+                True,
+                device_key,
+                password,
+                device_name,
+                executive_type_name
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_id_is_different_from_device_group_admin_id(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    unconfigured_device = create_unconfigured_device()
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = unconfigured_device.password + 'test'
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    admin.id += 1
+    assert device_group.admin_id != admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        result = executive_device_service_instance.add_executive_device_to_device_group(
+            device_group.product_key,
+            admin.id,
+            True,
+            device_key,
+            password,
+            device_name,
+            executive_type_name
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_id_is_different_from_device_group_admin_id(
+        create_device_group, create_unconfigured_device, create_executive_type, create_admin):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin = create_admin()
+
+    device_key = "test device_key"
+    password = 'test'
+    device_name = 'test_exec_device_name'
+    executive_type_name = 'test_executive_type_name'
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = executive_device_service_instance.add_executive_device_to_device_group(
+            'device_group.product_key',
+            admin.id,
+            True,
+            device_key,
+            password,
+            device_name,
+            executive_type_name
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+@pytest.mark.parametrize(
+    "product_key, admin_id, is_admin, device_key, password, device_name, executive_type_name, expected_result", [
+        (None, 'admin_id', True, "test device_key", 'password', 'test_device_name', 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND),
+        ('product_key', None, True, "test device_key", 'password', 'test_device_name', 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+        ('product_key', 'admin_id', None, "test device_key", 'password', 'test_device_name', 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+        ('product_key', 'admin_id', True, None, 'password', 'test_device_name', 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", None, 'test_device_name', 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", 'password', None, 'test_executive_type_name',
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+        ('product_key', 'admin_id', True, "test device_key", 'password', 'test_device_name', None,
+         Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+
+    ])
+def test_add_sensor_to_device_group_should_return_error_message_when_when_admin_id_is_different_from_device_group_admin_id(
+        product_key, admin_id, is_admin, device_key, password, device_name, executive_type_name, expected_result
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    result = executive_device_service_instance.add_executive_device_to_device_group(
+        product_key,
+        admin_id,
+        is_admin,
+        device_key,
+        password,
+        device_name,
+        executive_type_name
+    )
+
+    assert result == expected_result
