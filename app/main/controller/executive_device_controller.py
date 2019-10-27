@@ -102,10 +102,11 @@ def add_executive_device_to_device_group(product_key: str):
 @api.route('/hubs/<product_key>/executive-devices/<device_key>', methods=['POST'])
 def modify_executive_device(product_key: str, device_key: str):
     auth_header = request.headers.get('Authorization')
+    result_values = None
 
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
 
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['name', 'typeName', 'state', 'positiveState', 'negativeState', 'formulaName', 'userGroupName',
                    'isFormulaUsed']
@@ -113,7 +114,6 @@ def modify_executive_device(product_key: str, device_key: str):
 
     if error_message is None:
         if status is None:
-            request_dict = request.get_json()
             name = request_dict['name']
             type_name = request_dict['typeName']
             state = request_dict['state']
@@ -144,6 +144,7 @@ def modify_executive_device(product_key: str, device_key: str):
 
     return ResponseUtils.create_response(
         result=result,
+        result_values=result_values,
         product_key=product_key,
         is_logged=True
     )
