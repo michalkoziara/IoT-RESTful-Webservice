@@ -319,8 +319,8 @@ class SensorService:
         else:
             return False
 
-    def _is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
-        if not isinstance(reading_value, str):
+    def _is_enum_reading_right(self, reading_value: int, sensor_type: SensorType) -> bool:
+        if isinstance(reading_value, str):
             return False
         possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
             sensor_type.id)

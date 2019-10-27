@@ -207,8 +207,8 @@ class ExecutiveDeviceService:
         else:
             return False
 
-    def _is_enum_state_right(self, state: str, sensor_type: SensorType) -> bool:
-        if not isinstance(state, str):
+    def _is_enum_state_right(self, state: int, sensor_type: SensorType) -> bool:
+        if isinstance(state, str):
             return False
         possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_sensor_type_id(
             sensor_type.id)
