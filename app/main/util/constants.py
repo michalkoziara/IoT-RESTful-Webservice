@@ -48,3 +48,5 @@ class Constants:
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
 
     RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND = 'Unconfigure device not found.'
+    RESPONSE_MESSAGE_WRONG_PASSWORD = 'Wrong password.'
+
