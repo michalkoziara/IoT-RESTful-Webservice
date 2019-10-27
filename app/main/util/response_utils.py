@@ -21,7 +21,7 @@ _logger = LogService.get_instance()
 class ResponseUtils:
 
     @staticmethod
-    def check_request_data(
+    def get_request_data(
             request: Request,
             data_keys: Optional[List[str]] = None,
             product_key: Optional[str] = None,
@@ -30,9 +30,10 @@ class ResponseUtils:
             is_custom_check: Optional[bool] = False,
             custom_check_metod: Optional = None,
             *args,
-            **kwargs) -> Tuple[Optional[str], Optional[int]]:
+            **kwargs) -> Tuple[Optional[str], Optional[int], Optional[Any]]:
         result_message = None
         status = None
+        request_dict = None
 
         if not request.is_json:
             result_message = Constants.RESPONSE_MESSAGE_BAD_MIMETYPE
@@ -45,7 +46,7 @@ class ResponseUtils:
                 request_dict = request.get_json()
 
                 if is_custom_check:
-                    if custom_check_metod(*args, **kwargs):
+                    if not custom_check_metod(request_dict, *args, **kwargs):
                         result_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
                         status = response_message_codes[Constants.RESPONSE_MESSAGE_BAD_REQUEST]
 
@@ -84,7 +85,7 @@ class ResponseUtils:
                     ),
                     product_key
                 )
-        return result_message, status
+        return result_message, status, request_dict
 
     @staticmethod
     def create_response(

@@ -38,7 +38,9 @@ class Constants:
     RESPONSE_MESSAGE_SENSOR_TYPES_NOT_FOUND = 'Sensor types name not found.'
     RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED = 'Sensor name already defined in device group.'
     RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED = 'Executive device name already defined in device group.'
-
+    RESPONSE_MESSAGE_SENSOR_NOT_FOUND = 'Sensor not found'
+    RESPONSE_MESSAGE_INVALID_FORMULA = 'Formula is invalid.'
+    RESPONSE_MESSAGE_DUPLICATE_FORMULA_NAME = 'Formula with given name already exists.'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND = 'Sensors readings not found'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST = 'Sensors readings must be a list of dictionaries'
     RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND = 'Devices states not found'
@@ -46,9 +48,7 @@ class Constants:
     RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST = 'Devices keys must be non-empty list.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED = 'Executive device type name not defined.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
-
     RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND = 'Unconfigure device not found.'
     RESPONSE_MESSAGE_WRONG_PASSWORD = 'Wrong password.'
 
     RESPONSE_MESSAGE_FORMULA_NOT_FOUND = 'Formula name not found.'
-

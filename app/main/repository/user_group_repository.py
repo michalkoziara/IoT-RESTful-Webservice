@@ -58,3 +58,16 @@ class UserGroupRepository(BaseRepository):
         return UserGroup.query.filter(
             UserGroup.id == user_group_id
         ).first()
+
+    def get_user_group_by_name_and_device_group_id_and_user_id(
+            self,
+            name: str,
+            device_group_id: str,
+            user_id: str) -> UserGroup:
+        return UserGroup.query.filter(
+            and_(
+                UserGroup.name == name,
+                UserGroup.device_group_id == device_group_id,
+                UserGroup.users.any(id=user_id)
+            )
+        ).first()

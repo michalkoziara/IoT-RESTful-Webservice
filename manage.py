@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_migrate import MigrateCommand
 from flask_script import Manager
 
+import app.main.controller
 import app.main.model
 from app import api
 from app.main import create_app

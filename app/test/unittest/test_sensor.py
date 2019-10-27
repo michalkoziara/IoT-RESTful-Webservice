@@ -603,15 +603,15 @@ def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_par
             get_sensor_type_by_id_mock.return_value = sensor_type
             with patch.object(
                     SensorService,
-                    '_reading_in_range'
-            ) as _reading_in_range_mock:
+                    'reading_in_range'
+            ) as reading_in_range_mock:
                 with patch.object(
                         SensorReadingRepository,
                         'save'
                 ) as save_mock:
                     save_mock.return_value = True
                     get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
-                    _reading_in_range_mock.return_value = True
+                    reading_in_range_mock.return_value = True
 
                     sensor_service_instance.set_sensor_reading(test_device_group_id, values)
                     assert sensor.is_active == values['isActive']
@@ -647,10 +647,10 @@ def test_set_sensor_reading_should_not_set_sensor_reading_when_state_not_in_rang
             get_sensor_type_by_id_mock.return_value = sensor_type
             with patch.object(
                     SensorService,
-                    '_reading_in_range'
-            ) as _reading_in_range_mock:
+                    'reading_in_range'
+            ) as reading_in_range_mock:
                 get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
-                _reading_in_range_mock.return_value = False
+                reading_in_range_mock.return_value = False
                 assert not sensor_service_instance.set_sensor_reading(test_device_group_id, values)
 
 

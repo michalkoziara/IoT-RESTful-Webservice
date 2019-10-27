@@ -31,3 +31,11 @@ class FormulaRepository(BaseRepository):
 
     def get_formulas_by_ids(self, ids: List) -> List[Formula]:
         return Formula.query.filter(Formula.id.in_(ids)).all()
+
+    def get_formula_by_name_and_user_group_id(self, name: str, user_group_id: str) -> Formula:
+        return Formula.query.filter(
+            and_(
+                Formula.name == name,
+                Formula.user_group_id == user_group_id
+            )
+        ).first()

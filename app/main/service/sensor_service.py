@@ -272,7 +272,7 @@ class SensorService:
         if not sensor_type:
             return False
 
-        if not self._reading_in_range(reading_value, sensor_type):
+        if not self.reading_in_range(reading_value, sensor_type):
             return False
 
         sensor.is_active = is_active
@@ -309,7 +309,7 @@ class SensorService:
 
         return reading_return_value
 
-    def _reading_in_range(self, reading_value: str, sensor_type: SensorType):
+    def reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
             return self._is_enum_reading_right(reading_value, sensor_type)
         elif sensor_type.reading_type == 'Decimal':
@@ -318,6 +318,15 @@ class SensorService:
             return is_bool(reading_value)
         else:
             return False
+
+    def is_enum_reading_text_right(self, reading_text: str, sensor_type_id: str) -> bool:
+        if not isinstance(reading_text, str):
+            return False
+        possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
+            sensor_type_id)
+        if reading_text in [possible_reading.text for possible_reading in possible_readings]:
+            return True
+        return False
 
     def _is_enum_reading_right(self, reading_value: int, sensor_type: SensorType) -> bool:
         if isinstance(reading_value, str):

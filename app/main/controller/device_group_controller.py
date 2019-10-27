@@ -20,7 +20,7 @@ def modify_device_group(product_key: str):
 
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
 
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['name'],
         product_key=product_key,
@@ -29,7 +29,6 @@ def modify_device_group(product_key: str):
     )
 
     if status is None:
-        request_dict = request.get_json()
         new_name = request_dict['name']
 
         if error_message is None:

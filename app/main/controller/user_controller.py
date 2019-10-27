@@ -6,6 +6,7 @@ from flask import request
 from app import api
 from app.main.service.user_service import UserService
 from app.main.service.log_service import LogService
+from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 
 _user_service_instance = UserService.get_instance()
@@ -14,13 +15,12 @@ _logger = LogService.get_instance()
 
 @api.route('/users/login', methods=['POST'])
 def login():
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['email', 'password']
     )
 
     if status is None:
-        request_dict = request.get_json()
         email = request_dict['email']
         password = request_dict['password']
 
@@ -36,20 +36,22 @@ def login():
 
 @api.route('/users', methods=['POST'])
 def register_user():
-    response_message, status = ResponseUtils.check_request_data(
+    response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
         data_keys=['username', 'email', 'password']
     )
 
     if status is None:
-        request_dict = request.get_json()
         username = request_dict['username']
         email = request_dict['email']
         password = request_dict['password']
 
         result = _user_service_instance.create_user(username, email, password)
 
-        return ResponseUtils.create_response(result=result)
+        return ResponseUtils.create_response(
+            result=result,
+            success_message=Constants.RESPONSE_MESSAGE_CREATED
+        )
     else:
         return Response(
             response=json.dumps(dict(errorMessage=response_message)),
