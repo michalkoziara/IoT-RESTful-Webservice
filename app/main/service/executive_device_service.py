@@ -197,7 +197,7 @@ class ExecutiveDeviceService:
 
         executive_device = ExecutiveDevice(
             name=device_name,
-            state="Not set",  # change state
+            state="Not set",  # TODO add setting state to  executive_type.default_state
             is_updated=False,
             is_active=False,
             is_assigned=False,

@@ -421,9 +421,6 @@ def test_get_list_of_unassigned_executive_devices_should_return_error_message_wh
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
 
-##########
-
-
 def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
         client,
         insert_device_group,

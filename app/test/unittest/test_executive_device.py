@@ -480,9 +480,6 @@ def test_is_decimal_state_in_range_should_return_false_when_value_not_in_range_o
     assert not executive_device_service_instance._is_decimal_state_in_range(value, executive_type)
 
 
-#########
-
-
 def test_get_list_of_unassigned_executive_devices_should_return_list_of_unassigned_executive_devices_when_user_is_not_admin_and_right_parameters_are_passed(
         get_executive_device_default_values,
         create_executive_device,
@@ -722,9 +719,6 @@ def test_get_list_of_unassigned_executive_devices_should_error_message_when_one_
 
     assert result == expected_result
     assert result_values is None
-
-
-#############
 
 
 def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
