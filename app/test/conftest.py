@@ -666,7 +666,7 @@ def create_unconfigured_devices():
 def user_group_default_values(device_group_default_values) -> Dict[str, Optional[Union[int, str, List[Any]]]]:
     return {
         'id': 1,
-        'name': 'default user group name',
+        'name': 'Master',
         'password': 'default password',
         'device_group_id': device_group_default_values['id'],
         'formulas': [],

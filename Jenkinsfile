@@ -21,7 +21,6 @@ pipeline {
                 python3 -m venv env
                 chmod 754 env/bin/activate
                 . env/bin/activate
-                which pip
                 python3 -m pip install -r requirements.txt
                 """
             }
