@@ -175,7 +175,7 @@ class FormulaService:
         if not self._formula_repository_instance.save(formula):
             return Constants.RESPONSE_MESSAGE_ERROR
 
-        return Constants.RESPONSE_MESSAGE_OK
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def _check_literal_expression(self, expression: Complement, values: dict) -> bool:
         if (expression.uniqid < 0):

@@ -7,6 +7,7 @@ from app import api
 from app.main.service.formula_service import FormulaService
 from app.main.service.log_service import LogService
 from app.main.util.auth_utils import Auth
+from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 from app.main.util.utils import is_dict_with_keys
 
@@ -43,7 +44,8 @@ def create_formula(product_key: str, user_group_name: str):
             result=result,
             product_key=product_key,
             is_logged=True,
-            payload=request_dict
+            payload=request_dict,
+            success_message=Constants.RESPONSE_MESSAGE_CREATED
         )
     else:
         return Response(

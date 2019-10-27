@@ -64,7 +64,7 @@ def test_create_formula_should_add_new_formula_to_use_group_when_valid_request(
     )
 
     assert response is not None
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response_data = json.loads(response.data.decode())
     assert not response_data
@@ -120,7 +120,7 @@ def test_create_formula_should_return_error_message_when_invalid_request(
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
 
-def test_create_formula_should_return_invalid_formula_message_when_valid_formula(
+def test_create_formula_should_return_invalid_formula_message_when_invalid_formula(
         client,
         insert_device_group,
         get_sensor_type_default_values,
