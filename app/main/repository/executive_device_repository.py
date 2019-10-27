@@ -66,7 +66,7 @@ class ExecutiveDeviceRepository(BaseRepository):
             )
         ).all()
 
-    def get_executive_devicer_by_name_and_user_group_id(self, name: str, device_group_id: int) -> ExecutiveDevice:
+    def get_executive_device_by_name_and_user_group_id(self, name: str, device_group_id: int) -> ExecutiveDevice:
         return ExecutiveDevice.query.filter(and_(
             ExecutiveDevice.device_group_id == device_group_id,
             ExecutiveDevice.name == name,
