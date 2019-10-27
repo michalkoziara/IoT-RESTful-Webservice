@@ -1,5 +1,8 @@
 import json
 
+from sqlalchemy import and_
+
+from app.main.model import ExecutiveDevice, UnconfiguredDevice
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
@@ -243,7 +246,7 @@ def test_get_executive_device_info_should_return_device_key_not_found_error_when
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
 
 
-def test_get_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
+def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
         client,
         insert_device_group,
         get_executive_device_default_values,
@@ -381,7 +384,7 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_
     assert response_data == expected_output_values
 
 
-def test_get_get_list_of_unassigned_executive_devices_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
+def test_get_list_of_unassigned_executive_devices_should_return_error_message_when_valid_request_and_user_is_not_in_master_user_group(
         client,
         insert_device_group,
         get_sensor_default_values,
@@ -416,3 +419,131 @@ def test_get_get_list_of_unassigned_executive_devices_should_return_error_messag
     response_data = json.loads(response.data.decode())
     assert response_data is not None
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_executive_type,
+        insert_unconfigured_device
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    executive_type = insert_executive_type()
+
+    unconfigured_device = insert_unconfigured_device()
+
+    assert device_group.sensors == []
+    assert device_group.admin_id == admin.id
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-devices',
+        data=json.dumps(
+            {
+                "deviceKey": unconfigured_device.device_key,
+                "password": device_group.password,
+                "deviceName": 'test_device_name',
+                "deviceTypeName": executive_type.name
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 201
+    assert response.content_type == content_type
+
+    executive_device = ExecutiveDevice.query.filter(
+        and_(
+            ExecutiveDevice.device_key == unconfigured_device.device_key,
+            ExecutiveDevice.device_group_id == device_group.id
+        )
+    ).first()
+
+    deleted_unconfigured_device = UnconfiguredDevice.query.filter(
+        and_(
+            UnconfiguredDevice.device_key == unconfigured_device.device_key,
+            UnconfiguredDevice.device_group_id == device_group.id
+        )
+    ).first()
+
+    assert deleted_unconfigured_device is None
+    assert executive_device
+    assert executive_device.device_group_id == device_group.id
+    assert executive_device.name == 'test_device_name'
+    assert executive_device.state
+    assert executive_device.is_updated is False
+    assert executive_device.is_active is False
+    assert executive_device.is_updated is False
+    assert executive_device.is_assigned is False
+    assert executive_device.positive_state is None
+    assert executive_device.negative_state is None
+    assert executive_device.device_key == unconfigured_device.device_key
+    assert executive_device.executive_type_id == executive_type.id
+    assert executive_device.user_group_id is None
+    assert executive_device.formula_id is None
+
+
+def test_add_sensor_to_device_group_should_return_error_message_when_device_key_already_in_sensors_table(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_executive_type,
+        get_executive_device_default_values,
+        insert_executive_device,
+        insert_unconfigured_device
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    executive_type = insert_executive_type()
+
+    unconfigured_device = insert_unconfigured_device()
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['device_key'] = unconfigured_device.device_key
+    exec_device = insert_executive_device(executive_device_values)
+
+    assert device_group.executive_devices == [exec_device]
+    assert device_group.admin_id == admin.id
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-devices',
+        data=json.dumps(
+            {
+                "deviceKey": unconfigured_device.device_key,
+                "password": device_group.password,
+                "deviceName": 'test_device_name',
+                "deviceTypeName": executive_type.name
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 409
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
+
+    not_deleted_unconfigured_device = UnconfiguredDevice.query.filter(
+        and_(
+            UnconfiguredDevice.device_key == unconfigured_device.device_key,
+            UnconfiguredDevice.device_group_id == device_group.id
+        )
+    ).first()
+
+    assert not_deleted_unconfigured_device is unconfigured_device
+    assert device_group.executive_devices == [exec_device]

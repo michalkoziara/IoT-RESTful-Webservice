@@ -1,7 +1,7 @@
 # Flask DB Boilerplate
 flask_boilerplate_test.db
 flask_boilerplate_main.db
-/app/main/util/flask_boilerplate_test.db-journal
+flask_boilerplate_test.db-journal
 
 # PyCharm
 .idea

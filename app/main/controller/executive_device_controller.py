@@ -58,3 +58,43 @@ def get_unassigned_executive_devices_in_device_group(product_key: str):
         product_key=product_key,
         is_logged=True
     )
+
+
+@api.route('/hubs/<product_key>/executive-devices', methods=['POST'])
+def add_executive_device_to_device_group(product_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    response_message, status = ResponseUtils.check_request_data(
+        request=request,
+        data_keys=['deviceKey', 'password', 'deviceName', 'deviceTypeName']
+    )
+
+    if error_message is None:
+        if status is None:
+            request_dict = request.get_json()
+            device_key = request_dict['deviceKey']
+            password = request_dict['password']
+            device_name = request_dict['deviceName']
+            device_type_name = request_dict['deviceTypeName']
+
+            result = _executive_device_service_instance.add_executive_device_to_device_group(
+                product_key,
+                user_info['user_id'],
+                user_info['is_admin'],
+                device_key,
+                password,
+                device_name,
+                device_type_name
+            )
+        else:
+            result = response_message
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        product_key=product_key,
+        is_logged=True
+    )

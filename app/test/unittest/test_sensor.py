@@ -1282,7 +1282,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_wrong_passw
                 sensor_type_name
             )
 
-    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result == Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_admin_id_is_different_from_device_group_admin_id(
@@ -1332,9 +1332,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_devcice_gro
     sensor_name = 'test_sensor_name'
     sensor_type_name = 'test_sensor_type_name'
 
-    admin.id += 1
-    assert device_group.admin_id != admin.id
-
     with patch.object(
             DeviceGroupRepository,
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
@@ -1371,7 +1368,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_devcice_gro
          Constants.RESPONSE_MESSAGE_BAD_REQUEST),
 
     ])
-def test_add_sensor_to_device_group_should_return_error_message_when_device_group_not_found(
+def test_add_sensor_to_device_group_should_return_error_message_when_one_of_parameters_none(
         product_key, admin_id, is_admin, device_key, password, sensor_name, sensor_type_name, expected_result):
     sensor_service_instance = SensorService.get_instance()
 

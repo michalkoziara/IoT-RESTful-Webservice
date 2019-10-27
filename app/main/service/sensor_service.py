@@ -168,7 +168,7 @@ class SensorService:
             return Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
 
         if password != uncofigured_device.password:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         sensor_with_the_same_name = self._sensor_repository_instance.get_sensor_by_name_and_user_group_id(
             sensor_name,
@@ -319,8 +319,8 @@ class SensorService:
         else:
             return False
 
-    def _is_enum_reading_right(self, reading_value, sensor_type: SensorType) -> bool:
-        if not isinstance(reading_value, str):
+    def _is_enum_reading_right(self, reading_value: int, sensor_type: SensorType) -> bool:
+        if isinstance(reading_value, str):
             return False
         possible_readings = self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
             sensor_type.id)
