@@ -38,6 +38,12 @@ class SensorRepository(BaseRepository):
         return Sensor.query.filter(
             Sensor.user_group_id == user_group_id).all()
 
+    def get_sensor_by_name_and_user_group_id(self, name: str, device_group_id: int) -> Sensor:
+        return Sensor.query.filter(and_(
+            Sensor.device_group_id == device_group_id,
+            Sensor.name == name,
+        )).first()
+
     def get_sensors_by_device_group_id_and_user_group_id_and_names(
             self,
             user_group_id: str,
@@ -63,5 +69,13 @@ class SensorRepository(BaseRepository):
                         DeviceGroup.product_key == product_key
                     )
                 )
+            )
+        ).all()
+
+    def get_sensors_by_device_group_id_that_are_not_in_user_group(self, device_group_id: str) -> List[Sensor]:
+        return Sensor.query.filter(
+            and_(
+                Sensor.device_group_id == device_group_id,
+                Sensor.user_group_id == None  # equality operator required by SQLAlchemy
             )
         ).all()

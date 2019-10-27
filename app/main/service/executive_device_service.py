@@ -1,14 +1,17 @@
 # pylint: disable=no-self-use
-from typing import Optional
+from typing import Optional, List
 from typing import Tuple
 
-from app.main.model.sensor_type import SensorType
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.sensor_type import SensorType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.state_enumerator_repository import StateEnumeratorRepository
+from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_bool
@@ -30,6 +33,7 @@ class ExecutiveDeviceService:
         return cls._instance
 
     def __init__(self):
+        self._unconfigured_device_repository = UnconfiguredDeviceRepository.get_instance()
         self._state_enumerator_repository_instance = StateEnumeratorRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._executive_device_repository_instance = ExecutiveDeviceRepository.get_instance()
@@ -71,7 +75,7 @@ class ExecutiveDeviceService:
 
         executive_device_info = {}
         executive_device_info['name'] = executive_device.name
-        executive_device_info['state'] = executive_device.state
+        executive_device_info['state'] = self.get_executive_device_state_value(executive_device)
         executive_device_info['isUpdated'] = executive_device.is_updated
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
@@ -97,6 +101,125 @@ class ExecutiveDeviceService:
             executive_device_info['formulaName'] = None
 
         return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+    def get_list_of_unassigned_executive_devices(
+            self, product_key: str,
+            user_id: str,
+            is_admin: bool
+    ) -> Tuple[bool, Optional[List[dict]]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if is_admin:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        else:
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
+
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        values = []
+
+        executive_devices = self._executive_device_repository_instance \
+            .get_executive_devices_by_device_group_id_that_are_not_in_user_group(
+            device_group.id)
+
+        for executive_device in executive_devices:
+            executive_device_info = {
+                'name': executive_device.name,
+                'isActive': executive_device.is_active
+            }
+            values.append(executive_device_info)
+
+        return Constants.RESPONSE_MESSAGE_OK, values
+
+    def add_executive_device_to_device_group(
+            self,
+            product_key: str,
+            admin_id: str,
+            is_admin: bool,
+            device_key: str,
+            password: str,
+            device_name: str,
+            device_type_name: str) -> str:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if admin_id is None or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        if not device_key or not password or not device_name or not device_type_name:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if device_group.admin_id != admin_id or not is_admin:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        uncofigured_device = \
+            self._unconfigured_device_repository.get_unconfigured_device_by_device_key_and_device_group_id(
+                device_key, device_group.id)
+
+        if not uncofigured_device:
+            return Constants.RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND
+
+        if password != uncofigured_device.password:
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+        device_with_the_same_name = \
+            self._executive_device_repository_instance.get_executive_device_by_name_and_user_group_id(
+                device_name,
+                device_group.id)
+
+        if device_with_the_same_name:
+            return Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+        executive_type = self._executive_type_repository_instance.get_executive_type_by_device_group_id_and_name(
+            device_group.id,
+            device_type_name)
+
+        if not executive_type:
+            return Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED
+
+        executive_device = ExecutiveDevice(
+            name=device_name,
+            state="Not set",  # TODO add setting state to  executive_type.default_state
+            is_updated=False,
+            is_active=False,
+            is_assigned=False,
+            is_formula_used=False,
+            positive_state=None,
+            negative_state=None,
+            device_key=str(device_key),
+            executive_type_id=executive_type.id,
+            user_group_id=None,
+            device_group_id=device_group.id,
+            formula_id=None
+        )
+        try:
+            self._executive_device_repository_instance.save_but_do_not_commit(executive_device)
+            self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
+            self._unconfigured_device_repository.commit_changes()
+        except SQLAlchemyError:
+            self._executive_device_repository_instance.rollback_session()
+
+            return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def set_device_state(self, device_group_id, values: dict):
 
@@ -137,6 +260,8 @@ class ExecutiveDeviceService:
         state_type = executive_device_type.state_type
 
         state = executive_device.state
+        if not state:
+            return None
         state_value = None
         if state_type == 'Enum':
             state_value = \
@@ -163,8 +288,8 @@ class ExecutiveDeviceService:
         else:
             return False
 
-    def _is_enum_state_right(self, state: str, sensor_type: SensorType) -> bool:
-        if not isinstance(state, str):
+    def _is_enum_state_right(self, state: int, sensor_type: SensorType) -> bool:
+        if isinstance(state, str):
             return False
         possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_sensor_type_id(
             sensor_type.id)

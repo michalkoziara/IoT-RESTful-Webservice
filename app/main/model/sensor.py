@@ -1,3 +1,5 @@
+from sqlalchemy import UniqueConstraint
+
 from app.main import db
 
 
@@ -17,3 +19,5 @@ class Sensor(db.Model):
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
 
     sensor_readings = db.relationship('SensorReading', backref='sensor', lazy=True)
+
+    UniqueConstraint('device_group_id', 'name', name='unique_sensor_name_in_group')

@@ -490,7 +490,7 @@ def executive_device_default_values(
     return {
         'id': 1,
         'name': 'executive device default name',
-        'state': 'default state',
+        'state': '1',
         'is_updated': True,
         'is_active': True,
         'is_assigned': True,

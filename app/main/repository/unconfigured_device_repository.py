@@ -1,6 +1,8 @@
 # pylint: disable=no-self-use
 from typing import List
 
+from sqlalchemy import and_
+
 from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.repository.base_repository import BaseRepository
 
@@ -20,3 +22,10 @@ class UnconfiguredDeviceRepository(BaseRepository):
 
     def get_unconfigured_device_by_device_key(self, device_key: str) -> UnconfiguredDevice:
         return UnconfiguredDevice.query.filter(UnconfiguredDevice.device_key == device_key).first()
+
+    def get_unconfigured_device_by_device_key_and_device_group_id(
+            self, device_key: str, device_group_id: str) -> UnconfiguredDevice:
+        return UnconfiguredDevice.query.filter(and_(
+            UnconfiguredDevice.device_key == device_key,
+            UnconfiguredDevice.device_group_id == device_group_id)
+        ).first()
