@@ -22,8 +22,8 @@ def is_user_in_one_of_user_groups_in_device_group(user: User, device_group: Devi
         return False
 
 
-def is_dict_with_keys(object, keys) -> bool:
-    if not is_dict(object) or not all(key in object for key in keys):
+def is_dict_with_keys(data_object, keys) -> bool:
+    if not is_dict(data_object) or not all(key in data_object for key in keys):
         return False
     else:
         return True
