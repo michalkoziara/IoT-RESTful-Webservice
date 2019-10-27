@@ -286,7 +286,7 @@ class SensorService:
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
         reading_type = sensor_type.reading_type
 
-        if not sensor_reading:
+        if sensor_reading is None:
             reading_value = self._sensor_reading_repository.get_last_reading_for_sensor_by_sensor_id(sensor.id).value
             if not reading_value:
                 return None
