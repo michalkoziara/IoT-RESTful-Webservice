@@ -422,14 +422,15 @@ class ExecutiveDeviceService:
 
         if executive_device.user_group_id is not None:
             old_user_group = self._user_group_repository.get_user_group_by_id(executive_device.user_group_id)
-            if user not in old_user_group.users:
+            if old_user_group is None or user not in old_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if new_user_group_name is not None:
             new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
                 new_user_group_name,
                 device_group_id)
-            if user not in new_user_group.users:
+
+            if new_user_group is None or user not in new_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if error_message is not None:
@@ -508,7 +509,8 @@ class ExecutiveDeviceService:
             positive_state_in_range = self._state_in_range(positive_state, executive_type)
             negative_state_in_range = self._state_in_range(negative_state, executive_type)
 
-            if not (formula and is_bool(is_formula_used) and positive_state_in_range and negative_state_in_range):
+            if formula is None or not (
+                    is_bool(is_formula_used) and positive_state_in_range and negative_state_in_range):
                 return False, None, Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
 
             executive_device.formula_id = formula.id
