@@ -333,10 +333,18 @@ class ExecutiveDeviceService:
 
         user = self._user_repository.get_user_by_id(user_id)
 
-        status, new_user_group, error_message = self._change_device_user_group(
+        new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(user_group_name,
+                                                                                                device_group.id)
+
+        status, error_message = self._change_device_name(executive_device, name, new_user_group)
+
+        if not status:
+            self._executive_device_repository_instance.rollback_session()
+            return error_message, None
+
+        status, error_message = self._change_device_user_group(
             executive_device,
-            user, user_group_name,
-            device_group.id)
+            user, new_user_group)
 
         if not status:
             self._executive_device_repository_instance.rollback_session()
@@ -346,12 +354,6 @@ class ExecutiveDeviceService:
             executive_device,
             device_group.id,
             type_name)
-
-        if not status:
-            self._executive_device_repository_instance.rollback_session()
-            return error_message, None
-
-        status, error_message = self._change_device_name(executive_device, name, new_user_group)
 
         if not status:
             self._executive_device_repository_instance.rollback_session()
@@ -408,16 +410,14 @@ class ExecutiveDeviceService:
 
         return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA, None
 
-    def _change_device_user_group(self, executive_device: ExecutiveDevice, user: User, new_user_group_name: str,
-                                  device_group_id: int) -> (bool, Optional[UserGroup], Optional[str]):
+    def _change_device_user_group(self, executive_device: ExecutiveDevice, user: User, new_user_group: UserGroup
+                                  ) -> (bool, Optional[UserGroup], Optional[str]):
         """
         Function returns:
             success status,
-            optional:new UserGroup
             optional: error message
         """
 
-        new_user_group = None
         error_message = None
 
         if executive_device.user_group_id is not None:
@@ -425,22 +425,17 @@ class ExecutiveDeviceService:
             if old_user_group is None or user not in old_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
-        if new_user_group_name is not None:
-            new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
-                new_user_group_name,
-                device_group_id)
-
-            if new_user_group is None or user not in new_user_group.users:
-                error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+        if new_user_group is None or user not in new_user_group.users:
+            error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if error_message is not None:
-            return False, None, error_message
+            return False, error_message
         else:
             if new_user_group is not None:
                 executive_device.user_group_id = new_user_group.id
             else:
                 executive_device.user_group_id = None
-            return True, new_user_group, None
+            return True, None
 
     def _change_device_type(self, executive_device: ExecutiveDevice,
                             device_group_id: str, type_name: str
