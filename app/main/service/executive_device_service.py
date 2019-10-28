@@ -378,37 +378,43 @@ class ExecutiveDeviceService:
         executive_device.is_updated = True
 
         if self._executive_device_repository_instance.update_database():
-
-            executive_device_info = {
-                'changedName': executive_device.name,
-                'changedType': new_executive_type.name,
-                'changedState': self.get_executive_device_state_value(
-                    executive_device,
-                    executive_device.state),
-                'isFormulaUsed': executive_device.is_formula_used,
-            }
-            if formula_name:
-                executive_device_info['changedFormulaName'] = formula.name
-                executive_device_info['changedPositiveState'] = self.get_executive_device_state_value(
-                    executive_device,
-                    executive_device.positive_state)
-                executive_device_info['changedNegativeState'] = self.get_executive_device_state_value(
-                    executive_device,
-                    executive_device.negative_state)
-
-            else:
-                executive_device_info['changedFormulaName'] = None
-                executive_device_info['changedPositiveState'] = None
-                executive_device_info['changedNegativeState'] = None
-
-            if new_user_group is not None:
-                executive_device_info['changedUserGroupName'] = new_user_group.name
-            else:
-                executive_device_info['changedUserGroupName'] = None
+            executive_device_info = self._get_modified_device_info(
+                executive_device, new_executive_type, formula, new_user_group)
 
             return Constants.RESPONSE_MESSAGE_OK, executive_device_info
 
         return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA, None
+
+    def _get_modified_device_info(self, executive_device: ExecutiveDevice, executive_type: ExecutiveType,
+                                  formula: Formula, user_group: UserGroup):
+        executive_device_info = {
+            'changedName': executive_device.name,
+            'changedType': executive_type.name,
+            'changedState': self.get_executive_device_state_value(
+                executive_device,
+                executive_device.state),
+            'isFormulaUsed': executive_device.is_formula_used,
+        }
+        if formula is not None:
+            executive_device_info['changedFormulaName'] = formula.name
+            executive_device_info['changedPositiveState'] = self.get_executive_device_state_value(
+                executive_device,
+                executive_device.positive_state)
+            executive_device_info['changedNegativeState'] = self.get_executive_device_state_value(
+                executive_device,
+                executive_device.negative_state)
+
+        else:
+            executive_device_info['changedFormulaName'] = None
+            executive_device_info['changedPositiveState'] = None
+            executive_device_info['changedNegativeState'] = None
+
+        if user_group is not None:
+            executive_device_info['changedUserGroupName'] = user_group.name
+        else:
+            executive_device_info['changedUserGroupName'] = None
+
+        return executive_device_info
 
     def _change_device_user_group(self, executive_device: ExecutiveDevice, user: User, new_user_group: UserGroup
                                   ) -> (bool, Optional[UserGroup], Optional[str]):
