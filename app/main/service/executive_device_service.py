@@ -283,18 +283,18 @@ class ExecutiveDeviceService:
 
     def modify_executive_device(
             self,
-            product_key,
-            user_id,
-            is_admin,
-            device_key,
-            name,
-            type_name,
-            state,
-            positive_state,
-            negative_state,
-            formula_name,
-            user_group_name,
-            is_formula_used
+            product_key: str,
+            user_id: int,
+            is_admin: bool,
+            device_key: str,
+            name: str,
+            type_name: str,
+            state: float,
+            positive_state: float,
+            negative_state: float,
+            formula_name: str,
+            user_group_name: str,
+            is_formula_used: bool
     ):
 
         if not product_key:
@@ -339,6 +339,7 @@ class ExecutiveDeviceService:
             device_group.id)
 
         if not status:
+            self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
         status, new_executive_type, error_message = self._change_device_type(
@@ -347,16 +348,19 @@ class ExecutiveDeviceService:
             type_name)
 
         if not status:
+            self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
         status, error_message = self._change_device_name(executive_device, name, new_user_group)
 
         if not status:
+            self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
-        status, error_message = self._change_device_state(executive_device, type_name, new_executive_type)
+        status, error_message = self._change_device_state(executive_device, state, new_executive_type)
 
         if not status:
+            self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
         status, formula, error_message = self._change_device_formula_related_fields(
@@ -365,6 +369,10 @@ class ExecutiveDeviceService:
             is_formula_used, new_executive_type,
             new_user_group)
 
+        if not status:
+            self._executive_device_repository_instance.rollback_session()
+            return error_message, None
+
         executive_device.is_updated = True
 
         if self._executive_device_repository_instance.update_database():
@@ -372,6 +380,10 @@ class ExecutiveDeviceService:
             executive_device_info = {
                 'changedName': executive_device.name,
                 'changedType': new_executive_type.name,
+                'changedState': self.get_executive_device_state_value(
+                    executive_device,
+                    executive_device.state),
+                'isFormulaUsed': executive_device.is_formula_used,
             }
             if formula_name:
                 executive_device_info['changedFormulaName'] = formula.name
@@ -457,7 +469,8 @@ class ExecutiveDeviceService:
                 name,
                 user_group.id)
         if executive_device_with_the_same_name:
-            error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+            if executive_device.id != executive_device_with_the_same_name.id:
+                error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
 
         if error_message is not None:
             return False, error_message
