@@ -425,7 +425,7 @@ class ExecutiveDeviceService:
             if old_user_group is None or user not in old_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
-        if new_user_group is None or user not in new_user_group.users:
+        if new_user_group is not None and user not in new_user_group.users:
             error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if error_message is not None:
