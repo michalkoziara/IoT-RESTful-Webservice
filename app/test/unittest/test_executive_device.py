@@ -1169,3 +1169,158 @@ def test_add_sensor_to_device_group_should_return_error_message_when_one_of_para
     )
 
     assert result == expected_result
+
+
+def test__change_device_user_group_should_change_devices_user_group_if_user_in_old_and_new_user_groups(
+        create_executive_device,
+        create_user_group,
+        create_user):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+    executive_device = create_executive_device()
+    user = create_user()
+
+    old_user_group = create_user_group()
+    assert executive_device.user_group_id == old_user_group.id
+
+    new_user_group = create_user_group()
+
+    old_user_group.users = [user]
+    new_user_group.users = [user]
+
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id'
+    ) as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = executive_device_service_instance._change_device_user_group(
+            executive_device,
+            user,
+            new_user_group
+        )
+
+    assert status is True
+    assert error_msg is None
+    assert executive_device.user_group_id == new_user_group.id
+
+
+@pytest.mark.parametrize('user_in_old_user_group, user_in_new_user_group',
+                         [(True, False), (False, True), (False, False)])
+def test__change_device_user_group_should_return_error_message_when_user_not_in_old_or_new_user_groups(
+        user_in_old_user_group, user_in_new_user_group,
+        create_executive_device,
+        create_user_group,
+        create_user):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+    executive_device = create_executive_device()
+    user = create_user()
+
+    old_user_group = create_user_group()
+    assert executive_device.user_group_id == old_user_group.id
+
+    new_user_group = create_user_group()
+
+    if user_in_old_user_group:
+        old_user_group.users = [user]
+    else:
+        old_user_group.users = []
+
+    if user_in_new_user_group:
+        new_user_group.users = [user]
+    else:
+        new_user_group.users = []
+
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id'
+    ) as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = executive_device_service_instance._change_device_user_group(
+            executive_device,
+            user,
+            new_user_group,
+        )
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    assert executive_device.user_group_id == old_user_group.id
+
+
+def test__change_device_type_should_change_device_type_if_device_type_in_device_group(
+        create_executive_device,
+        get_executive_type_default_values,
+        create_executive_type):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_type_values = get_executive_type_default_values()
+    executive_type_values['id'] += 1
+    executive_type_values['name'] = 'Test'
+
+    executive_type = create_executive_type(executive_type_values)
+    executive_device = create_executive_device()
+
+    assert executive_device.executive_type_id != executive_type.id
+
+    with patch.object(
+            ExecutiveTypeRepository,
+            'get_executive_type_by_device_group_id_and_name'
+    ) as get_executive_type_by_device_group_id_and_name_mock:
+        get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
+
+        status, returned_exec_type, error_msg = executive_device_service_instance._change_device_type(
+            executive_device,
+            'device_group_id',
+            executive_type.name
+        )
+
+    assert status is True
+    assert returned_exec_type is executive_type
+    assert error_msg is None
+    assert executive_device.executive_type_id == executive_type.id
+
+
+def test__change_device_type_should_return_error_message_when_exec_type_not_found(
+        create_executive_device):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    old_type_id = executive_device.id
+
+    with patch.object(
+            ExecutiveTypeRepository,
+            'get_executive_type_by_device_group_id_and_name'
+    ) as get_executive_type_by_device_group_id_and_name_mock:
+        get_executive_type_by_device_group_id_and_name_mock.return_value = None
+
+        status, returned_exec_type, error_msg = executive_device_service_instance._change_device_type(
+            executive_device,
+            'device_group_id',
+            'executive_type_name'
+        )
+
+    assert status is False
+    assert returned_exec_type is None
+    assert error_msg == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+    assert executive_device.executive_type_id == old_type_id
+
+
+@pytest.mark.parametrize('user_group_is_none',
+                         [True, False])
+def test__change_device_name_should_change_devices_name_if_name_is_not_in_user_group_or_user_group_is_none(
+        user_group_is_none,
+        create_executive_device,
+        create_user_group,
+):
+    executive_device = create_executive_device()
+    if user_group_is_none:
+        user_group = None
+    else:
+        user_group = create_user_group()
+
+    with patch.object(
+            ExecutiveTypeRepository,
+            'get_executive_type_by_device_group_id_and_name'
+    ) as get_executive_type_by_device_group_id_and_name_mock:
+        get_executive_type_by_device_group_id_and_name_mock.return_value = None
