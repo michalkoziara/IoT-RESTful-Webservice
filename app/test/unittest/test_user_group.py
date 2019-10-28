@@ -101,6 +101,7 @@ def test_get_list_of_user_groups_should_return_error_message_when_user_not_in_an
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
 
+
 def test_get_list_of_user_groups_should_return_error_message_when_device_group_not_found(
         create_device_group
 ):

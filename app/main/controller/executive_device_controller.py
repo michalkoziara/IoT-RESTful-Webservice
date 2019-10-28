@@ -97,3 +97,54 @@ def add_executive_device_to_device_group(product_key: str):
         product_key=product_key,
         is_logged=True
     )
+
+
+@api.route('/hubs/<product_key>/executive-devices/<device_key>', methods=['POST'])
+def modify_executive_device(product_key: str, device_key: str):
+    auth_header = request.headers.get('Authorization')
+    result_values = None
+    #TODO make sure that invalid json does not crash app
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    response_message, status, request_dict = ResponseUtils.get_request_data(
+        request=request,
+        data_keys=['name', 'typeName', 'state', 'positiveState', 'negativeState', 'formulaName', 'userGroupName',
+                   'isFormulaUsed']
+    )
+
+    if error_message is None:
+        if status is None:
+            name = request_dict['name']
+            type_name = request_dict['typeName']
+            state = request_dict['state']
+            positive_state = request_dict['positiveState']
+            negative_state = request_dict['negativeState']
+            formula_name = request_dict['formulaName']
+            user_group_name = request_dict['userGroupName']
+            is_formula_used = request_dict['isFormulaUsed']
+
+            result, result_values = _executive_device_service_instance.modify_executive_device(
+                product_key,
+                user_info['user_id'],
+                user_info['is_admin'],
+                device_key,
+                name,
+                type_name,
+                state,
+                positive_state,
+                negative_state,
+                formula_name,
+                user_group_name,
+                is_formula_used
+            )
+        else:
+            result = response_message
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
