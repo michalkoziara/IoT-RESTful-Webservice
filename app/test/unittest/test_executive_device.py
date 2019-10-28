@@ -1306,21 +1306,166 @@ def test__change_device_type_should_return_error_message_when_exec_type_not_foun
     assert executive_device.executive_type_id == old_type_id
 
 
-@pytest.mark.parametrize('user_group_is_none',
-                         [True, False])
+@pytest.mark.parametrize('user_group_is_none', [True, False])
 def test__change_device_name_should_change_devices_name_if_name_is_not_in_user_group_or_user_group_is_none(
         user_group_is_none,
         create_executive_device,
         create_user_group,
 ):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
     executive_device = create_executive_device()
     if user_group_is_none:
         user_group = None
     else:
         user_group = create_user_group()
 
+    changed_name = 'Changed name'
+
     with patch.object(
-            ExecutiveTypeRepository,
-            'get_executive_type_by_device_group_id_and_name'
-    ) as get_executive_type_by_device_group_id_and_name_mock:
-        get_executive_type_by_device_group_id_and_name_mock.return_value = None
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_name_and_user_group_id'
+    ) as get_executive_device_by_name_and_user_group_id_mock:
+        if user_group_is_none:
+            get_executive_device_by_name_and_user_group_id_mock.return_value = None
+        else:
+            get_executive_device_by_name_and_user_group_id_mock.return_value = executive_device
+
+        status, error_msg = executive_device_service_instance._change_device_name(
+            executive_device, changed_name, user_group)
+
+    assert status is True
+    assert error_msg is None
+    assert executive_device.name == changed_name
+
+
+def test__change_device_name_should_not_change_devices_name_if_name_is_defined_in_user_group(
+        create_executive_device,
+        create_user_group,
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    second_executive_device = Mock()
+    second_executive_device.id.return_value = executive_device.id
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_name_and_user_group_id'
+    ) as get_executive_device_by_name_and_user_group_id_mock:
+        get_executive_device_by_name_and_user_group_id_mock.return_value = second_executive_device
+
+        status, error_msg = executive_device_service_instance._change_device_name(
+            executive_device, 'changed_name', Mock())
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+
+def test__change_device_formula_related_fields_should_change_devices_fields_if_all_parameters_are_correct(
+        create_executive_device, create_formula
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    formula = create_formula()
+
+    formula_name = formula.name
+    positive_state = "Positive"
+    negative_state = "Negative"
+    is_formula_used = True
+
+    with patch.object(
+            ExecutiveDeviceService,
+            '_state_in_range'
+    ) as _state_in_range_mock:
+        _state_in_range_mock.return_value = True
+        with patch.object(
+                FormulaRepository,
+                'get_formula_by_name_and_user_group_id'
+        ) as get_formula_by_name_and_user_group_id_mock:
+            get_formula_by_name_and_user_group_id_mock.return_value = formula
+
+            status, returned_formula, error_msg = \
+                executive_device_service_instance._change_device_formula_related_fields(
+                    executive_device,
+                    formula_name,
+                    positive_state,
+                    negative_state, is_formula_used,
+                    Mock(),
+                    Mock()
+                )
+    assert status is True
+    assert returned_formula is formula
+    assert error_msg is None
+
+    assert executive_device.formula_id == formula.id
+    assert executive_device.negative_state == negative_state
+    assert executive_device.positive_state == positive_state
+    assert executive_device.is_formula_used is is_formula_used
+
+
+@pytest.mark.parametrize('formula_name, positive_state, negative_state, is_formula_used',
+                         [
+                             (None, "positive", "negative", True),
+                             ("formula_name", None, "negative", True),
+                             ("formula_name", "positive", None, True),
+                             ("formula_name", "positive", "negative", None),
+                             ("formula_name", None, None, None),
+                             (None, "positive", None, None),
+                             (None, None, "negative", None),
+                             (None, None, None, True),
+
+                         ])
+def test__change_device_formula_related_fields_should_return_error_message_when_formula_not_found(
+        formula_name, positive_state, negative_state, is_formula_used
+
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    status, returned_formula, error_msg = \
+        executive_device_service_instance._change_device_formula_related_fields(
+            Mock,
+            formula_name,
+            positive_state,
+            negative_state, is_formula_used,
+            Mock(),
+            Mock()
+        )
+
+    assert status is False
+    assert returned_formula is None
+    assert error_msg == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+
+
+def test__change_device_formula_related_fields_should_return_error_message_when_formula_not_found(
+        create_executive_device
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+
+    formula_name = 'formula.name'
+    positive_state = "Positive"
+    negative_state = "Negative"
+    is_formula_used = True
+
+    with patch.object(
+            FormulaRepository,
+            'get_formula_by_name_and_user_group_id'
+    ) as get_formula_by_name_and_user_group_id_mock:
+        get_formula_by_name_and_user_group_id_mock.return_value = None
+
+        status, returned_formula, error_msg = \
+            executive_device_service_instance._change_device_formula_related_fields(
+                executive_device,
+                formula_name,
+                positive_state,
+                negative_state, is_formula_used,
+                Mock(),
+                Mock()
+            )
+
+    assert status is False
+    assert returned_formula is None
+    assert error_msg == Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
