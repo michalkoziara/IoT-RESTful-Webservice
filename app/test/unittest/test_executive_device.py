@@ -1417,7 +1417,7 @@ def test__change_device_formula_related_fields_should_change_devices_fields_if_a
                              (None, None, None, True),
 
                          ])
-def test__change_device_formula_related_fields_should_return_error_message_when_formula_not_found(
+def test__change_device_formula_related_fields_should_return_error_message_when_wrong_combination_of_parameters(
         formula_name, positive_state, negative_state, is_formula_used
 
 ):
