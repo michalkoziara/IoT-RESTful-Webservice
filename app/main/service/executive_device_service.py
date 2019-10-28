@@ -464,14 +464,14 @@ class ExecutiveDeviceService:
                             ) -> (bool, Optional[str]):
 
         error_message = None
-
-        executive_device_with_the_same_name = \
-            self._executive_device_repository_instance.get_executive_device_by_name_and_user_group_id(
-                name,
-                user_group.id)
-        if executive_device_with_the_same_name:
-            if executive_device.id != executive_device_with_the_same_name.id:
-                error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+        if user_group is not None:
+            executive_device_with_the_same_name = \
+                self._executive_device_repository_instance.get_executive_device_by_name_and_user_group_id(
+                    name,
+                    user_group.id)
+            if executive_device_with_the_same_name:
+                if executive_device.id != executive_device_with_the_same_name.id:
+                    error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
 
         if error_message is not None:
             return False, error_message
@@ -520,16 +520,16 @@ class ExecutiveDeviceService:
 
             return True, formula, None
 
-        else:
-            if positive_state is not None or negative_state is not None or is_formula_used is None:
-                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+        elif positive_state is None and negative_state is None and is_formula_used is None:
 
             executive_device.formula_id = None
             executive_device.positive_state = None
             executive_device.negative_state = None
             executive_device.is_formula_used = None
-
             return True, None, None
+
+        else:
+            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
     def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
         if executive_type.state_type == 'Enum':
