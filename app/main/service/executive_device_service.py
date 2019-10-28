@@ -497,7 +497,7 @@ class ExecutiveDeviceService:
         """
 
         if formula_name is not None:
-            if user_group is None:
+            if user_group is None or is_formula_used is None or positive_state is None or negative_state is None:
                 return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
             formula = self._formula_repository.get_formula_by_name_and_user_group_id(formula_name, user_group.id)
