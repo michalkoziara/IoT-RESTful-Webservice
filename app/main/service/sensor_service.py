@@ -359,13 +359,19 @@ class SensorService:
 
         user = self._user_repository.get_user_by_id(user_id)
 
-        new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(user_group_name,
-                                                                                                device_group.id)
+        if user_group_name is not None:
+            new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
+                user_group_name,
+                device_group.id)
+            if new_user_group is None:
+                return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
+        else:
+            new_user_group = None
 
         status, error_message = self._change_sensor_name(sensor, name, new_user_group)
 
         if not status:
-            self._executive_device_repository_instance.rollback_session()
+            self._sensor_repository_instance.rollback_session()
             return error_message, None
 
         status, error_message = self._change_sensor_user_group(
@@ -373,7 +379,7 @@ class SensorService:
             user, new_user_group)
 
         if not status:
-            self._executive_device_repository_instance.rollback_session()
+            self._sensor_repository_instance.rollback_session()
             return error_message, None
 
         status, new_sensor_type, error_message = self._change_sensor_type(
@@ -382,12 +388,12 @@ class SensorService:
             type_name)
 
         if not status:
-            self._executive_device_repository_instance.rollback_session()
+            self._sensor_repository_instance.rollback_session()
             return error_message, None
 
         sensor.is_updated = True
 
-        if self._executive_device_repository_instance.update_database():
+        if self._sensor_repository_instance.update_database():
             executive_device_info = self._get_modified_sensor_info(
                 sensor, new_sensor_type, new_user_group)
 
@@ -468,7 +474,7 @@ class SensorService:
         new_executive_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(
             device_group_id, type_name)
         if new_executive_type is None:
-            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+            return False, None, Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
 
         sensor.executive_type_id = new_executive_type.id
         return True, new_executive_type, None
