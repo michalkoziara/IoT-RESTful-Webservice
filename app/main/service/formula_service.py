@@ -65,7 +65,7 @@ class FormulaService:
             return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
 
         if not user_id:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
