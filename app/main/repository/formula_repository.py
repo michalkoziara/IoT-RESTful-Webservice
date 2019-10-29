@@ -17,6 +17,13 @@ class FormulaRepository(BaseRepository):
 
         return cls._instance
 
+    def get_formula_by_name_and_user_group_id(self, name: str, user_group_id: str):
+        return Formula.query.filter(
+            and_(
+                Formula.nam == name,
+                Formula.user_group_id == user_group_id
+            )).first()
+
     def get_formula_by_id(self, formula_id: str) -> Formula:
         return Formula.query.filter(
             Formula.id == formula_id

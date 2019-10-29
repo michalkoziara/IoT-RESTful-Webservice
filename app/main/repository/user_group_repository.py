@@ -54,6 +54,11 @@ class UserGroupRepository(BaseRepository):
             UserGroup.device_group_id == device_group_id
         ).all()
 
+    def get_user_group_by_id(self, user_group_id: str) -> UserGroup:
+        return UserGroup.query.filter(
+            UserGroup.id == user_group_id
+        ).first()
+
     def get_user_group_by_name_and_device_group_id_and_user_id(
             self,
             name: str,

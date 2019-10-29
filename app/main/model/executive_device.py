@@ -13,9 +13,9 @@ class ExecutiveDevice(db.Model):
     is_updated = db.Column(db.Boolean, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
     is_assigned = db.Column(db.Boolean, nullable=False)
-    is_formula_used = db.Column(db.Boolean, nullable=False)
-    positive_state = db.Column(db.String(255))
-    negative_state = db.Column(db.String(255))
+    is_formula_used = db.Column(db.Boolean, nullable=True)  # changed to nullable = True
+    positive_state = db.Column(db.String(255), nullable=True)
+    negative_state = db.Column(db.String(255), nullable=True)
     device_key = db.Column(db.String(255), nullable=False, unique=True)
 
     executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id'), nullable=False)
