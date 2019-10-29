@@ -1515,3 +1515,55 @@ def test__change_sensor_user_group_should_return_error_message_when_user_not_in_
     assert error_msg == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
     assert sensor.user_group_id == old_user_group.id
+
+
+def test__change_sensor_type_should_change_sensor_type_if_sensor_type_in_device_group(
+        create_sensor_type,
+        get_sensor_type_default_values,
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['id'] += 1
+    sensor_type_values['name'] = 'Test'
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    sensor = create_sensor()
+
+    assert sensor.sensor_type_id != sensor_type.id
+
+    with patch.object(
+            SensorTypeRepository,
+            'get_sensor_type_by_device_group_id_and_name'
+    ) as get_sensor_type_by_device_group_id_and_name_mock:
+        get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
+
+        status, returned_sensor_type, error_msg = sensor_service_instance._change_sensor_type(
+            sensor, 'test', 'type_name')
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.sensor_type_id == sensor_type.id
+
+
+def test__change_device_type_should_return_error_message_when_exec_type_not_found(
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor = create_sensor()
+    old_type_id = sensor.sensor_type_id
+
+    with patch.object(
+            SensorTypeRepository,
+            'get_sensor_type_by_device_group_id_and_name'
+    ) as get_sensor_type_by_device_group_id_and_name_mock:
+        get_sensor_type_by_device_group_id_and_name_mock.return_value = None
+
+        status, returned_sensor_type, error_msg = sensor_service_instance._change_sensor_type(
+            sensor, 'test', 'type_name')
+
+    assert status is False
+    assert returned_sensor_type is None
+    assert error_msg == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
+    assert sensor.sensor_type_id == old_type_id

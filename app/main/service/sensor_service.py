@@ -403,17 +403,17 @@ class SensorService:
 
     def _get_modified_sensor_info(self, sensor: Sensor, sensor_type: SensorType,
                                   user_group: UserGroup):
-        executive_device_info = {
+        sensor_info = {
             'changedName': sensor.name,
             'changedType': sensor_type.name,
         }
 
         if user_group is not None:
-            executive_device_info['changedUserGroupName'] = user_group.name
+            sensor_info['changedUserGroupName'] = user_group.name
         else:
-            executive_device_info['changedUserGroupName'] = None
+            sensor_info['changedUserGroupName'] = None
 
-        return executive_device_info
+        return sensor_info
 
     def _change_sensor_name(self, sensor: Sensor, name: str, user_group: UserGroup
                             ) -> (bool, Optional[str]):
@@ -476,7 +476,7 @@ class SensorService:
         if new_executive_type is None:
             return False, None, Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
 
-        sensor.executive_type_id = new_executive_type.id
+        sensor.sensor_type_id = new_executive_type.id
         return True, new_executive_type, None
 
     def reading_in_range(self, reading_value: str, sensor_type: SensorType):
