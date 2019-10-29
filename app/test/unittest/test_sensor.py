@@ -1153,6 +1153,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_type
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED
 
+
 def test_add_sensor_to_device_group_should_return_error_message_when_sensor_name_already_in_device_group(
         create_device_group, create_unconfigured_device, create_admin):
     sensor_service_instance = SensorService.get_instance()
@@ -1202,7 +1203,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_name
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED
-
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_unconfigured_device_not_found(
@@ -1383,3 +1383,68 @@ def test_add_sensor_to_device_group_should_return_error_message_when_one_of_para
     )
 
     assert result == expected_result
+
+
+def test__change_sensor_name_should_change_sensor_name_if_name_is_not_defined_in_user_group(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    sensor.name = "To be changed"
+
+    new_name = "Changed"
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = None
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, new_name, Mock())
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.name == new_name
+
+
+def test__change_sensor_name_should_not_change_sensor_name_and_return_true_when_it_is_the_same_name(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    old_name = "To be changed"
+    sensor.name = old_name
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = sensor
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, sensor.name, Mock())
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.name == old_name
+
+
+def test__change_sensor_name_should_not_change_sensor_when_name_already_defined_in_user_group(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    old_name = "To be changed"
+    sensor.name = old_name
+
+    mocked_sensor = Mock()
+    mocked_sensor.id.return_value = sensor.id + 1
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = mocked_sensor
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, "test", Mock())
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
