@@ -121,3 +121,42 @@ def get_sensor_readings(product_key: str, device_key: str):
         product_key=product_key,
         is_logged=True
     )
+
+
+@api.route('/hubs/<product_key>/sensors/<device_key>', methods=['POST'])
+def modify_sensor(product_key: str, device_key: str):
+    auth_header = request.headers.get('Authorization')
+    result_values = None
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    response_message, status, request_dict = ResponseUtils.get_request_data(
+        request=request,
+        data_keys=['name', 'typeName', 'userGroupName']
+    )
+
+    if error_message is None:
+        if status is None:
+            name = request_dict['name']
+            type_name = request_dict['typeName']
+            user_group_name = request_dict['userGroupName']
+
+            result, result_values = _sensor_service_instance.modify_sensor(
+                product_key,
+                user_info['user_id'],
+                user_info['is_admin'],
+                device_key,
+                name,
+                type_name,
+                user_group_name
+            )
+        else:
+            result = response_message
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
