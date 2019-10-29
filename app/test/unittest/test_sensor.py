@@ -1448,3 +1448,70 @@ def test__change_sensor_name_should_not_change_sensor_when_name_already_defined_
 
     assert status is False
     assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+
+def test__change_sensor_user_group_should_change_sensors_user_group_if_user_is_in_both_user_groups(
+        create_sensor,
+        create_user_group,
+        create_user):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor = create_sensor()
+    user = create_user()
+    old_user_group = create_user_group()
+    new_user_group = create_user_group()
+
+    old_user_group.users = [user]
+    new_user_group.users = [user]
+
+    new_user_group.id = 5
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id') as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.user_group_id == new_user_group.id
+
+
+@pytest.mark.parametrize('user_in_old_user_group, user_in_new_user_group',
+                         [(True, False), (False, True), (False, False)])
+def test__change_sensor_user_group_should_return_error_message_when_user_not_in_old_or_new_user_groups(
+        user_in_old_user_group, user_in_new_user_group,
+        create_sensor,
+        create_user_group,
+        create_user):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+    user = create_user()
+    old_user_group = create_user_group()
+
+    assert sensor.user_group_id == old_user_group.id
+
+    new_user_group = create_user_group()
+
+    if user_in_old_user_group:
+        old_user_group.users = [user]
+    else:
+        old_user_group.users = []
+
+    if user_in_new_user_group:
+        new_user_group.users = [user]
+    else:
+        new_user_group.users = []
+
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id') as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    assert sensor.user_group_id == old_user_group.id
