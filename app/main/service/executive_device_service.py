@@ -41,7 +41,7 @@ class ExecutiveDeviceService:
         self._executive_type_repository_instance = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
 
-    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
+    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[str, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None

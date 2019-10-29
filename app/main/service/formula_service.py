@@ -3,6 +3,7 @@ from json import dumps
 from typing import Any
 from typing import Dict
 from typing import Tuple
+from typing import Optional
 
 from pyeda.boolalg.expr import AndOp
 from pyeda.boolalg.expr import Complement
@@ -51,6 +52,39 @@ class FormulaService:
         self._formula_repository_instance = FormulaRepository.get_instance()
 
         self._sensor_service_instance = SensorService.get_instance()
+
+    def get_formula_names_in_user_group(
+            self,
+            product_key: str,
+            user_group_name: str,
+            user_id: str) -> Tuple[str, Optional[dict]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_group_name:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        user_group = self._user_group_repository_instance.get_user_group_by_name_and_device_group_id(
+            user_group_name,
+            device_group.id
+        )
+
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
+
+        if user_id not in [user.id for user in user_group.users]:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        formula_names = [formula.name for formula in user_group.formulas]
+        return Constants.RESPONSE_MESSAGE_OK, {'names': formula_names}
 
     def add_formula_to_user_group(
             self,
