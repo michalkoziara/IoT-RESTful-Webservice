@@ -442,6 +442,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     executive_device_values['is_formula_used'] = True
     executive_device = insert_executive_device(executive_device_values)
 
+    assert executive_device.is_updated
+
     sensor_type_values = get_sensor_type_default_values()
     sensor_type_values['reading_type'] = 'Decimal'
     sensor_type_values['range_min'] = -1
@@ -449,6 +451,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
 
     insert_sensor_type(sensor_type_values)
     sensor = insert_sensor()
+
+    assert sensor.is_updated
 
     insert_sensor_reading_enumerator()
     insert_state_enumerator()
@@ -477,7 +481,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     assert response_data['devices'][0]['deviceKey'] == executive_device.device_key
     assert response_data['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
-
+    assert not executive_device.is_updated
+    assert not sensor.is_updated
 
 def test_get_devices_configurations_should_return_error_message_when_invalid_request(client):
     content_type = 'application/json'

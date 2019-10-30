@@ -227,6 +227,7 @@ class HubService:
                         'enumerator': enumerators
                     }
                 )
+                sensor.is_updated = False
 
         executive_devices = \
             self._executive_device_repository_instance.get_executive_devices_by_product_key_and_device_keys(
@@ -292,6 +293,11 @@ class HubService:
                         'enumerator': enumerators
                     }
                 )
+
+                executive_device.is_updated = False
+
+        if not self._executive_type_repository.update_database():
+            return Constants.RESPONSE_MESSAGE_ERROR, None
 
         result_values = {
             'sensors': sensor_infos,
