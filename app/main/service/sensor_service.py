@@ -467,7 +467,7 @@ class SensorService:
         """
         Function returns:
             success status,
-            optional:new ExecutiveType
+            optional:new Sensor Type
             optional: error message
         """
 
