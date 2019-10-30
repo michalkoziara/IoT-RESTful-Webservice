@@ -1008,8 +1008,8 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                                     'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
                                 with patch.object(
                                         BaseRepository,
-                                        'commit_changes') as commit_changes_mock:
-                                    commit_changes_mock.return_value = True
+                                        'update_database') as update_database_mock:
+                                    update_database_mock.return_value = True
 
                                     result = sensor_service_instance.add_sensor_to_device_group(
                                         device_group.product_key,
@@ -1027,7 +1027,7 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                                         sensor_type_id=sensor_type.id, user_group_id=None)
     save_but_do_not_commit_mock.assert_called_once()
     delete_but_do_not_commit_mock.assert_called_once_with(unconfigured_device)
-    commit_changes_mock.assert_called_once()
+    update_database_mock.assert_called_once()
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_not_successfull_db_update(
@@ -1081,20 +1081,18 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
                                     'delete_but_do_not_commit') as delete_but_do_not_commit_mock:
                                 with patch.object(
                                         BaseRepository,
-                                        'commit_changes') as commit_changes_mock:
-                                    commit_changes_mock.side_effect = raise_exception
-                                    commit_changes_mock.return_value = False
+                                        'update_database') as update_database_mock:
+                                    update_database_mock.return_value = False
 
-                                    with patch.object(BaseRepository, 'rollback_session'):
-                                        result = sensor_service_instance.add_sensor_to_device_group(
-                                            device_group.product_key,
-                                            admin.id,
-                                            True,
-                                            device_key,
-                                            password,
-                                            sensor_name,
-                                            sensor_type_name
-                                        )
+                                    result = sensor_service_instance.add_sensor_to_device_group(
+                                        device_group.product_key,
+                                        admin.id,
+                                        True,
+                                        device_key,
+                                        password,
+                                        sensor_name,
+                                        sensor_type_name
+                                    )
 
     assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
     sensor_init_mock.assert_called_with(device_group_id=device_group.id, device_key=device_key, is_active=False,
