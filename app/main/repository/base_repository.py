@@ -14,6 +14,7 @@ class BaseRepository:
             result = True
         except SQLAlchemyError:
             result = False
+            self.rollback_session()
 
         return result
 
