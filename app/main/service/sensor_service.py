@@ -195,13 +195,11 @@ class SensorService:
             device_group_id=device_group.id,
             sensor_readings=[]
         )
-        try:
-            self._sensor_repository_instance.save_but_do_not_commit(sensor)
-            self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
-            self._unconfigured_device_repository.commit_changes()
-        except SQLAlchemyError:
-            self._sensor_repository_instance.rollback_session()
 
+        self._sensor_repository_instance.save_but_do_not_commit(sensor)
+        self._unconfigured_device_repository.delete_but_do_not_commit(uncofigured_device)
+
+        if not self._unconfigured_device_repository.update_database():
             return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
 
         return Constants.RESPONSE_MESSAGE_CREATED

@@ -24,6 +24,7 @@ class BaseRepository:
             result = True
         except SQLAlchemyError:
             result = False
+            self.rollback_session()
 
         return result
 
@@ -33,6 +34,7 @@ class BaseRepository:
             result = True
         except SQLAlchemyError:
             result = False
+            self.rollback_session()
 
         return result
 
@@ -44,6 +46,3 @@ class BaseRepository:
 
     def delete_but_do_not_commit(self, model: db.Model) -> None:
         db.session.delete(model)
-
-    def commit_changes(self)-> None:
-        db.session.commit()
