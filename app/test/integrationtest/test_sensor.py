@@ -458,7 +458,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_device_key_
     sensor_type = insert_sensor_type()
 
     unconfigured_device = insert_unconfigured_device()
-    ##
+
     sensor_values = get_sensor_default_values()
     sensor_values['device_key'] = unconfigured_device.device_key
     sensor = insert_sensor(sensor_values)
