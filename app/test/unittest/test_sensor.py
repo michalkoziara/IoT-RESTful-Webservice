@@ -1539,7 +1539,7 @@ def test__change_sensor_type_should_change_sensor_type_if_sensor_type_in_device_
     ) as get_sensor_type_by_device_group_id_and_name_mock:
         get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
 
-        status, returned_sensor_type, error_msg = sensor_service_instance._change_sensor_type(
+        status, _, error_msg = sensor_service_instance._change_sensor_type(
             sensor, 'test', 'type_name')
 
     assert status is True
