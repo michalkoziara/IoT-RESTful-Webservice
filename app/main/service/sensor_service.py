@@ -4,6 +4,7 @@ from typing import Tuple
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.main.model import UserGroup, User
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
@@ -14,13 +15,14 @@ from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
+from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
 from app.main.util.utils import is_bool
 
 
 class SensorService:
     _instance = None
-
+    _user_repository = None
     _device_group_repository_instance = None
     _executive_device_repository_instance = None
     _sensor_repository_instance = None
@@ -36,6 +38,7 @@ class SensorService:
         return cls._instance
 
     def __init__(self):
+        self._user_repository = UserRepository.get_instance()
         self._sensor_reading_repository = SensorReadingRepository.get_instance()
         self._reading_enumerator_repository_instance = ReadingEnumeratorRepository.get_instance()
         self._sensor_reading_repository_instance = SensorReadingRepository.get_instance()
@@ -308,6 +311,173 @@ class SensorService:
                 reading_return_value = False
 
         return reading_return_value
+
+    def modify_sensor(
+            self,
+            product_key: str,
+            user_id: int,
+            is_admin: bool,
+            device_key: str,
+            name: str,
+            type_name: str,
+            user_group_name: str
+    ):
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not device_key:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        if user_id is None or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        if is_admin:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        if not name or not type_name:
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+            user_id,
+            product_key)
+
+        if not users_device_group:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        sensor = \
+            self._sensor_repository_instance.get_sensor_by_device_key_and_device_group_id(
+                device_key, device_group.id)
+
+        if not sensor:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
+
+        user = self._user_repository.get_user_by_id(user_id)
+
+        if user_group_name is not None:
+            new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
+                user_group_name,
+                device_group.id)
+            if new_user_group is None:
+                return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
+        else:
+            new_user_group = None
+
+        status, error_message = self._change_sensor_name(sensor, name, new_user_group)
+
+        if not status:
+            self._sensor_repository_instance.rollback_session()
+            return error_message, None
+
+        status, error_message = self._change_sensor_user_group(
+            sensor,
+            user, new_user_group)
+
+        if not status:
+            self._sensor_repository_instance.rollback_session()
+            return error_message, None
+
+        status, new_sensor_type, error_message = self._change_sensor_type(
+            sensor,
+            device_group.id,
+            type_name)
+
+        if not status:
+            self._sensor_repository_instance.rollback_session()
+            return error_message, None
+
+        sensor.is_updated = True
+
+        if self._sensor_repository_instance.update_database():
+            executive_device_info = self._get_modified_sensor_info(
+                sensor, new_sensor_type, new_user_group)
+
+            return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+        return Constants.RESPONSE_MESSAGE_CONFLICTING_DATA, None
+
+    def _get_modified_sensor_info(self, sensor: Sensor, sensor_type: SensorType,
+                                  user_group: UserGroup):
+        sensor_info = {
+            'changedName': sensor.name,
+            'changedType': sensor_type.name,
+        }
+
+        if user_group is not None:
+            sensor_info['changedUserGroupName'] = user_group.name
+        else:
+            sensor_info['changedUserGroupName'] = None
+
+        return sensor_info
+
+    def _change_sensor_name(self, sensor: Sensor, name: str, user_group: UserGroup
+                            ) -> (bool, Optional[str]):
+
+        error_message = None
+        if user_group is not None:
+            sensor_with_the_same_name = \
+                self._sensor_repository_instance.get_sensor_by_name_and_user_group_id(
+                    name,
+                    user_group.id)
+            if sensor_with_the_same_name:
+                if sensor.id != sensor_with_the_same_name.id:
+                    error_message = Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+        if error_message is not None:
+            return False, error_message
+        else:
+            sensor.name = name
+            return True, None
+
+    def _change_sensor_user_group(self, sensor: Sensor, user: User, new_user_group: UserGroup
+                                  ) -> (bool, Optional[UserGroup], Optional[str]):
+        """
+        Function returns:
+            success status,
+            optional: error message
+        """
+
+        error_message = None
+
+        if sensor.user_group_id is not None:
+            old_user_group = self._user_group_repository.get_user_group_by_id(sensor.user_group_id)
+            if old_user_group is not None and user not in old_user_group.users:
+                error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        if new_user_group is not None and user not in new_user_group.users:
+            error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        if error_message is not None:
+            return False, error_message
+        else:
+            if new_user_group is not None:
+                sensor.user_group_id = new_user_group.id
+            else:
+                sensor.user_group_id = None
+            return True, None
+
+    def _change_sensor_type(self, sensor: Sensor,
+                            device_group_id: str, type_name: str
+                            ) -> (bool, Optional[SensorType], Optional[str]):
+        """
+        Function returns:
+            success status,
+            optional:new Sensor Type
+            optional: error message
+        """
+
+        new_executive_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(
+            device_group_id, type_name)
+        if new_executive_type is None:
+            return False, None, Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
+
+        sensor.sensor_type_id = new_executive_type.id
+        return True, new_executive_type, None
 
     def reading_in_range(self, reading_value: str, sensor_type: SensorType):
         if sensor_type.reading_type == 'Enum':
