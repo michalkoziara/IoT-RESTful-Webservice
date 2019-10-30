@@ -1300,7 +1300,7 @@ def test__change_device_type_should_return_error_message_when_exec_type_not_foun
 
     assert status is False
     assert returned_exec_type is None
-    assert error_msg == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+    assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND
     assert executive_device.executive_type_id == old_type_id
 
 

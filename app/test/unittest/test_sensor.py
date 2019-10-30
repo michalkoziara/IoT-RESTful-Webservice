@@ -11,6 +11,7 @@ from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository
 from app.main.repository.user_group_repository import UserGroupRepository
+from app.main.repository.user_repository import UserRepository
 from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
 
@@ -1151,6 +1152,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_type
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NAME_NOT_DEFINED
 
+
 def test_add_sensor_to_device_group_should_return_error_message_when_sensor_name_already_in_device_group(
         create_device_group, create_unconfigured_device, create_admin):
     sensor_service_instance = SensorService.get_instance()
@@ -1200,7 +1202,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_sensor_name
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_SENSOR_NAME_ALREADY_DEFINED
-
 
 
 def test_add_sensor_to_device_group_should_return_error_message_when_unconfigured_device_not_found(
@@ -1381,3 +1382,301 @@ def test_add_sensor_to_device_group_should_return_error_message_when_one_of_para
     )
 
     assert result == expected_result
+
+
+def test__change_sensor_name_should_change_sensor_name_if_name_is_not_defined_in_user_group(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    sensor.name = "To be changed"
+
+    new_name = "Changed"
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = None
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, new_name, Mock())
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.name == new_name
+
+
+def test__change_sensor_name_should_not_change_sensor_name_and_return_true_when_it_is_the_same_name(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    old_name = "To be changed"
+    sensor.name = old_name
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = sensor
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, sensor.name, Mock())
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.name == old_name
+
+
+def test__change_sensor_name_should_not_change_sensor_when_name_already_defined_in_user_group(
+        create_sensor
+):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+
+    old_name = "To be changed"
+    sensor.name = old_name
+
+    mocked_sensor = Mock()
+    mocked_sensor.id.return_value = sensor.id + 1
+
+    with patch.object(
+            SensorRepository,
+            'get_sensor_by_name_and_user_group_id') as get_sensor_by_name_and_user_group_id_mock:
+        get_sensor_by_name_and_user_group_id_mock.return_value = mocked_sensor
+        status, error_msg = sensor_service_instance._change_sensor_name(sensor, "test", Mock())
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED
+
+
+def test__change_sensor_user_group_should_change_sensors_user_group_if_user_is_in_both_user_groups(
+        create_sensor,
+        create_user_group,
+        create_user):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor = create_sensor()
+    user = create_user()
+    old_user_group = create_user_group()
+    new_user_group = create_user_group()
+
+    old_user_group.users = [user]
+    new_user_group.users = [user]
+
+    new_user_group.id = 5
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id') as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.user_group_id == new_user_group.id
+
+
+@pytest.mark.parametrize('user_in_old_user_group, user_in_new_user_group',
+                         [(True, False), (False, True), (False, False)])
+def test__change_sensor_user_group_should_return_error_message_when_user_not_in_old_or_new_user_groups(
+        user_in_old_user_group, user_in_new_user_group,
+        create_sensor,
+        create_user_group,
+        create_user):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+    user = create_user()
+    old_user_group = create_user_group()
+
+    assert sensor.user_group_id == old_user_group.id
+
+    new_user_group = create_user_group()
+
+    if user_in_old_user_group:
+        old_user_group.users = [user]
+    else:
+        old_user_group.users = []
+
+    if user_in_new_user_group:
+        new_user_group.users = [user]
+    else:
+        new_user_group.users = []
+
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id') as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+
+    assert status is False
+    assert error_msg == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    assert sensor.user_group_id == old_user_group.id
+
+
+def test__change_sensor_type_should_change_sensor_type_if_sensor_type_in_device_group(
+        create_sensor_type,
+        get_sensor_type_default_values,
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['id'] += 1
+    sensor_type_values['name'] = 'Test'
+
+    sensor_type = create_sensor_type(sensor_type_values)
+    sensor = create_sensor()
+
+    assert sensor.sensor_type_id != sensor_type.id
+
+    with patch.object(
+            SensorTypeRepository,
+            'get_sensor_type_by_device_group_id_and_name'
+    ) as get_sensor_type_by_device_group_id_and_name_mock:
+        get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
+
+        status, _, error_msg = sensor_service_instance._change_sensor_type(
+            sensor, 'test', 'type_name')
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.sensor_type_id == sensor_type.id
+
+
+def test__change_device_type_should_return_error_message_when_exec_type_not_found(
+        create_sensor):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor = create_sensor()
+    old_type_id = sensor.sensor_type_id
+
+    with patch.object(
+            SensorTypeRepository,
+            'get_sensor_type_by_device_group_id_and_name'
+    ) as get_sensor_type_by_device_group_id_and_name_mock:
+        get_sensor_type_by_device_group_id_and_name_mock.return_value = None
+
+        status, returned_sensor_type, error_msg = sensor_service_instance._change_sensor_type(
+            sensor, 'test', 'type_name')
+
+    assert status is False
+    assert returned_sensor_type is None
+    assert error_msg == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_NOT_FOUND
+    assert sensor.sensor_type_id == old_type_id
+
+
+def test_modify_sensor_should_modify_sensor_when_valid_arguments_are_passed_and_new_user_group_is_not_none(
+        get_sensor_default_values,
+        create_sensor,
+        get_sensor_type_default_values,
+        create_sensor_type,
+        create_user,
+        create_user_group
+):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = Mock()
+
+    user = create_user()
+
+    old_user_group = create_user_group()
+    new_user_group = create_user_group()
+
+    old_user_group.users = [user]
+    new_user_group.users = [user]
+
+    new_user_group.id += 1
+    new_user_group.name = "new user group"
+
+    new_sensor_type = create_sensor_type()
+    new_sensor_type.name = 'new sensor type'
+    new_sensor_type.id += 1
+
+    sensor_values = get_sensor_default_values()
+    sensor_values['name'] = 'to be changed'
+    sensor_values['is_updated'] = False
+    sensor_values['user_group_id'] = old_user_group.id
+
+    sensor = create_sensor(sensor_values)
+
+    new_name = "New name"
+
+    expected_values = {
+        'changedName': new_name,
+        'changedType': new_sensor_type.name,
+        'changedUserGroupName': new_user_group.name,
+
+    }
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                DeviceGroupRepository,
+                'get_device_group_by_user_id_and_product_key'
+        ) as get_device_group_by_user_id_and_product_key_mock:
+            get_device_group_by_user_id_and_product_key_mock.return_value = Mock()
+
+            with patch.object(
+                    SensorRepository,
+                    'get_sensor_by_device_key_and_device_group_id'
+            ) as get_sensor_by_device_key_and_device_group_id_mock:
+                get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+                with patch.object(
+                        UserRepository,
+                        'get_user_by_id'
+                ) as get_user_by_id_mock:
+                    get_user_by_id_mock.return_value = user
+
+                    with patch.object(
+                            UserGroupRepository,
+                            'get_user_group_by_name_and_device_group_id'
+                    ) as get_user_group_by_name_and_device_group_id_mock:
+                        get_user_group_by_name_and_device_group_id_mock.return_value = new_user_group
+
+                        with patch.object(
+                                SensorRepository,
+                                'get_sensor_by_name_and_user_group_id'
+                        ) as get_sensor_by_name_and_user_group_id_mock:
+                            get_sensor_by_name_and_user_group_id_mock.return_value = None
+
+                            with patch.object(
+                                    UserGroupRepository,
+                                    'get_user_group_by_id'
+                            ) as get_user_group_by_id_mock:
+                                get_user_group_by_id_mock.return_value = old_user_group
+
+                                with patch.object(
+                                        SensorTypeRepository,
+                                        'get_sensor_type_by_device_group_id_and_name'
+                                ) as get_sensor_type_by_device_group_id_and_name_mock:
+                                    get_sensor_type_by_device_group_id_and_name_mock.return_value = new_sensor_type
+
+                                    with patch.object(
+                                            SensorRepository,
+                                            'update_database'
+                                    ) as update_database_mock:
+                                        update_database_mock.return_value = True
+
+                                        result, result_values = sensor_service_instance.modify_sensor(
+                                            "product_key",
+                                            user.id,
+                                            False,
+                                            "device_key",
+                                            new_name,
+                                            "New type name",
+                                            "New user group name"
+                                        )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert sensor.name == new_name
+    assert sensor.sensor_type_id == new_sensor_type.id
+    assert sensor.user_group_id == new_user_group.id
+    assert result_values == expected_values
