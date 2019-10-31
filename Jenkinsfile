@@ -10,8 +10,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                checkout scm
                 echo 'Checkout..'
+                checkout scm
             }
         }
         stage('Build') {
@@ -25,18 +25,44 @@ pipeline {
                 """
             }
         }
-        stage('Test') {
+        stage('Run unit tests') {
             steps {
-                echo 'Testing..'
+                echo 'Running unit tests..'
                 sh """
                 . env/bin/activate
-                pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-config=.coveragerc --junitxml=unit_test_report.xml
+                pytest app/test/unittest/ --cache-clear -rxs -v --junitxml=unit_test_report.xml
                 """
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
-
+                    junit allowEmptyResults: true, testResults: '*_test_report.xml'
+                }
+            }
+        }
+        stage('Run integration tests') {
+            steps {
+                echo 'Running integration tests..'
+                sh """
+                . env/bin/activate
+                pytest app/test/integrationtest/ --cache-clear -rxs -v --junitxml=integration_test_report.xml
+                """
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '*_test_report.xml'
+                }
+            }
+        }
+        stage('Send test data to codacy') {
+            steps {
+                echo 'Sending data to codacy..'
+                sh """
+                . env/bin/activate
+                pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-config=.coveragerc
+                """
+            }
+            post {
+                always {
                     withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
                         sh """
                         . env/bin/activate
