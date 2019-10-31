@@ -1,6 +1,7 @@
 # pylint: disable=no-self-use
 import json
 from datetime import datetime
+from json import loads
 from typing import Any
 from typing import Dict
 from typing import List
@@ -286,7 +287,7 @@ class HubService:
                         'state': executive_device.state,
                         'positiveState': executive_device.positive_state,
                         'negativeState': executive_device.negative_state,
-                        'rule': formula.rule if formula else None,
+                        'rule': loads(formula.rule) if formula else None,
                         'stateType': executive_type.state_type if executive_type else None,
                         'rangeMin': executive_type.state_range_min if executive_type else None,
                         'rangeMax': executive_type.state_range_max if executive_type else None,
