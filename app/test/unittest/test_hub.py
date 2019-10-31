@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+from app.main.repository.base_repository import BaseRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -511,13 +512,19 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
                     ) as get_formulas_by_ids_mock:
                         get_formulas_by_ids_mock.return_value = formulas
 
-                        result, result_values = hub_service_instance.get_devices_informations(
-                            'product_key',
-                            [
-                                sensors[0].device_key,
-                                executive_devices[0].device_key
-                            ]
-                        )
+                        with patch.object(
+                                BaseRepository,
+                                'update_database'
+                        ) as update_database_mock:
+                            update_database_mock.return_value = True
+
+                            result, result_values = hub_service_instance.get_devices_informations(
+                                'product_key',
+                                [
+                                    sensors[0].device_key,
+                                    executive_devices[0].device_key
+                                ]
+                            )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
@@ -527,7 +534,7 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
     assert len(result_values['devices']) == 1
     assert result_values['sensors'][0]['deviceKey'] == sensors[0].device_key
     assert result_values['devices'][0]['deviceKey'] == executive_devices[0].device_key
-    assert result_values['devices'][0]['rule'] == get_formula_default_values()['rule']
+    assert result_values['devices'][0]['rule']
     assert result_values['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert result_values['devices'][0]['stateType'] == executive_type_values['state_type']
 
@@ -561,10 +568,16 @@ def test_get_devices_informations_should_return_empty_lists_when_valid_product_k
         ) as get_executive_devices_by_product_key_and_device_keys_mock:
             get_executive_devices_by_product_key_and_device_keys_mock.return_value = None
 
-            result, result_values = hub_service_instance.get_devices_informations(
-                'product_key',
-                ['test']
-            )
+            with patch.object(
+                    BaseRepository,
+                    'update_database'
+            ) as update_database_mock:
+                update_database_mock.return_value = True
+
+                result, result_values = hub_service_instance.get_devices_informations(
+                    'product_key',
+                    ['test']
+                )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values

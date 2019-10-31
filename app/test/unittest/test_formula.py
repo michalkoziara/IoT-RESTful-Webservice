@@ -533,7 +533,7 @@ def test_get_formula_names_in_user_group_should_return_product_key_not_found_mes
     assert not result_values
 
 
-@pytest.mark.parametrize("product_key, user_group_name ,user_id, expected_result", [
+@pytest.mark.parametrize("product_key, user_group_name, user_id, expected_result", [
     ('product_key', 'user_group_name', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
     ('product_key', None, 'user_id', Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND),
     (None, 'user_group_name', 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
@@ -548,6 +548,226 @@ def test_get_formula_names_in_user_group_should_return_error_message_when_no_par
     result, result_values = formula_service_instance.get_formula_names_in_user_group(
         product_key,
         user_group_name,
+        user_id
+    )
+
+    assert result
+    assert result == expected_result
+    assert not result_values
+
+
+def test_get_formula_info_should_return_formula_information_when_valid_product_key_user_group_user_and_formula(
+        create_device_group,
+        get_user_default_values,
+        create_user,
+        get_user_group_default_values,
+        create_user_group,
+        create_formula):
+    formula_service_instance = FormulaService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    formula = create_formula()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    user_group_values['formulas'] = [formula]
+
+    user_group = create_user_group(user_group_values)
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = user_group
+
+            result, result_values = formula_service_instance.get_formula_info(
+                device_group.product_key,
+                user_group.name,
+                formula.name,
+                user.id
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_OK
+
+    assert result_values
+    assert 'name' in result_values
+    assert formula.name in result_values['name']
+    assert 'rule' in result_values
+    assert result_values['rule']
+
+
+def test_get_formula_info_should_return_formula_not_found_message_when_no_formula_with_given_name(
+        create_device_group,
+        get_user_default_values,
+        create_user,
+        get_user_group_default_values,
+        create_user_group,
+        create_formula):
+    formula_service_instance = FormulaService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    formula = create_formula()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    user_group_values['formulas'] = [formula]
+
+    user_group = create_user_group(user_group_values)
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = user_group
+
+            result, result_values = formula_service_instance.get_formula_info(
+                device_group.product_key,
+                user_group.name,
+                'not' + formula.name,
+                user.id
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
+
+    assert not result_values
+
+
+def test_get_formula_info_should_return_no_privileges_message_when_user_not_in_user_group(
+        create_device_group,
+        get_user_default_values,
+        create_user,
+        create_user_group):
+    formula_service_instance = FormulaService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    user_group = create_user_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = user_group
+
+            result, result_values = formula_service_instance.get_formula_info(
+                device_group.product_key,
+                user_group.name,
+                'formula_name',
+                user.id
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    assert not result_values
+
+
+def test_get_formula_info_should_return_user_group_not_found_message_when_no_user_group(
+        create_device_group,
+        get_user_default_values,
+        create_user,
+        create_user_group):
+    formula_service_instance = FormulaService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    user_group = create_user_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = None
+
+            result, result_values = formula_service_instance.get_formula_info(
+                device_group.product_key,
+                user_group.name,
+                'formula_name',
+                user.id
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+    assert not result_values
+
+
+def test_get_formula_info_should_return_product_key_not_found_message_when_no_device_group(
+        create_device_group,
+        get_user_default_values,
+        create_user,
+        create_user_group):
+    formula_service_instance = FormulaService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    user_group = create_user_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = formula_service_instance.get_formula_info(
+            device_group.product_key,
+            user_group.name,
+            'formula_name',
+            user.id
+        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+    assert not result_values
+
+
+@pytest.mark.parametrize("product_key, user_group_name, user_id, formula_name, expected_result", [
+    ('product_key', 'user_group_name', 'user_id', None, Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND),
+    ('product_key', 'user_group_name', None, 'formula_name', Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', None, 'user_id', 'formula_name', Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND),
+    (None, 'user_group_name', 'user_id', 'formula_name', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_get_formula_info_should_return_error_message_when_no_parameter_given(
+        product_key,
+        user_group_name,
+        user_id,
+        formula_name,
+        expected_result):
+    formula_service_instance = FormulaService.get_instance()
+
+    result, result_values = formula_service_instance.get_formula_info(
+        product_key,
+        user_group_name,
+        formula_name,
         user_id
     )
 

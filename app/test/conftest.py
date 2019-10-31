@@ -438,7 +438,9 @@ def formula_default_values(user_group_default_values) -> Dict[str, Optional[Unio
     return {
         'id': 1,
         'name': 'formula default name',
-        'rule': 'default rule',
+        'rule': "{\"isNegated\": false, \"operator\": \"and\", \"complexRight\": {\"isNegated\": false, \"value\":" +
+                "false, \"functor\": \"==\", \"sensorName\": \"sensor\"}, \"complexLeft\": {\"isNegated\": false, " +
+                "\"value\": false, \"functor\": \"==\", \"sensorName\": \"sensor\"}}",
         'user_group_id': user_group_default_values['id'],
         'executive_devices': []
     }
@@ -645,8 +647,7 @@ def create_unconfigured_device(create_unconfigured_devices, get_unconfigured_dev
 
 @pytest.fixture
 def create_unconfigured_devices():
-    def _create_unconfigured_devices(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[
-        UnconfiguredDevice]:
+    def _create_unconfigured_devices(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[UnconfiguredDevice]:
         unconfigured_devices = []
         for value in values:
             unconfigured_devices.append(
