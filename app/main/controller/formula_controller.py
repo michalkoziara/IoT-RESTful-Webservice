@@ -15,6 +15,34 @@ _formula_service_instance = FormulaService.get_instance()
 _logger = LogService.get_instance()
 
 
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>/formulas/<formula_name>', methods=['GET'])
+def get_formula(product_key: str, user_group_name: str, formula_name: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+    result_values = None
+
+    if error_message is None:
+        if not user_info['is_admin']:
+            result, result_values = _formula_service_instance.get_formula_info(
+                product_key,
+                user_group_name,
+                formula_name,
+                user_info['user_id']
+            )
+        else:
+            result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        result_values=result_values,
+        product_key=product_key,
+        is_logged=True
+    )
+
+
 @api.route('/hubs/<product_key>/user-groups/<user_group_name>/formulas', methods=['GET'])
 def get_formulas(product_key: str, user_group_name: str):
     auth_header = request.headers.get('Authorization')
