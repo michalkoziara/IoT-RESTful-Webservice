@@ -35,7 +35,7 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '*_test_report.xml'
+                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '*_test_report.xml'
+                    junit allowEmptyResults: true, testResults: 'integration_test_report.xml'
                 }
             }
         }
