@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from app.main.model import ExecutiveDevice
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.base_repository import BaseRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
@@ -1464,3 +1465,271 @@ def test__change_device_formula_related_fields_should_return_error_message_when_
     assert status is False
     assert returned_formula is None
     assert error_msg == Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
+
+
+def test_delete_executive_device_should_delete_sensor_when_right_parameters_are_passed(
+        create_executive_device,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_device_by_device_key_and_device_group_id'
+            ) as get_executive_device_by_device_key_and_device_group_id:
+                get_executive_device_by_device_key_and_device_group_id.return_value = executive_device
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'delete'
+                ) as delete_mock:
+                    delete_mock.return_value = True
+
+                    result = executive_device_service_instance.delete_executive_device(executive_device.device_key,
+                                                                                       'product_key', admin_id,
+                                                                                       is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    delete_mock.assert_called_once_with(executive_device)
+
+
+def test_delete_executive_device_should_return_error_message_when_unsuccessful_db_deletion(
+        create_executive_device,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_device_by_device_key_and_device_group_id'
+            ) as get_executive_device_by_device_key_and_device_group_id:
+                get_executive_device_by_device_key_and_device_group_id.return_value = executive_device
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'delete'
+                ) as delete_mock:
+                    delete_mock.return_value = False
+
+                    result = executive_device_service_instance.delete_executive_device(executive_device.device_key,
+                                                                                       'product_key', admin_id,
+                                                                                       is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+    delete_mock.assert_called_once_with(executive_device)
+
+
+def test_delete_executive_should_return_error_message_when_admin_in_not_assigned_to_device_group(
+        create_executive_device,
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin_id = 1
+    is_admin = True
+
+    executive_device = create_executive_device()
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_id + 1
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_device_by_device_key_and_device_group_id'
+            ) as get_executive_device_by_device_key_and_device_group_id:
+                get_executive_device_by_device_key_and_device_group_id.return_value = executive_device
+
+                with patch.object(
+                        ExecutiveDeviceRepository,
+                        'delete'
+                ) as delete_mock:
+                    delete_mock.return_value = False
+
+                    result = executive_device_service_instance.delete_executive_device(
+                        'executive_device.device_key',
+                        'product_key', admin_id,
+                        is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_executive_device_should_delete_sensor_when_exec_device_not_found(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    ExecutiveDeviceRepository,
+                    'get_executive_device_by_device_key_and_device_group_id'
+            ) as get_executive_device_by_device_key_and_device_group_id:
+                get_executive_device_by_device_key_and_device_group_id.return_value = None
+
+                result = executive_device_service_instance.delete_executive_device(
+                    'executive_device.device_key',
+                    'product_key', admin_id,
+                    is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NOT_FOUND
+
+
+def test_delete_executive_device_should_return_error_message_when_admin_in_not_admin(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            result = executive_device_service_instance.delete_executive_device(
+                'executive_device.device_key',
+                'product_key', admin_id,
+                is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_executive_device_should_return_error_message_when_admin_in_not_found(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = None
+
+            result = executive_device_service_instance.delete_executive_device(
+                'executive_device.device_key',
+                'product_key', admin_id,
+                is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_executive_device_should_return_error_message_when_device_group_not_found(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = executive_device_service_instance.delete_executive_device(
+            'executive_device.device_key',
+            'product_key', admin_id,
+            is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND

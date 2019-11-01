@@ -584,15 +584,13 @@ def test_modify_sensor_should_modify_sensor_when_valid_request(
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
-def test_delete_sensor_should_delete_sensor_and_all_its_readings_when_valid_request(
+def test_delete_sensor_should_delete_sensor_when_valid_request(
         client,
         insert_device_group,
         get_sensor_default_values,
         insert_admin,
         insert_sensor,
-        insert_sensor_type,
-        get_sensor_reading_default_values,
-        insert_sensor_reading):
+        insert_sensor_type):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -623,7 +621,7 @@ def test_delete_sensor_should_delete_sensor_and_all_its_readings_when_valid_requ
     assert sensor_in_db is None
 
 
-def test_delete_sensor_should_not_delete_sensor_and_all_its_readings_when_not_valid_request(
+def test_delete_sensor_should_not_delete_sensor_when_not_valid_request(
         client,
         insert_device_group,
         get_sensor_default_values,
