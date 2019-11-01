@@ -9,4 +9,4 @@ class UnconfiguredDevice(db.Model):
     device_key = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'))
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"))

@@ -12,7 +12,7 @@ class UserGroup(db.Model):
     name = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
     formulas = db.relationship('Formula', backref='user_group', lazy=True)
     sensors = db.relationship('Sensor', backref='user_group', lazy=True)

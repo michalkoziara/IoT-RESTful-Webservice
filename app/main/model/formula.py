@@ -11,7 +11,7 @@ class Formula(db.Model):
     name = db.Column(db.String(255), nullable=False)
     rule = db.Column(db.Text, nullable=False)
 
-    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=False)
+    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete="CASCADE"), nullable=False)
 
     executive_devices = db.relationship('ExecutiveDevice', backref='formula', lazy=True)
 

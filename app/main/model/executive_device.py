@@ -18,9 +18,9 @@ class ExecutiveDevice(db.Model):
     negative_state = db.Column(db.String(255), nullable=True)
     device_key = db.Column(db.String(255), nullable=False, unique=True)
 
-    executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id'), nullable=False)
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
-    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)
-    formula_id = db.Column(db.Integer, db.ForeignKey('formula.id'), nullable=True)
+    executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id', ondelete="CASCADE"), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
+    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete="SET NULL"), nullable=True)
+    formula_id = db.Column(db.Integer, db.ForeignKey('formula.id', ondelete="SET NULL"), nullable=True)
 
     UniqueConstraint('device_group_id', 'name', name='unique_exec_device_name_in_group')

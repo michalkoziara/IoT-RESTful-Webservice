@@ -14,9 +14,9 @@ class Sensor(db.Model):
     is_assigned = db.Column(db.Boolean, nullable=False)
     device_key = db.Column(db.String(255), nullable=False, unique=True)
 
-    sensor_type_id = db.Column(db.Integer, db.ForeignKey('sensor_type.id'), nullable=False)
-    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'), nullable=True)
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    sensor_type_id = db.Column(db.Integer, db.ForeignKey('sensor_type.id', ondelete="CASCADE"), nullable=False)
+    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete="SET NULL"), nullable=True)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
     sensor_readings = db.relationship('SensorReading', backref='sensor', lazy=True)
 
