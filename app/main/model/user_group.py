@@ -14,11 +14,11 @@ class UserGroup(db.Model):
 
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
-    formulas = db.relationship('Formula', backref='user_group', lazy=True)
-    sensors = db.relationship('Sensor', backref='user_group', lazy=True)
-    executive_devices = db.relationship('ExecutiveDevice', backref='user_group', lazy=True)
+    formulas = db.relationship('Formula', backref='user_group', lazy=True, passive_deletes=True)
+    sensors = db.relationship('Sensor', backref='user_group', lazy=True, passive_deletes=True)
+    executive_devices = db.relationship('ExecutiveDevice', backref='user_group', lazy=True, passive_deletes=True)
 
     users = db.relationship('User', secondary=user_group_member,
-                            lazy='subquery', backref=db.backref('user_groups', lazy=True))
+                            lazy='subquery', backref=db.backref('user_groups', lazy=True), passive_deletes=True)
 
     UniqueConstraint('device_group_id', 'name', name='unique_name_in_device_group')

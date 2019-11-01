@@ -13,6 +13,6 @@ class Formula(db.Model):
 
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete="CASCADE"), nullable=False)
 
-    executive_devices = db.relationship('ExecutiveDevice', backref='formula', lazy=True)
+    executive_devices = db.relationship('ExecutiveDevice', backref='formula', lazy=True, passive_deletes=True)
 
     UniqueConstraint('user_group_id', 'name', name='unique_name_in_user_group')

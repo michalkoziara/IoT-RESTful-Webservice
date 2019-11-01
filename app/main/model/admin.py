@@ -12,4 +12,4 @@ class Admin(db.Model):
     password = db.Column(db.String(255), nullable=False)
 
     device_group = db.relationship('DeviceGroup', backref='admin', cascade="all, delete-orphan",
-                                   lazy=True, uselist=False)
+                                   lazy=True, uselist=False, passive_deletes=True)

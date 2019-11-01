@@ -18,7 +18,7 @@ class ExecutiveType(db.Model):
 
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
-    executive_devices = db.relationship('ExecutiveDevice', backref='executive_type', lazy=True)
-    state_enumerators = db.relationship('StateEnumerator', backref='executive_type', lazy=True)
+    executive_devices = db.relationship('ExecutiveDevice', backref='executive_type', lazy=True, passive_deletes=True)
+    state_enumerators = db.relationship('StateEnumerator', backref='executive_type', lazy=True, passive_deletes=True)
 
     UniqueConstraint('device_group_id', 'name', name='unique_exec_type_in_device_group')
