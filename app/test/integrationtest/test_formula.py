@@ -425,3 +425,125 @@ def test_get_formula_should_return_no_privileges_error_message_when_user_is_admi
     assert response_data
     assert 'errorMessage' in response_data
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_formula_should_delete_formula_in_given_user_group_when_valid_request(
+        client,
+        insert_device_group,
+        get_user_default_values,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+    formula = insert_formula()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    user_group_values['formulas'] = [formula]
+    user_group = insert_user_group(user_group_values)
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas/' + formula.name,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 200
+
+    response_data = json.loads(response.data.decode())
+    assert not response_data
+
+    formulas = Formula.query.filter(Formula.name == formula.name).all()
+    assert not formulas
+
+
+def test_delete_formula_should_return_error_message_when_invalid_request(
+        client,
+        insert_device_group,
+        get_user_default_values,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    user_group = insert_user_group(user_group_values)
+    formula = insert_formula()
+
+    invalid_user_group = 'not' + user_group.name
+    uri = '/api/hubs/' + device_group.product_key + '/user-groups/' + invalid_user_group + '/formulas/' + formula.name
+    response = client.delete(
+        uri,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+
+def test_delete_formula_should_return_error_message_when_user_not_authorized(client):
+    content_type = 'application/json'
+
+    product_key = 'test product key'
+    user_group_name = 'test user group name'
+    formula_name = 'test formula name'
+
+    response = client.delete(
+        '/api/hubs/' + product_key + '/user-groups/' + user_group_name + '/formulas/' + formula_name,
+        content_type=content_type,
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+
+def test_delete_formula_should_return_no_privileges_error_message_when_user_is_admin(
+        client, insert_admin):
+    content_type = 'application/json'
+
+    admin = insert_admin()
+
+    product_key = 'test product key'
+    user_group_name = 'test user group name'
+    formula_name = 'test formula name'
+
+    response = client.delete(
+        '/api/hubs/' + product_key + '/user-groups/' + user_group_name + '/formulas/' + formula_name,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 403
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES

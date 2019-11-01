@@ -3,8 +3,8 @@ import json
 import pytest
 
 from app.main.model.device_group import DeviceGroup
-from app.main.util.constants import Constants
 from app.main.util.auth_utils import Auth
+from app.main.util.constants import Constants
 
 
 def test_modify_device_group_should_change_device_group_name_when_valid_request(

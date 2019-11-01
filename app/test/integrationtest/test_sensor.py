@@ -3,7 +3,8 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
-from app.main.model import Sensor, UnconfiguredDevice
+from app.main.model import Sensor
+from app.main.model import UnconfiguredDevice
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 

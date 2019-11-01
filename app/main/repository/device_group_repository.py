@@ -1,6 +1,4 @@
 # pylint: disable=no-self-use
-from typing import List
-
 from sqlalchemy import and_
 
 from app.main.model.device_group import DeviceGroup

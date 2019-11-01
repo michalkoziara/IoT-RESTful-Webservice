@@ -1,7 +1,7 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.main.model import Sensor
 from app.main.repository.base_repository import BaseRepository
@@ -1045,9 +1045,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
     sensor_type_name = 'test_sensor_type_name'
 
     assert device_group.admin_id == admin.id
-
-    def raise_exception():
-        raise SQLAlchemyError()
 
     with patch.object(
             DeviceGroupRepository,

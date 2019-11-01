@@ -1,8 +1,10 @@
 # pylint: disable=no-self-use
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from typing import Tuple
 
-from app.main.model import UserGroup, User
+from app.main.model import User
+from app.main.model import UserGroup
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
@@ -130,8 +132,6 @@ class SensorService:
             return Constants.RESPONSE_MESSAGE_OK
         else:
             return Constants.RESPONSE_MESSAGE_ERROR
-
-
 
     def get_list_of_unassigned_sensors(self, product_key: str,
                                        user_id: str,

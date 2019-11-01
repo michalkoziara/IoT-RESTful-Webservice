@@ -10,9 +10,9 @@ from typing import Tuple
 from typing import Union
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
-from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
+from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.unconfigured_device_repository import UnconfiguredDeviceRepository

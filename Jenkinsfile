@@ -53,9 +53,9 @@ pipeline {
                 }
             }
         }
-        stage('Send test data to codacy') {
+        stage('Send to static code analyser') {
             steps {
-                echo 'Sending data to codacy..'
+                echo 'Sending test data to static code analyser..'
                 sh """
                 . env/bin/activate
                 pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-config=.coveragerc
@@ -73,7 +73,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to dev') {
+        stage('Deploy to development') {
             when {
                 branch 'dev'
             }
@@ -83,7 +83,7 @@ pipeline {
                 sh "git push -f git@heroku.com:iot-restful-webservice-dev.git HEAD:master"
             }
         }
-        stage('Deploy to prod') {
+        stage('Deploy to production') {
             when {
                 branch 'master'
             }
