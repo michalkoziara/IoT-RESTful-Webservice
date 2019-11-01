@@ -1046,9 +1046,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
 
     assert device_group.admin_id == admin.id
 
-    def raise_exception():
-        raise SQLAlchemyError()
-
     with patch.object(
             DeviceGroupRepository,
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:

@@ -818,9 +818,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
     device_name = 'test_exec_device_name'
     executive_type_name = 'test_executive_type_name'
 
-    def raise_exception():
-        raise SQLAlchemyError()
-
     assert device_group.admin_id == admin.id
 
     with patch.object(
