@@ -2,8 +2,6 @@
 from typing import Optional, List
 from typing import Tuple
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.main.model import ExecutiveType, UserGroup, User, Formula
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.repository.device_group_repository import DeviceGroupRepository

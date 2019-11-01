@@ -2,8 +2,6 @@
 from typing import Optional, List
 from typing import Tuple
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.main.model import UserGroup, User
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
