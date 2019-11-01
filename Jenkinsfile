@@ -20,7 +20,7 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh """
-                docker build --target app -t $DOCKER_IMAGE_TEST
+                docker build --target app -t $DOCKER_IMAGE_TEST .
                 """
             }
         }
