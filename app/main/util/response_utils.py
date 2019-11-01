@@ -6,8 +6,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from flask import Response
 from flask import Request
+from flask import Response
 from werkzeug.exceptions import BadRequest
 
 from app.main.service.log_service import LogService

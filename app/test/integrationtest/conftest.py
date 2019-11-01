@@ -7,7 +7,8 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
-from app.main.model import ReadingEnumerator, StateEnumerator
+from app.main.model import ReadingEnumerator
+from app.main.model import StateEnumerator
 from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice

@@ -5,10 +5,10 @@ from typing import Tuple
 import flask_bcrypt
 
 from app.main.model.user import User
-from app.main.util.auth_utils import Auth
-from app.main.util.constants import Constants
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.user_repository import UserRepository
+from app.main.util.auth_utils import Auth
+from app.main.util.constants import Constants
 
 
 class UserService:

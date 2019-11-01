@@ -1,7 +1,8 @@
 import random
 import string
 
-from app.main.model import User, DeviceGroup
+from app.main.model import DeviceGroup
+from app.main.model import User
 
 
 # TODO make those functions methods
