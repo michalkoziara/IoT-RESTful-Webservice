@@ -1,6 +1,9 @@
 pipeline {
     agent any
-    
+    environment {
+        DOCKER_IMAGE_TEST = "$BUILD_NUMBER-test"
+    }
+
     options {
         skipDefaultCheckout()
         skipStagesAfterUnstable()
@@ -9,47 +12,53 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
                 echo 'Checkout..'
                 checkout scm
             }
         }
-        stage('Build') {
+        stage('Build test env') {
             steps {
                 echo 'Building..'
                 sh """
-                python3 -m venv env
-                chmod 754 env/bin/activate
-                . env/bin/activate
-                python3 -m pip install -r requirements.txt
+                docker build --target app -t $DOCKER_IMAGE_TEST
                 """
             }
         }
-        stage('Run unit tests') {
-            steps {
-                echo 'Running unit tests..'
-                sh """
-                . env/bin/activate
-                pytest app/test/unittest/ --cache-clear -rxs -v --junitxml=unit_test_report.xml
-                """
-            }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
+        stage('Run tests') {
+            parallel {
+                stage('Run unit tests') {
+                    agent {
+                        docker {
+                            alwaysPull false
+                            image $DOCKER_IMAGE_TEST
+                        }
+                    }
+                    steps {
+                        echo 'Running unit tests..'
+                        sh """
+                        pytest app/test/unittest/ --cache-clear -rxs -v --junitxml=unit_test_report.xml
+                        """
+                    }
+                }
+                stage('Run integration tests') {
+                    agent {
+                        docker {
+                            alwaysPull false
+                            image $DOCKER_IMAGE_TEST
+                        }
+                    }
+                    steps {
+                        echo 'Running integration tests..'
+                        sh """
+                        pytest app/test/integrationtest/ --cache-clear -rxs -v --junitxml=integration_test_report.xml
+                        """
+                    }
                 }
             }
-        }
-        stage('Run integration tests') {
-            steps {
-                echo 'Running integration tests..'
-                sh """
-                . env/bin/activate
-                pytest app/test/integrationtest/ --cache-clear -rxs -v --junitxml=integration_test_report.xml
-                """
-            }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'integration_test_report.xml'
+                    sh """docker rmi $DOCKER_IMAGE_TEST"""
+                    junit allowEmptyResults: true, testResults: '*_test_report.xml'
                 }
             }
         }
