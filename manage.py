@@ -13,7 +13,6 @@ from app.main import create_app
 from app.main import db
 from app.main.util.constants import Constants
 
-
 app = create_app(Constants.CURRENT_ENV)
 app.register_blueprint(api)
 app.app_context().push()

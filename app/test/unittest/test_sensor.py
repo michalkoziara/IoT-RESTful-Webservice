@@ -1,7 +1,7 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.main.model import Sensor
 from app.main.repository.base_repository import BaseRepository

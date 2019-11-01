@@ -1,5 +1,6 @@
 # pylint: disable=no-self-use
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from typing import Tuple
 
 from app.main.repository.admin_repository import AdminRepository

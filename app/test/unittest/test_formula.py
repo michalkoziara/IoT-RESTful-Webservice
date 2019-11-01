@@ -3,10 +3,10 @@ from unittest.mock import patch
 import pytest
 
 from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
-from app.main.repository.formula_repository import FormulaRepository
 from app.main.service.formula_service import FormulaService
 from app.main.util.constants import Constants
 

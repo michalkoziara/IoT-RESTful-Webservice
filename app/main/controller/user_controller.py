@@ -4,8 +4,8 @@ from flask import Response
 from flask import request
 
 from app import api
-from app.main.service.user_service import UserService
 from app.main.service.log_service import LogService
+from app.main.service.user_service import UserService
 from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 

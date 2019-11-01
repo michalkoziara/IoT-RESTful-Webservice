@@ -1,8 +1,8 @@
 from flask import request
 
 from app import api
-from app.main.service.user_group_service import UserGroupService
 from app.main.service.log_service import LogService
+from app.main.service.user_group_service import UserGroupService
 from app.main.util.auth_utils import Auth
 from app.main.util.response_utils import ResponseUtils
 

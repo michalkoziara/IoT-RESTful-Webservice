@@ -1,8 +1,12 @@
 # pylint: disable=no-self-use
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from typing import Tuple
 
-from app.main.model import ExecutiveType, UserGroup, User, Formula
+from app.main.model import ExecutiveType
+from app.main.model import Formula
+from app.main.model import User
+from app.main.model import UserGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository

@@ -1,8 +1,10 @@
 # pylint: disable=no-self-use
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from typing import Tuple
 
-from app.main.model import UserGroup, User
+from app.main.model import User
+from app.main.model import UserGroup
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType

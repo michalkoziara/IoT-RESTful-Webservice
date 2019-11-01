@@ -3,8 +3,8 @@ from json import dumps
 from json import loads
 from typing import Any
 from typing import Dict
-from typing import Tuple
 from typing import Optional
+from typing import Tuple
 
 from pyeda.boolalg.expr import AndOp
 from pyeda.boolalg.expr import Complement
@@ -13,16 +13,16 @@ from pyeda.inter import *
 from pyeda.parsing.boolexpr import Error
 
 from app.main.model.formula import Formula
-from app.main.repository.formula_repository import FormulaRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.repository.formula_repository import FormulaRepository
+from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
-from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
-from app.main.util.utils import is_dict_with_keys
 from app.main.util.utils import get_random_letters
+from app.main.util.utils import is_dict_with_keys
 
 
 class FormulaService:

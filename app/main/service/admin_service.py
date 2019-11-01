@@ -3,10 +3,10 @@ from datetime import datetime
 import flask_bcrypt
 
 from app.main.model.admin import Admin
-from app.main.util.constants import Constants
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.user_repository import UserRepository
+from app.main.util.constants import Constants
 
 
 class AdminService:
