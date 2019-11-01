@@ -4,6 +4,7 @@ from sqlalchemy import and_
 
 from app.main.model import ExecutiveDevice
 from app.main.model import UnconfiguredDevice
+from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
@@ -647,3 +648,83 @@ def test_modify_executive_device_should_modify_exec_device_when_valid_request(
     assert response_data["changedPositiveState"] == positive_state
     assert response_data["changedNegativeState"] == negative_state
     assert response_data["changedUserGroupName"] == new_user_group.name
+
+
+def test_delete_executive_device_should_delete_executive_device_when_valid_request(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_admin,
+        insert_executive_device,
+        insert_executive_type,
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    insert_executive_type()
+
+    executive_device = insert_executive_device()
+
+    exec_device_device_key = executive_device.device_key
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    exec_device_in_db = ExecutiveDeviceRepository.get_instance().get_executive_device_by_device_key_and_device_group_id(
+        exec_device_device_key,
+        device_group.id)
+
+    assert exec_device_in_db is None
+
+
+def test_delete_executive_device_should_not_delete_executive_device_when_not_valid_request(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_admin,
+        insert_executive_device,
+        insert_executive_type,
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    insert_executive_type()
+
+    executive_device = insert_executive_device()
+
+    exec_device_device_key = executive_device.device_key
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 403
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    exec_device_in_db = ExecutiveDeviceRepository.get_instance().get_executive_device_by_device_key_and_device_group_id(
+        exec_device_device_key,
+        device_group.id)
+
+    assert exec_device_in_db is executive_device
