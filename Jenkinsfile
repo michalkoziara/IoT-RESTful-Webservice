@@ -53,7 +53,7 @@ pipeline {
                 }
             }
         }
-        stage('Send data to static code analyser') {
+        stage('Send to static code analyser') {
             steps {
                 echo 'Sending test data to static code analyser..'
                 sh """
