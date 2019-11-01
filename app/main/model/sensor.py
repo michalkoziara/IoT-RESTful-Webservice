@@ -18,6 +18,6 @@ class Sensor(db.Model):
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete="SET NULL"), nullable=True)
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
-    sensor_readings = db.relationship('SensorReading', backref='sensor', lazy=True)
+    sensor_readings = db.relationship('SensorReading', backref='sensor', lazy=True, passive_deletes=True)
 
     UniqueConstraint('device_group_id', 'name', name='unique_sensor_name_in_group')

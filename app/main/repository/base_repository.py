@@ -23,7 +23,8 @@ class BaseRepository:
             db.session.delete(model)
             db.session.commit()
             result = True
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             result = False
             self.rollback_session()
 

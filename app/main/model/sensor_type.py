@@ -18,7 +18,7 @@ class SensorType(db.Model):
 
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
-    sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
-    reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)
+    sensors = db.relationship('Sensor', backref='sensor_type', lazy=True, passive_deletes=True)
+    reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True, passive_deletes=True)
 
     UniqueConstraint('device_group_id', 'name', name='unique_sensor_type_in_device_group')

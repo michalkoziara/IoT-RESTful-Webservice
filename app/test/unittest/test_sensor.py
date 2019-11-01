@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from app.main.model import Sensor
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.base_repository import BaseRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
@@ -1677,3 +1678,232 @@ def test_modify_sensor_should_modify_sensor_when_valid_arguments_are_passed_and_
     assert sensor.sensor_type_id == new_sensor_type.id
     assert sensor.user_group_id == new_user_group.id
     assert result_values == expected_values
+
+
+def test_delete_sensor_should_delete_sensor_when_right_parameters_are_passed(create_sensor,
+                                                                             create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    SensorRepository,
+                    'get_sensor_by_device_key_and_device_group_id'
+            ) as get_sensor_by_device_key_and_device_group_id_mock:
+                get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+                with patch.object(
+                        SensorRepository,
+                        'delete'
+                ) as delete_mock:
+                    delete_mock.return_value = True
+
+                    result = sensor_service_instance.delete_sensor(sensor.device_key, 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    delete_mock.assert_called_once_with(sensor)
+
+
+def test_delete_sensor_should_return_error_message_when_unsuccessful_db_deletion(create_sensor,
+                                                                                 create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+    sensor = create_sensor()
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    SensorRepository,
+                    'get_sensor_by_device_key_and_device_group_id'
+            ) as get_sensor_by_device_key_and_device_group_id_mock:
+                get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+                with patch.object(
+                        SensorRepository,
+                        'delete'
+                ) as delete_mock:
+                    delete_mock.return_value = False
+
+                    result = sensor_service_instance.delete_sensor(sensor.device_key, 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+    delete_mock.assert_called_once_with(sensor)
+
+
+def test_delete_sensor_should_return_error_message_when_sensor_not_found(create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_mock.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            with patch.object(
+                    SensorRepository,
+                    'get_sensor_by_device_key_and_device_group_id'
+            ) as get_sensor_by_device_key_and_device_group_id_mock:
+                get_sensor_by_device_key_and_device_group_id_mock.return_value = None
+
+                result = sensor_service_instance.delete_sensor('sensor.device_key', 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
+
+
+def test_delete_sensor_should_return_error_message_when_admin_in_not_assigned_to_device_group(create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    admin_id = 1
+    is_admin = True
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_id + 1
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            result = sensor_service_instance.delete_sensor('sensor.device_key', 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_sensor_should_return_error_message_when_admin_in_not_admin(create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    admin_mock = Mock()
+    admin_mock.id.return_value = admin_id
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin_mock
+
+            result = sensor_service_instance.delete_sensor('sensor.device_key', 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_sensor_should_return_error_message_when_admin_in_not_found(create_sensor,
+                                                                           create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    device_group = create_device_group()
+
+    device_group.admin_id = admin_id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = None
+
+            result = sensor_service_instance.delete_sensor('sensor.device_key', 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_sensor_should_return_error_message_when_device_group_not_found():
+    sensor_service_instance = SensorService.get_instance()
+
+    admin_id = 1
+    is_admin = False
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = sensor_service_instance.delete_sensor('sensor.device_key', 'product_key', admin_id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND

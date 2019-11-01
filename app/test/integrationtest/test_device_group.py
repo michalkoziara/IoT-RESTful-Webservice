@@ -19,16 +19,16 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
     old_name = 'name'
     new_name = 'new_name'
 
+    admin = insert_admin()
+
     device_group_values = get_device_group_default_values()
     device_group_values['name'] = old_name
     device_group_values['product_key'] = product_key
+    device_group_values['admin_id'] = admin.id
 
     test_device_group = insert_device_group(device_group_values)
 
-    admin_values = get_admin_default_values()
-    admin_values['device_group'] = test_device_group
 
-    admin = insert_admin(admin_values)
 
     response = client.put(
         '/api/hubs/' + product_key,
