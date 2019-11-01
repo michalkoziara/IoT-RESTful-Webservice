@@ -54,6 +54,51 @@ class FormulaService:
 
         self._sensor_service_instance = SensorService.get_instance()
 
+    def delete_formula_from_user_group(
+            self,
+            product_key: str,
+            user_group_name: str,
+            formula_name: str,
+            user_id: str) -> str:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not user_group_name:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+        if not formula_name:
+            return Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        user_group = self._user_group_repository_instance.get_user_group_by_name_and_device_group_id(
+            user_group_name,
+            device_group.id
+        )
+
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+        if user_id not in [user.id for user in user_group.users]:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        formulas = [formula for formula in user_group.formulas if formula.name == formula_name]
+
+        if not formulas:
+            return Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
+
+        formula = formulas[0]
+        if not self._formula_repository_instance.delete(formula):
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_OK
+
     def get_formula_info(
             self,
             product_key: str,
