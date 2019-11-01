@@ -16,7 +16,7 @@ class SensorType(db.Model):
     range_min = db.Column(db.Float, nullable=False)
     range_max = db.Column(db.Float, nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
     sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
     reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)

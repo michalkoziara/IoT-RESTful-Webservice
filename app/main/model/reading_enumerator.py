@@ -11,6 +11,6 @@ class ReadingEnumerator(db.Model):
     number = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(255), nullable=False)
 
-    sensor_type_id = db.Column(db.Integer, db.ForeignKey('sensor_type.id'), nullable=False)
+    sensor_type_id = db.Column(db.Integer, db.ForeignKey('sensor_type.id', ondelete="CASCADE"), nullable=False)
 
     UniqueConstraint('sensor_type_id', 'number', name='unique_number_in_sensor_enumerator')

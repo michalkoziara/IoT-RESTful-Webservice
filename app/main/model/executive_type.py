@@ -16,7 +16,7 @@ class ExecutiveType(db.Model):
     state_range_min = db.Column(db.Float, nullable=False)
     state_range_max = db.Column(db.Float, nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
     executive_devices = db.relationship('ExecutiveDevice', backref='executive_type', lazy=True)
     state_enumerators = db.relationship('StateEnumerator', backref='executive_type', lazy=True)

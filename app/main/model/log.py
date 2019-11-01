@@ -17,4 +17,4 @@ class Log(db.Model):
     time = db.Column(db.Integer)
     creation_date = db.Column(db.DateTime, nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
