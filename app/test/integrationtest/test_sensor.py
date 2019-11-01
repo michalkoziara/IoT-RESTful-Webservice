@@ -5,7 +5,6 @@ from sqlalchemy import and_
 
 from app.main.model import Sensor
 from app.main.model import UnconfiguredDevice
-from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
@@ -601,24 +600,9 @@ def test_delete_sensor_should_delete_sensor_and_all_its_readings_when_valid_requ
 
     insert_sensor_type()
 
-    first_sensor_reading_values = get_sensor_reading_default_values()
-    second_sensor_reading_values = get_sensor_reading_default_values()
-
-    second_sensor_reading_values['id'] += 1
-
-    first_sensor_reading = insert_sensor_reading(first_sensor_reading_values)
-    second_sensor_reading = insert_sensor_reading(second_sensor_reading_values)
-
-    sensor_values = get_sensor_default_values()
-    sensor_values['sensor_readings'] = [first_sensor_reading, second_sensor_reading]
-    sensor = insert_sensor(sensor_values)
+    sensor = insert_sensor()
 
     sensor_device_key = sensor.device_key
-    sensor_id = sensor.id
-
-    sensor_readings = SensorReadingRepository.get_instance().get_sensor_readings_by_sensor_id(sensor_id)
-
-    assert sensor_readings == [first_sensor_reading, second_sensor_reading]
 
     response = client.delete(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
@@ -627,7 +611,6 @@ def test_delete_sensor_should_delete_sensor_and_all_its_readings_when_valid_requ
             'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
         }
     )
-
 
     assert response is not None
     assert response.status_code == 200
@@ -639,7 +622,45 @@ def test_delete_sensor_should_delete_sensor_and_all_its_readings_when_valid_requ
 
     assert sensor_in_db is None
 
-    sensor_readings_in_db = SensorReadingRepository.get_instance().get_sensor_readings_by_sensor_id(sensor_id)
 
-    assert sensor_readings_in_db == []
+def test_delete_sensor_should_not_delete_sensor_and_all_its_readings_when_not_valid_request(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_admin,
+        insert_sensor,
+        insert_sensor_type,
+        get_sensor_reading_default_values,
+        insert_sensor_reading):
+    content_type = 'application/json'
 
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    insert_sensor_type()
+
+    sensor = insert_sensor()
+
+    sensor_device_key = sensor.device_key
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 403
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+    sensor_in_db = SensorRepository.get_instance().get_sensor_by_device_key_and_device_group_id(
+        sensor_device_key,
+        device_group.id)
+
+    assert sensor_in_db is sensor
