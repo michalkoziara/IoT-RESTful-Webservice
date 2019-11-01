@@ -2,7 +2,8 @@ import json
 
 from sqlalchemy import and_
 
-from app.main.model import ExecutiveDevice, UnconfiguredDevice
+from app.main.model import ExecutiveDevice
+from app.main.model import UnconfiguredDevice
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 

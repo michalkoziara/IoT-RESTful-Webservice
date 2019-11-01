@@ -1,7 +1,7 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.main.model import ExecutiveDevice
 from app.main.repository.base_repository import BaseRepository
@@ -817,9 +817,6 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
     password = unconfigured_device.password
     device_name = 'test_exec_device_name'
     executive_type_name = 'test_executive_type_name'
-
-    def raise_exception():
-        raise SQLAlchemyError()
 
     assert device_group.admin_id == admin.id
 
