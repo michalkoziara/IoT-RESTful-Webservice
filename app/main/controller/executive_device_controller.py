@@ -35,6 +35,29 @@ def get_executive_device(product_key: str, device_key: str):
     )
 
 
+@api.route('/hubs/<product_key>/executive-devices/<device_key>', methods=['DELETE'])
+def delete_executive_device(product_key: str, device_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    if error_message is None:
+        result = _executive_device_service_instance.delete_executive_device(
+            device_key,
+            product_key,
+            user_info['user_id'],
+            user_info['is_admin']
+        )
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        product_key=product_key,
+        is_logged=True
+    )
+
+
 # TODO change this route to /executive-devices/unassigned
 @api.route('/hubs/<product_key>/executive-devices', methods=['GET'])
 def get_unassigned_executive_devices_in_device_group(product_key: str):
@@ -103,7 +126,7 @@ def add_executive_device_to_device_group(product_key: str):
 def modify_executive_device(product_key: str, device_key: str):
     auth_header = request.headers.get('Authorization')
     result_values = None
-    #TODO make sure that invalid json does not crash app
+    # TODO make sure that invalid json does not crash app
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
 
     response_message, status, request_dict = ResponseUtils.get_request_data(

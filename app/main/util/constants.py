@@ -24,6 +24,7 @@ class Constants:
     RESPONSE_MESSAGE_DUPLICATE_FORMULA_NAME = 'Formula with given name already exists.'
     RESPONSE_MESSAGE_ERROR = 'Server encountered an unexpected condition that prevented it from fulfilling the request.'
     RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NAME_ALREADY_DEFINED = 'Executive device name already defined in device group.'
+    RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NOT_FOUND = 'Executive device not found'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NAME_NOT_DEFINED = 'Executive device type name not defined.'
     RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND = 'Executive type name not found.'
     RESPONSE_MESSAGE_FORMULA_NOT_FOUND = 'Formula name not found.'

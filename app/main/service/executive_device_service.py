@@ -8,6 +8,7 @@ from app.main.model import Formula
 from app.main.model import User
 from app.main.model import UserGroup
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -28,6 +29,7 @@ class ExecutiveDeviceService:
     _executive_type_repository_instance = None
     _formula_repository = None
     _user_repository = None
+    _admin_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -45,6 +47,7 @@ class ExecutiveDeviceService:
         self._executive_type_repository_instance = ExecutiveTypeRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
+        self._admin_repository = AdminRepository.get_instance()
 
     def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[str, Optional[dict]]:
 
@@ -106,6 +109,40 @@ class ExecutiveDeviceService:
             executive_device_info['formulaName'] = None
 
         return Constants.RESPONSE_MESSAGE_OK, executive_device_info
+
+    def delete_executive_device(self, device_key: str, product_key: str, admin_id: str, is_admin: bool):
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not device_key:
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
+
+        if not admin_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        admin = self._admin_repository.get_admin_by_id(admin_id)
+
+        if not admin or is_admin is False or device_group.admin_id != admin.id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        executive_device = self._executive_device_repository_instance \
+            .get_executive_device_by_device_key_and_device_group_id(
+            device_key,
+            device_group.id
+        )
+
+        if not executive_device:
+            return Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NOT_FOUND
+
+        if self._executive_device_repository_instance.delete(executive_device):
+            return Constants.RESPONSE_MESSAGE_OK
+        else:
+            return Constants.RESPONSE_MESSAGE_ERROR
 
     def get_list_of_unassigned_executive_devices(
             self, product_key: str,
