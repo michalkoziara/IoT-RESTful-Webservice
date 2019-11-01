@@ -11,4 +11,5 @@ class Admin(db.Model):
     registered_on = db.Column(db.DateTime, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
-    device_group = db.relationship('DeviceGroup', backref='admin', lazy=True, uselist=False)
+    device_group = db.relationship('DeviceGroup', backref='admin', cascade="all, delete-orphan",
+                                   lazy=True, uselist=False)
