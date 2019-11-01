@@ -126,7 +126,7 @@ class SensorService:
         )
 
         if not sensor:
-            return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
+            return Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
 
         if self._sensor_repository_instance.delete(sensor):
             return Constants.RESPONSE_MESSAGE_OK
