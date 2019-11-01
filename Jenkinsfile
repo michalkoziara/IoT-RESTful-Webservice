@@ -96,6 +96,7 @@ pipeline {
             when {
                 branch 'master'
             }
+
             steps {
                 echo 'Deploying to production instance..'
                 sh "git push -f git@heroku.com:iot-restful-webservice-prod.git HEAD:master"
