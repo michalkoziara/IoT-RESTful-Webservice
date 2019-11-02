@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.auth_utils import Auth
 
 
@@ -353,3 +354,38 @@ def test_get_list_of_sensors_should_return_error_message_when_wrong_token(
 
     response_data = json.loads(response.data.decode())
     assert response_data['errorMessage'] == "Invalid token."
+
+
+def test_delete_user_group_should_delete_user_group_when_valid_request(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_admin,
+        insert_user_group,
+        insert_sensor_type):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    user_group = insert_user_group()
+
+    user_group_name = user_group.name
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    user_group_in_db = UserGroupRepository.get_instance().get_user_group_by_name_and_device_group_id(
+        user_group_name,
+        device_group.id)
+
+    assert user_group_in_db is None
