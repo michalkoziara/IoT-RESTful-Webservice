@@ -298,5 +298,47 @@ def test_join_device_group_should_add_user_to_device_groups_master_group_when_va
     assert user in master_user_group.users
 
 
+def test_join_user_group_should_add_user_to_user_group_when_valid_request(
+        client,
+        insert_device_group,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_user):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    master_user_group_values = get_user_group_default_values()
+    master_user_group_values['name'] = 'Master'
+    master_user_group_values['id'] += 1
+    master_user_group_values['users'] = [user]
+
+    insert_user_group(master_user_group_values)
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['name'] = 'test'
+    user_group = insert_user_group(user_group_values)
+
+    response = client.post(
+        'api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/users',
+        data=json.dumps(
+            {
+                "password": user_group.password,
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    assert user in user_group.users
+
+
 if __name__ == '__main__':
     pytest.main(['app/integrationtest/{}.py'.format(__file__)])

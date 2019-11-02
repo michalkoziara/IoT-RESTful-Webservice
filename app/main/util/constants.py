@@ -54,5 +54,6 @@ class Constants:
     RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED = 'User group was not found.'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
     RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP = 'User already is a member of user group.'
+    RESPONSE_MESSAGE_USER_ALREADY_IN_DEVICE_GROUP = 'User already is a member of device group.'
     RESPONSE_MESSAGE_WRONG_DATA = 'Hub send wrong data'
     RESPONSE_MESSAGE_WRONG_PASSWORD = 'Wrong password.'
