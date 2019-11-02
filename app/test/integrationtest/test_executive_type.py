@@ -1,5 +1,6 @@
 import json
 
+from app.main.model.executive_type import ExecutiveType
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
@@ -126,4 +127,176 @@ def test_get_list_of_types_names_should_return_error_message_when_admin_is_not_a
 
     response_data = json.loads(response.data.decode())
     assert response_data is not None
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_create_executive_type_should_create_executive_type_in_device_group_when_valid_request(
+        client,
+        insert_device_group,
+        insert_admin):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    executive_type_name = 'test executive type name'
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-types',
+        data=json.dumps(
+            {
+                "typeName": executive_type_name,
+                "stateType": "Enum",
+                "stateRangeMin": 0,
+                "stateRangeMax": 1,
+                "enumerator": [
+                    {
+                        "number": 0,
+                        "text": "zero"
+                    },
+                    {
+                        "number": 1,
+                        "text": "one"
+                    }
+                ]
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 201
+
+    response_data = json.loads(response.data.decode())
+    assert not response_data
+
+    executive_types = ExecutiveType.query.filter(ExecutiveType.name == executive_type_name).all()
+    assert executive_types
+
+
+def test_create_executive_type_should_return_error_message_when_invalid_request(
+        client,
+        insert_device_group,
+        insert_admin):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    executive_type_name = 'test executive type name'
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-types',
+        data=json.dumps(
+            {
+                "typeName": executive_type_name,
+                "stateType": "Enum",
+                "stateRangeMin": 0,
+                "stateRangeMax": 0,
+                "enumerator": [
+                ]
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+
+def test_create_executive_type_should_return_error_message_when_user_not_authorized(
+        client,
+        insert_device_group,
+        insert_admin):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    executive_type_name = 'test executive type name'
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-types',
+        data=json.dumps(
+            {
+                "typeName": executive_type_name,
+                "stateType": "Enum",
+                "stateRangeMin": 0,
+                "stateRangeMax": 1,
+                "enumerator": [
+                    {
+                        "number": 0,
+                        "text": "zero"
+                    },
+                    {
+                        "number": 1,
+                        "text": "one"
+                    }
+                ]
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+
+def test_create_executive_type_should_return_no_privileges_error_message_when_user_is_not_admin(
+        client,
+        insert_device_group,
+        insert_user):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_user()
+
+    executive_type_name = 'test executive type name'
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-types',
+        data=json.dumps(
+            {
+                "typeName": executive_type_name,
+                "stateType": "Enum",
+                "stateRangeMin": 0,
+                "stateRangeMax": 1,
+                "enumerator": [
+                    {
+                        "number": 0,
+                        "text": "zero"
+                    },
+                    {
+                        "number": 1,
+                        "text": "one"
+                    }
+                ]
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 403
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
