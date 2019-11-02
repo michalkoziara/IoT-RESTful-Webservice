@@ -483,3 +483,157 @@ def test_get_list_of_types_names_should_return_error_message_when_one_of_paramet
 
     assert result == expected_result
     assert result_values is None
+
+
+@pytest.mark.parametrize("state_type", ['Decimal', 'Enum', 'Boolean'])
+def test_create_executive_type_in_device_group_should_create_executive_type_when_valid_parameters(
+        create_device_group,
+        state_type):
+    executive_type_service_instance = ExecutiveTypeService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_device_group_id_and_name'
+        ) as get_executive_type_by_device_group_id_and_name_mock:
+            get_executive_type_by_device_group_id_and_name_mock.return_value = None
+
+            with patch.object(
+                    ExecutiveTypeRepository,
+                    'save'
+            ) as save_mock:
+                save_mock.return_value = True
+
+                with patch.object(
+                        StateEnumeratorRepository,
+                        'save_but_do_not_commit'
+                ):
+                    with patch.object(
+                            StateEnumeratorRepository,
+                            'update_database'
+                    ) as update_database_mock:
+                        update_database_mock.return_value = True
+
+                        result = executive_type_service_instance.create_executive_type_in_device_group(
+                            device_group.product_key, 'type_name', state_type, 0, 1,
+                            [
+                                {
+                                    'number': 0,
+                                    'text': 'zero'
+                                },
+                                {
+                                    'number': 1,
+                                    'text': 'one'
+                                }
+                            ],
+                            'admin_id'
+                        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
+
+
+def test_create_executive_type_in_device_group_should_return_error_message_when_no_device_group():
+    executive_type_service_instance = ExecutiveTypeService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = None
+
+        result = executive_type_service_instance.create_executive_type_in_device_group(
+            'product_key', 'type_name', 'Enum', 0, 1,
+            [
+                {
+                    'number': 0,
+                    'text': 'zero'
+                },
+                {
+                    'number': 1,
+                    'text': 'one'
+                }
+            ],
+            'admin_id'
+        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_create_executive_type_in_device_group_should_return_sensor_type_already_exists_when_duplicated_name(
+        create_device_group,
+        create_executive_type):
+    executive_type_service_instance = ExecutiveTypeService.get_instance()
+
+    device_group = create_device_group()
+    executive_type = create_executive_type()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_device_group_id_and_name'
+        ) as get_executive_type_by_device_group_id_and_name_mock:
+            get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
+
+            result = executive_type_service_instance.create_executive_type_in_device_group(
+                device_group.product_key, 'type_name', 'Enum', 0, 1,
+                [
+                    {
+                        'number': 0,
+                        'text': 'zero'
+                    },
+                    {
+                        'number': 1,
+                        'text': 'one'
+                    }
+                ],
+                'admin_id'
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_ALREADY_EXISTS
+
+
+@pytest.mark.parametrize("product_key, type_name, admin_id, expected_result", [
+    ('product_key', 'type_name', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', None, 'user_id', Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+    (None, 'type_name', 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_create_sensor_type_in_device_group_should_return_bad_request_when_no_parameter_given(
+        product_key,
+        type_name,
+        admin_id,
+        expected_result
+):
+    executive_type_service_instance = ExecutiveTypeService.get_instance()
+
+    result = executive_type_service_instance.create_executive_type_in_device_group(
+        product_key, type_name, 'Enum', 0, 1,
+        [
+            {
+                'number': 0,
+                'text': 'zero'
+            },
+            {
+                'number': 1,
+                'text': 'one'
+            }
+        ],
+        admin_id
+    )
+
+    assert result
+    assert result == expected_result
