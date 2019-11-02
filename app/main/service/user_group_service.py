@@ -1,3 +1,4 @@
+from app.main.model.user_group import UserGroup
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
@@ -49,6 +50,45 @@ class UserGroupService:
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._executive_device_service = ExecutiveDeviceService.get_instance()
         self._admin_repository = AdminRepository.get_instance()
+
+    def create_user_group_in_device_group(self, product_key: str, group_name: str, password: str, user_id: str) -> str:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not group_name:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED
+
+        if not password:
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+            user_id,
+            product_key
+        )
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        existing_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
+            group_name,
+            device_group.id
+        )
+        if existing_user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_ALREADY_EXISTS
+
+        user_group = UserGroup(
+            name=group_name,
+            password=password,
+            device_group_id=device_group.id
+        )
+
+        if not self._user_group_repository.save(user_group):
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def get_list_of_user_groups(self, product_key: str, user_id: str):
         if not product_key:
