@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.util.constants import Constants
@@ -72,3 +73,186 @@ def test_change_name_should_not_change_device_group_name_when_invalid_parameters
 
 if __name__ == '__main__':
     pytest.main(['app/unittest/{}.py'.format(__file__)])
+
+
+def test_delete_device_group_should_delete_device_group_and_admin_when_right_parameters_are_passed(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    admin = create_admin()
+    device_group = create_device_group()
+    is_admin = True
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            with patch.object(
+                    DeviceGroupRepository,
+                    'delete_but_do_not_commit'
+            )as delete_but_do_not_commit_device_group_mock:
+                with patch.object(
+                        AdminRepository,
+                        'delete_but_do_not_commit'
+                )as delete_but_do_not_commit_admin_mock:
+                    with patch.object(
+                            DeviceGroupRepository,
+                            'update_database'
+                    ) as update_database_mock:
+                        update_database_mock.return_value = True
+
+                        result = device_group_service_instance.delete_device_group('product_key', admin.id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    delete_but_do_not_commit_device_group_mock.assert_called_with(device_group)
+    delete_but_do_not_commit_admin_mock.assert_called_with(admin)
+    update_database_mock.assert_called_once()
+
+
+def test_delete_device_group_should_return_error_message_when_unsuccessful_db_update(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    admin = create_admin()
+    device_group = create_device_group()
+    is_admin = True
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            with patch.object(
+                    DeviceGroupRepository,
+                    'delete_but_do_not_commit'
+            )as delete_but_do_not_commit_device_group_mock:
+                with patch.object(
+                        AdminRepository,
+                        'delete_but_do_not_commit'
+                )as delete_but_do_not_commit_admin_mock:
+                    with patch.object(
+                            DeviceGroupRepository,
+                            'update_database'
+                    ) as update_database_mock:
+                        update_database_mock.return_value = False
+
+                        result = device_group_service_instance.delete_device_group('product_key', admin.id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+    delete_but_do_not_commit_device_group_mock.assert_called_with(device_group)
+    delete_but_do_not_commit_admin_mock.assert_called_with(admin)
+    update_database_mock.assert_called_once()
+
+
+def test_delete_device_group_should_return_error_message_when_admin_in_not_assigned_to_device_group(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    admin = create_admin()
+    device_group = create_device_group()
+    is_admin = True
+
+    device_group.admin_id += 1
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            result = device_group_service_instance.delete_device_group('product_key', admin.id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_device_group_should_return_error_message_when_admin_in_not_admin(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    admin = create_admin()
+    device_group = create_device_group()
+    is_admin = False
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            result = device_group_service_instance.delete_device_group('product_key', admin.id, is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_device_group_should_return_error_message_when_admin_in_not_found(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    device_group = create_device_group()
+    is_admin = False
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                AdminRepository,
+                'get_admin_by_id'
+        ) as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = None
+
+            result = device_group_service_instance.delete_device_group('product_key', 'admin.id', is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_delete_device_group_should_return_error_message_when_device_group_not_found(
+        create_admin,
+        create_device_group):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    is_admin = False
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = device_group_service_instance.delete_device_group('product_key', 'admin.id', is_admin)
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
