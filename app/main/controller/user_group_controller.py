@@ -59,7 +59,8 @@ def get_list_of_user_groups(product_key: str):
     if error_message is None:
         result, result_values = _user_group_service_instance.get_list_of_user_groups(
             product_key,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message
