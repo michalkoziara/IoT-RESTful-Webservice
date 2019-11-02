@@ -61,6 +61,57 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
     assert response_data == expected_output_values
 
 
+def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_user_group,
+        get_user_group_default_values
+
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    first_user_group_values = get_user_group_default_values()
+    second_user_group_values = get_user_group_default_values()
+    third_user_group_values = get_user_group_default_values()
+
+    first_user_group_values['name'] = 'Master'
+    second_user_group_values['name'] = 'second'
+    third_user_group_values['name'] = 'third'
+
+    second_user_group_values['id'] += 1
+    third_user_group_values['id'] += 2
+
+    first_user_group = insert_user_group(first_user_group_values)
+    second_user_group = insert_user_group(second_user_group_values)
+    third_user_group = insert_user_group(third_user_group_values)
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+    assert device_group.admin_id == admin.id
+
+    expected_output_values = ['Master', 'second', 'third']
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/user_groups',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
 def test_get_list_of_user_groups_should_return_error_message_when_wrong_token(
         client):
     content_type = 'application/json'

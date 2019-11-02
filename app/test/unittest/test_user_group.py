@@ -66,10 +66,128 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
 
                     result, result_values = user_group_service.get_list_of_user_groups(
                         device_group.product_key,
-                        user.id
+                        user.id,
+                        False
                     )
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values == expected_output_values
+
+
+def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_valid_request_and_user_is_admin(
+        create_device_group,
+        create_admin,
+        get_user_group_default_values,
+        create_user_group,
+):
+    user_group_service = UserGroupService.get_instance()
+    device_group = create_device_group()
+    admin = create_admin()
+
+    first_user_group_values = get_user_group_default_values()
+    second_user_group_values = get_user_group_default_values()
+    third_user_group_values = get_user_group_default_values()
+
+    first_user_group_values['name'] = 'first'
+    second_user_group_values['name'] = 'second'
+    third_user_group_values['name'] = 'third'
+
+    first_user_group = create_user_group(first_user_group_values)
+    second_user_group = create_user_group(second_user_group_values)
+    third_user_group = create_user_group(third_user_group_values)
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+    expected_output_values = ['first', 'second', 'third']
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(AdminRepository,
+                          'get_admin_by_id') as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            with patch.object(UserGroupRepository,
+                              'get_user_groups_by_device_group_id'
+                              ) as get_user_groups_by_device_group_id_mock:
+                get_user_groups_by_device_group_id_mock.return_value = [first_user_group,
+                                                                        second_user_group,
+                                                                        third_user_group]
+                with patch.object(DeviceGroupRepository,
+                                  'get_device_group_by_user_id_and_product_key'
+                                  ) as get_device_group_by_user_id_and_product_key_mock:
+                    get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+                    result, result_values = user_group_service.get_list_of_user_groups(
+                        device_group.product_key,
+                        admin.id,
+                        True
+                    )
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_output_values
+
+
+def test_get_list_of_user_groups_should_return_return_error_message_when_user_is_admin_in_different_device_group(
+        create_device_group,
+        create_admin,
+        get_user_group_default_values,
+        create_user_group,
+):
+    user_group_service = UserGroupService.get_instance()
+    device_group = create_device_group()
+
+    device_group.admin_id += 1
+
+    admin = create_admin()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(AdminRepository,
+                          'get_admin_by_id') as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = admin
+
+            result, result_values = user_group_service.get_list_of_user_groups(
+                device_group.product_key,
+                admin.id,
+                True
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
+
+def test_get_list_of_user_groups_should_return_return_error_message_when_admin_not_found(
+        create_device_group,
+        get_user_group_default_values,
+        create_user_group,
+):
+    user_group_service = UserGroupService.get_instance()
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(AdminRepository,
+                          'get_admin_by_id') as get_admin_by_id_mock:
+            get_admin_by_id_mock.return_value = None
+
+            result, result_values = user_group_service.get_list_of_user_groups(
+                device_group.product_key,
+                'admin.id',
+                True
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_ADMIN_NOT_DEFINED
+    assert result_values is None
 
 
 def test_get_list_of_user_groups_should_return_error_message_when_user_not_in_any_user_group(
@@ -98,7 +216,8 @@ def test_get_list_of_user_groups_should_return_error_message_when_user_not_in_an
                 get_device_group_by_user_id_and_product_key_mock.return_value = None
                 result, result_values = user_group_service.get_list_of_user_groups(
                     device_group.product_key,
-                    user.id
+                    user.id,
+                    False
                 )
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
@@ -117,7 +236,8 @@ def test_get_list_of_user_groups_should_return_error_message_when_device_group_n
 
         result, result_values = user_group_service.get_list_of_user_groups(
             'device_group.product_key',
-            'user.id'
+            'user.id',
+            False
         )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -135,7 +255,8 @@ def test_get_list_of_user_groups_should_return_error_message_when_one_of_paramet
 
     result, result_values = user_group_service.get_list_of_user_groups(
         product_key,
-        user_id
+        user_id,
+        False
     )
 
     assert result == expected_result

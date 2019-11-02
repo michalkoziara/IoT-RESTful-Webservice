@@ -90,7 +90,7 @@ class UserGroupService:
 
         return Constants.RESPONSE_MESSAGE_CREATED
 
-    def get_list_of_user_groups(self, product_key: str, user_id: str):
+    def get_list_of_user_groups(self, product_key: str, user_id: str, is_admin: bool):
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
@@ -103,12 +103,23 @@ class UserGroupService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
-            user_id,
-            product_key)
+        if is_admin is False:
 
-        if not users_device_group:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
+
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        else:
+            admin = self._admin_repository.get_admin_by_id(user_id)
+
+            if not admin:
+                return Constants.RESPONSE_MESSAGE_ADMIN_NOT_DEFINED, None
+
+            if device_group.admin_id != admin.id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         names = []
 
