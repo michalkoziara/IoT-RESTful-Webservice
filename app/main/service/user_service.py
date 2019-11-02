@@ -6,6 +6,8 @@ import flask_bcrypt
 
 from app.main.model.user import User
 from app.main.repository.admin_repository import AdminRepository
+from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
@@ -16,6 +18,7 @@ class UserService:
 
     _admin_repository_instance = None
     _user_repository_instance = None
+    _user_group_repository_instance = None
 
     @classmethod
     def get_instance(cls):
@@ -25,8 +28,10 @@ class UserService:
         return cls._instance
 
     def __init__(self):
+        self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._admin_repository_instance = AdminRepository.get_instance()
         self._user_repository_instance = UserRepository.get_instance()
+        self._user_group_repository_instance = UserGroupRepository.get_instance()
 
     def create_auth_token(self, email: str, password: str) -> Tuple[str, Optional[str]]:
         user = self._user_repository_instance.get_user_by_email(email)
@@ -74,3 +79,43 @@ class UserService:
             return Constants.RESPONSE_MESSAGE_ERROR
 
         return Constants.RESPONSE_MESSAGE_CREATED
+
+    def add_user_to_device_group(self, product_key: str, user_id: str,
+                                 is_admin: bool, password: str) -> str:
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not user_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if password != device_group.password:
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+        user = self._user_repository_instance.get_user_by_id(user_id)
+
+        if not user or is_admin is True:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        master_user_group = self._user_group_repository_instance.get_user_group_by_name_and_device_group_id(
+            'Master',
+            device_group.id)
+
+        if not master_user_group:
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        if user not in master_user_group.users:
+            master_user_group.users.append(user)
+        else:
+            return Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP
+
+        if self._user_group_repository_instance.update_database():
+            return Constants.RESPONSE_MESSAGE_OK
+        else:
+            return Constants.RESPONSE_MESSAGE_ERROR

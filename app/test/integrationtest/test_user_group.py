@@ -2,8 +2,10 @@ import json
 
 import pytest
 
+from app.main.model.user_group import UserGroup
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.auth_utils import Auth
+from app.main.util.constants import Constants
 
 
 def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
@@ -47,6 +49,57 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
+def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        insert_admin,
+        insert_user_group,
+        get_user_group_default_values
+
+):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    first_user_group_values = get_user_group_default_values()
+    second_user_group_values = get_user_group_default_values()
+    third_user_group_values = get_user_group_default_values()
+
+    first_user_group_values['name'] = 'Master'
+    second_user_group_values['name'] = 'second'
+    third_user_group_values['name'] = 'third'
+
+    second_user_group_values['id'] += 1
+    third_user_group_values['id'] += 2
+
+    first_user_group = insert_user_group(first_user_group_values)
+    second_user_group = insert_user_group(second_user_group_values)
+    third_user_group = insert_user_group(third_user_group_values)
+
+    device_group.user_groups = [first_user_group, second_user_group, third_user_group]
+
+    assert device_group.admin_id == admin.id
+
+    expected_output_values = ['Master', 'second', 'third']
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/user_groups',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
         }
     )
 
@@ -389,3 +442,157 @@ def test_delete_user_group_should_delete_user_group_when_valid_request(
         device_group.id)
 
     assert user_group_in_db is None
+
+
+def test_create_user_group_should_create_user_group_in_device_group_when_valid_request(
+        client,
+        insert_device_group,
+        get_user_default_values,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    insert_user_group(user_group_values)
+
+    user_group_name = 'test user group name'
+    user_group_password = 'test user group password'
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/user-groups',
+        data=json.dumps(
+            {
+                "groupName": user_group_name,
+                "password": user_group_password,
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 201
+
+    response_data = json.loads(response.data.decode())
+    assert not response_data
+
+    user_group = UserGroup.query.filter(UserGroup.name == user_group_name).all()
+    assert user_group
+
+
+def test_create_user_group_should_return_error_message_when_invalid_request_data(
+        client,
+        insert_user):
+    content_type = 'application/json'
+
+    user = insert_user()
+
+    response = client.post(
+        '/api/hubs/' + 'not product key' + '/user-groups',
+        data=json.dumps(
+            {
+                "groupName": 'user_group_name'
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+
+def test_create_user_group_should_return_error_message_when_invalid_request(
+        client,
+        insert_user):
+    content_type = 'application/json'
+
+    user = insert_user()
+
+    response = client.post(
+        '/api/hubs/' + 'not product key' + '/user-groups',
+        data=json.dumps(
+            {
+                "groupName": 'user_group_name',
+                "password": 'user_group_password',
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_create_user_group_should_return_error_message_when_user_not_authorized(client):
+    content_type = 'application/json'
+
+    response = client.post(
+        '/api/hubs/' + 'product_key' + '/user-groups',
+        data=json.dumps(
+            {
+                "groupName": 'user_group_name',
+                "password": 'user_group_password',
+            }
+        ),
+        content_type=content_type,
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+
+def test_create_user_group_should_return_no_privileges_error_message_when_user_is_admin(
+        client, insert_admin):
+    content_type = 'application/json'
+
+    admin = insert_admin()
+
+    response = client.post(
+        '/api/hubs/' + 'product_key' + '/user-groups',
+        data=json.dumps(
+            {
+                "groupName": 'user_group_name',
+                "password": 'user_group_password',
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 403
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES

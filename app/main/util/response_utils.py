@@ -109,7 +109,11 @@ class ResponseUtils:
                     ResponseUtils.log_error_in_device_group_with_payload(product_key, result, payload)
                 else:
                     ResponseUtils.log_error_in_device_group(product_key, result)
-        status = response_message_codes[result]
+
+        try:
+            status = response_message_codes[result]
+        except KeyError:
+            status = 500
 
         return Response(
             response=json.dumps(response),

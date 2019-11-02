@@ -5,6 +5,8 @@ import jwt
 import pytest
 
 from app.main.repository.admin_repository import AdminRepository
+from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.service.user_service import UserService
 from app.main.util.constants import Constants
@@ -175,6 +177,289 @@ def test_create_user_should_return_error_message_when_save_failed():
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_ERROR
+
+
+def test_add_user_to_device_group_should_add_user_to_device_groups_master_group_when_right_arguments_are_passed(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    master_user_group = create_user_group()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_name_and_device_group_id'
+                              ) as get_user_group_by_name_and_device_group_id_mock:
+                get_user_group_by_name_and_device_group_id_mock.return_value = master_user_group
+
+                with patch.object(UserGroupRepository,
+                                  'update_database'
+                                  ) as update_database_mock:
+                    update_database_mock.return_value = True
+
+                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                            user.id, False,
+                                                                            device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    update_database_mock.assert_called_once()
+    assert user in master_user_group.users
+
+
+def test_add_user_to_device_group_should_return_error_message_when_db_upgrade_was_not_successful(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    master_user_group = create_user_group()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_name_and_device_group_id'
+                              ) as get_user_group_by_name_and_device_group_id_mock:
+                get_user_group_by_name_and_device_group_id_mock.return_value = master_user_group
+
+                with patch.object(UserGroupRepository,
+                                  'update_database'
+                                  ) as update_database_mock:
+                    update_database_mock.return_value = False
+
+                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                            user.id, False,
+                                                                            device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+    update_database_mock.assert_called_once()
+
+
+def test_add_user_to_device_group_should_return_error_message_when_user_already_in_master_user_group(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    master_user_group = create_user_group()
+
+    master_user_group.users.append(user)
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_name_and_device_group_id'
+                              ) as get_user_group_by_name_and_device_group_id_mock:
+                get_user_group_by_name_and_device_group_id_mock.return_value = master_user_group
+
+                with patch.object(UserGroupRepository,
+                                  'update_database'
+                                  ) as update_database_mock:
+                    update_database_mock.return_value = True
+
+                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                            user.id, False,
+                                                                            device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP
+
+
+def test_add_user_to_device_group_should_return_error_message_when_master_user_group_not_found(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_name_and_device_group_id'
+                              ) as get_user_group_by_name_and_device_group_id_mock:
+                get_user_group_by_name_and_device_group_id_mock.return_value = None
+
+                result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                        user.id, False,
+                                                                        device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+
+
+def test_add_user_to_device_group_should_return_error_message_when_user_is_admin(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+    master_user_group = create_user_group()
+
+    master_user_group.users.append(user)
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = user
+
+            with patch.object(UserGroupRepository,
+                              'get_user_group_by_name_and_device_group_id'
+                              ) as get_user_group_by_name_and_device_group_id_mock:
+                get_user_group_by_name_and_device_group_id_mock.return_value = master_user_group
+
+                result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                        user.id, True,
+                                                                        device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_user_to_device_group_should_return_error_message_when_user_not_found(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = None
+
+            result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                    'user.id', False,
+                                                                    device_group.password)
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_add_user_to_device_group_should_return_error_message_when_wrong_password_is_passed(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = None
+
+            result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                    'user.id', False,
+                                                                    'wrong password')
+
+    assert result == Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+
+def test_add_user_to_device_group_should_return_error_message_when_password_passed_is_none(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(UserRepository,
+                          'get_user_by_id'
+                          ) as get_user_by_id_mock:
+            get_user_by_id_mock.return_value = None
+
+            result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                    'user.id', False,
+                                                                    None)
+
+    assert result == Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+
+def test_add_user_to_device_group_should_return_error_message_when_device_group_not_found(
+        create_user,
+        create_device_group,
+        create_user_group
+):
+    user_service_instance = UserService.get_instance()
+
+    with patch.object(DeviceGroupRepository,
+                      'get_device_group_by_product_key'
+                      ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result = user_service_instance.add_user_to_device_group('device_group.product_key',
+                                                                'user.id', False,
+                                                                'wrong password')
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
 
 if __name__ == '__main__':

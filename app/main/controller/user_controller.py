@@ -6,6 +6,7 @@ from flask import request
 from app import api
 from app.main.service.log_service import LogService
 from app.main.service.user_service import UserService
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 from app.main.util.response_utils import ResponseUtils
 
@@ -57,3 +58,39 @@ def register_user():
             response=json.dumps(dict(errorMessage=response_message)),
             status=status,
             mimetype='application/json')
+
+
+@api.route('/users', methods=['PUT'])
+def join_device_group():
+    auth_header = request.headers.get('Authorization')
+    product_key = None
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    response_message, status, request_dict = ResponseUtils.get_request_data(
+        request=request,
+        data_keys=['productKey', 'productPassword']
+    )
+
+    if error_message is None:
+        if status is None:
+            product_key = request_dict['productKey']
+            password = request_dict['productPassword']
+
+            result = _user_service_instance.add_user_to_device_group(
+                product_key,
+                user_info['user_id'],
+                user_info['is_admin'],
+                password,
+
+            )
+        else:
+            result = response_message
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        product_key=product_key,
+        is_logged=True
+    )
