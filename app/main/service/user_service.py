@@ -107,6 +107,9 @@ class UserService:
             'Master',
             device_group.id)
 
+        if not master_user_group:
+            return Constants.RESPONSE_MESSAGE_ERROR
+
         if user not in master_user_group.users:
             master_user_group.users.append(user)
         else:
