@@ -877,3 +877,149 @@ def test_delete_user_group_should_return_error_message_when_device_group_not_fou
         result = user_group_service.delete_user_group('user_group.name', 'product_key', admin_id, is_admin)
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_create_user_group_in_device_group_should_create_user_group_when_valid_product_key_user_group_data_and_user(
+        create_device_group):
+    user_group_service_instance = UserGroupService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = None
+
+            with patch.object(
+                    UserGroupRepository,
+                    'save'
+            ) as save_mock:
+                save_mock.return_value = True
+
+                result = user_group_service_instance.create_user_group_in_device_group(
+                    device_group.product_key,
+                    'user_group_name',
+                    'password',
+                    'user_id'
+                )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
+
+
+def test_create_user_group_in_device_group_should_return_error_message_when_save_failed(
+        create_device_group):
+    user_group_service_instance = UserGroupService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = None
+
+            with patch.object(
+                    UserGroupRepository,
+                    'save'
+            ) as save_mock:
+                save_mock.return_value = False
+
+                result = user_group_service_instance.create_user_group_in_device_group(
+                    device_group.product_key,
+                    'user_group_name',
+                    'password',
+                    'user_id'
+                )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_ERROR
+
+
+def test_create_user_group_in_device_group_should_return_product_key_not_found_when_no_device_group():
+    user_group_service_instance = UserGroupService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = None
+
+        result = user_group_service_instance.create_user_group_in_device_group(
+            'product_key',
+            'user_group_name',
+            'password',
+            'user_id'
+        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_create_user_group_in_device_group_should_return_user_group_already_exists_when_duplicated_user_group_name(
+        create_device_group,
+        create_user_group):
+    user_group_service_instance = UserGroupService.get_instance()
+
+    device_group = create_device_group()
+    user_group = create_user_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_user_id_and_product_key'
+    ) as get_device_group_by_user_id_and_product_key_mock:
+        get_device_group_by_user_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                UserGroupRepository,
+                'get_user_group_by_name_and_device_group_id'
+        ) as get_user_group_by_name_and_device_group_id_mock:
+            get_user_group_by_name_and_device_group_id_mock.return_value = user_group
+
+            result = user_group_service_instance.create_user_group_in_device_group(
+                device_group.product_key,
+                'user_group_name',
+                'password',
+                'user_id'
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_USER_GROUP_ALREADY_EXISTS
+
+
+@pytest.mark.parametrize("product_key, user_group_name, user_id, password, expected_result", [
+    ('product_key', 'user_group_name', 'user_id', None, Constants.RESPONSE_MESSAGE_WRONG_PASSWORD),
+    ('product_key', 'user_group_name', None, 'password', Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', None, 'user_id', 'password', Constants.RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED),
+    (None, 'user_group_name', 'user_id', 'password', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_create_user_group_in_device_group_should_return_error_message_when_no_parameter_given(
+        product_key,
+        user_group_name,
+        user_id,
+        password,
+        expected_result):
+    user_group_service_instance = UserGroupService.get_instance()
+
+    result = user_group_service_instance.create_user_group_in_device_group(
+        product_key,
+        user_group_name,
+        password,
+        user_id
+    )
+
+    assert result
+    assert result == expected_result
