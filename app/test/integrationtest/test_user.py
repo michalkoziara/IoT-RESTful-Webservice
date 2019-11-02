@@ -6,7 +6,6 @@ import pytest
 from sqlalchemy import and_
 
 from app.main.model.user import User
-from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
