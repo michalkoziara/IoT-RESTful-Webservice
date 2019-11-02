@@ -47,6 +47,7 @@ class Constants:
     RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES = 'States of devices and readings of sensors were updated'
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
     RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES = 'User does not have necessary privileges.'
+    RESPONSE_MESSAGE_USER_GROUP_ALREADY_EXISTS = 'User group with given name already exists.'
     RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND = 'User group name was not found.'
     RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED = 'User group was not found.'
     RESPONSE_MESSAGE_USER_NOT_DEFINED = 'User not defined.'
