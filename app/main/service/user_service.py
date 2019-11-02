@@ -113,6 +113,50 @@ class UserService:
         if user not in master_user_group.users:
             master_user_group.users.append(user)
         else:
+            return Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_DEVICE_GROUP
+
+        if self._user_group_repository_instance.update_database():
+            return Constants.RESPONSE_MESSAGE_OK
+        else:
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+    def add_user_to_user_group(self, product_key: str, user_id: str,
+                               is_admin: bool, user_group_name: str,
+                               password: str) -> str:
+
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not user_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        user_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+            user_id, product_key)
+
+        user = self._user_repository_instance.get_user_by_id(user_id)
+
+        if not user or is_admin is True or user_device_group is None:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        user_group = self._user_group_repository_instance.get_user_group_by_name_and_device_group_id(
+            user_group_name,
+            device_group.id)
+
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+        if password != user_group.password:
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
+        if user not in user_group.users:
+            user_group.users.append(user)
+        else:
             return Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP
 
         if self._user_group_repository_instance.update_database():

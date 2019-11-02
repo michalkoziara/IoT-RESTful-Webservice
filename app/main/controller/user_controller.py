@@ -94,3 +94,37 @@ def join_device_group():
         product_key=product_key,
         is_logged=True
     )
+
+
+@api.route('/hubs/<product_key>/user_groups/<user_group_name>/users', methods=['POST'])
+def join_user_group(product_key, user_group_name):
+    auth_header = request.headers.get('Authorization')
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    response_message, status, request_dict = ResponseUtils.get_request_data(
+        request=request,
+        data_keys=['password']
+    )
+
+    if error_message is None:
+        if status is None:
+
+            password = request_dict['password']
+
+            result = _user_service_instance.add_user_to_user_group(
+                product_key,
+                user_info['user_id'],
+                user_info['is_admin'],
+                user_group_name,
+                password
+            )
+        else:
+            result = response_message
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        product_key=product_key,
+        is_logged=True
+    )
