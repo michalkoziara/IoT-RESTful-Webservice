@@ -484,3 +484,158 @@ def test_get_list_of_types_names_should_return_error_message_when_one_of_paramet
 
     assert result == expected_result
     assert result_values is None
+
+
+@pytest.mark.parametrize("reading_type", ['Decimal', 'Enum', 'Boolean'])
+def test_create_sensor_type_in_device_group_should_create_sensor_type_when_valid_parameters(
+        create_device_group,
+        reading_type
+):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_type_by_device_group_id_and_name'
+        ) as get_sensor_type_by_device_group_id_and_name_mock:
+            get_sensor_type_by_device_group_id_and_name_mock.return_value = None
+
+            with patch.object(
+                    SensorTypeRepository,
+                    'save'
+            ) as save_mock:
+                save_mock.return_value = True
+
+                with patch.object(
+                        ReadingEnumeratorRepository,
+                        'save_but_do_not_commit'
+                ):
+                    with patch.object(
+                            ReadingEnumeratorRepository,
+                            'update_database'
+                    ) as update_database_mock:
+                        update_database_mock.return_value = True
+
+                        result = sensor_type_service_instance.create_sensor_type_in_device_group(
+                            device_group.product_key, 'type_name', reading_type, 0, 1,
+                            [
+                                {
+                                    'number': 0,
+                                    'text': 'zero'
+                                },
+                                {
+                                    'number': 1,
+                                    'text': 'one'
+                                }
+                            ],
+                            'admin_id'
+                        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_CREATED
+
+
+def test_create_sensor_type_in_device_group_should_return_error_message_when_no_device_group():
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = None
+
+        result = sensor_type_service_instance.create_sensor_type_in_device_group(
+            'product_key', 'type_name', 'Enum', 0, 1,
+            [
+                {
+                    'number': 0,
+                    'text': 'zero'
+                },
+                {
+                    'number': 1,
+                    'text': 'one'
+                }
+            ],
+            'admin_id'
+        )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_create_sensor_type_in_device_group_should_return_sensor_type_already_exists_when_duplicated_name(
+        create_device_group,
+        create_sensor_type):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    device_group = create_device_group()
+    sensor_type = create_sensor_type()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id_and_product_key'
+    ) as get_device_group_by_admin_id_and_product_key_mock:
+        get_device_group_by_admin_id_and_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorTypeRepository,
+                'get_sensor_type_by_device_group_id_and_name'
+        ) as get_sensor_type_by_device_group_id_and_name_mock:
+            get_sensor_type_by_device_group_id_and_name_mock.return_value = sensor_type
+
+            result = sensor_type_service_instance.create_sensor_type_in_device_group(
+                device_group.product_key, 'type_name', 'Enum', 0, 1,
+                [
+                    {
+                        'number': 0,
+                        'text': 'zero'
+                    },
+                    {
+                        'number': 1,
+                        'text': 'one'
+                    }
+                ],
+                'admin_id'
+            )
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_SENSOR_TYPE_ALREADY_EXISTS
+
+
+@pytest.mark.parametrize("product_key, type_name, admin_id, expected_result", [
+    ('product_key', 'type_name', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', None, 'user_id', Constants.RESPONSE_MESSAGE_BAD_REQUEST),
+    (None, 'type_name', 'user_id', Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_create_sensor_type_in_device_group_should_return_bad_request_when_no_parameter_given(
+        product_key,
+        type_name,
+        admin_id,
+        expected_result
+):
+    sensor_type_service_instance = SensorTypeService.get_instance()
+
+    result = sensor_type_service_instance.create_sensor_type_in_device_group(
+        product_key, type_name, 'Enum', 0, 1,
+        [
+            {
+                'number': 0,
+                'text': 'zero'
+            },
+            {
+                'number': 1,
+                'text': 'one'
+            }
+        ],
+        admin_id
+    )
+
+    assert result
+    assert result == expected_result
