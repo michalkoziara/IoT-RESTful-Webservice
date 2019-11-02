@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy import and_
 
 from app.main.model.user import User
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 
@@ -257,6 +258,44 @@ def test_register_user_group_should_return_bad_request_message_when_bad_request(
     response_data = json.loads(response.data.decode())
     assert response_data
     assert error_message in response_data['errorMessage']
+
+
+def test_join_device_group_should_add_user_to_device_groups_master_group_when_valid_request(
+        client,
+        insert_device_group,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_user):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+
+    master_user_group_values = get_user_group_default_values()
+    master_user_group_values['name'] = 'Master'
+
+    master_user_group = insert_user_group(master_user_group_values)
+
+    user = insert_user()
+
+    response = client.put(
+        '/api/users',
+        data=json.dumps(
+            {
+                "productKey": device_group.product_key,
+                "productPassword": device_group.password,
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    assert user in master_user_group.users
 
 
 if __name__ == '__main__':
