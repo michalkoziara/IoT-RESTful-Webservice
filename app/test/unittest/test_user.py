@@ -295,7 +295,7 @@ def test_add_user_to_device_group_should_return_error_message_when_user_already_
                                                                             user.id, False,
                                                                             device_group.password)
 
-    assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP
+    assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_DEVICE_GROUP
 
 
 def test_add_user_to_device_group_should_return_error_message_when_master_user_group_not_found(
