@@ -1,3 +1,4 @@
+from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.formula_repository import FormulaRepository
@@ -25,6 +26,7 @@ class UserGroupService:
     _sensor_type_repository = None
     _reading_enumerator_repository = None
     _executive_device_service = None
+    _admin_repository = None
 
     @classmethod
     def get_instance(cls):
@@ -46,6 +48,7 @@ class UserGroupService:
         self._sensor_type_repository = SensorTypeRepository.get_instance()
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._executive_device_service = ExecutiveDeviceService.get_instance()
+        self._admin_repository = AdminRepository.get_instance()
 
     def get_list_of_user_groups(self, product_key: str, user_id: str):
         if not product_key:
@@ -75,6 +78,37 @@ class UserGroupService:
             names.append(user_group.name)
 
         return Constants.RESPONSE_MESSAGE_OK, names
+
+    def delete_user_group(self, user_group_name: str, product_key: str, admin_id: str, is_admin: bool):
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not user_group_name:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NOT_DEFINED
+
+        if not admin_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        admin = self._admin_repository.get_admin_by_id(admin_id)
+
+        if not admin or is_admin is False or device_group.admin_id != admin.id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+        user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
+            user_group_name, device_group.id)
+
+        if not user_group:
+            return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
+
+        if self._user_group_repository.delete(user_group):
+            return Constants.RESPONSE_MESSAGE_OK
+        else:
+            return Constants.RESPONSE_MESSAGE_ERROR
 
     def get_list_of_executive_devices(self, product_key: str, user_group_name: str, user_id: str):
 
