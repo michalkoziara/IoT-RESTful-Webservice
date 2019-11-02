@@ -3,6 +3,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from app.main.model.reading_enumerator import ReadingEnumerator
+from app.main.model.sensor_type import SensorType
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
@@ -11,6 +13,7 @@ from app.main.repository.sensor_type_repository import SensorTypeRepository
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
+from app.main.util.utils import is_dict_with_keys
 from app.main.util.utils import is_user_in_one_of_user_groups_in_device_group
 
 
@@ -20,7 +23,6 @@ class SensorTypeService:
     _device_group_repository_instance = None
     _sensor_repository_instance = None
     _sensor_type_repository_instance = None
-    _reading_enumerator_repository = None
     _reading_enumerator_repository = None
     _user_repository = None
     _admin_repository = None
@@ -41,6 +43,96 @@ class SensorTypeService:
         self._reading_enumerator_repository = ReadingEnumeratorRepository.get_instance()
         self._user_repository = UserRepository.get_instance()
         self._admin_repository = AdminRepository.get_instance()
+
+    def create_sensor_type_in_device_group(
+            self,
+            product_key: str,
+            type_name: str,
+            reading_type: str,
+            range_min: int,
+            range_max: int,
+            enumerator: List,
+            admin_id: str) -> str:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if (type_name is None
+                or reading_type is None
+                or range_min is None
+                or range_max is None
+                or enumerator is None
+                or reading_type not in ['Boolean', 'Enum', 'Decimal']
+                or (reading_type == 'Enum' and not enumerator)):
+            return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+        if not admin_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+        device_group = self._device_group_repository_instance.get_device_group_by_admin_id_and_product_key(
+            admin_id,
+            product_key
+        )
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        existing_sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_device_group_id_and_name(
+            device_group.id,
+            type_name
+        )
+        if existing_sensor_type:
+            return Constants.RESPONSE_MESSAGE_SENSOR_TYPE_ALREADY_EXISTS
+
+        sensor_type = SensorType(
+            name=type_name,
+            reading_type=reading_type,
+            device_group_id=device_group.id
+        )
+
+        enum_count = 0
+        if enumerator and reading_type == 'Enum':
+            for enum in enumerator:
+                if is_dict_with_keys(enum, ['text', 'number']):
+                    enum_count += 1
+
+            enum_count -= 1
+
+        if reading_type == 'Enum':
+            if enum_count < 0 or range_min != 0 or range_max != enum_count:
+                return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+            sensor_type.range_min = 0
+            sensor_type.range_max = enum_count
+        elif reading_type == 'Boolean':
+            if range_min != 0 or range_max != 1:
+                return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+            sensor_type.range_min = 0
+            sensor_type.range_max = 1
+        else:
+            if range_max <= range_min:
+                return Constants.RESPONSE_MESSAGE_BAD_REQUEST
+
+            sensor_type.range_min = range_min
+            sensor_type.range_max = range_max
+
+        if not self._sensor_type_repository_instance.save(sensor_type):
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        if enumerator and reading_type == 'Enum':
+            for enum in enumerator:
+                if is_dict_with_keys(enum, ['text', 'number']):
+                    reading_enum = ReadingEnumerator(
+                        number=enum['number'],
+                        text=enum['text'],
+                        sensor_type_id=sensor_type.id
+                    )
+                    self._reading_enumerator_repository.save_but_do_not_commit(reading_enum)
+
+            if not self._reading_enumerator_repository.update_database():
+                return Constants.RESPONSE_MESSAGE_ERROR
+
+        return Constants.RESPONSE_MESSAGE_CREATED
 
     def get_sensor_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[str, Optional[dict]]:
 
