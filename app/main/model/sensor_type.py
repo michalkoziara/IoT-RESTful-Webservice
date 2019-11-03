@@ -1,6 +1,7 @@
-from app.main import db
-
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.types import Enum
+
+from app.main import db
 
 
 class SensorType(db.Model):
@@ -15,7 +16,9 @@ class SensorType(db.Model):
     range_min = db.Column(db.Float, nullable=False)
     range_max = db.Column(db.Float, nullable=False)
 
-    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id'), nullable=False)
+    device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 
-    sensors = db.relationship('Sensor', backref='sensor_type', lazy=True)
-    reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True)
+    sensors = db.relationship('Sensor', backref='sensor_type', lazy=True, passive_deletes=True)
+    reading_enumerators = db.relationship('ReadingEnumerator', backref='sensor_type', lazy=True, passive_deletes=True)
+
+    UniqueConstraint('device_group_id', 'name', name='unique_sensor_type_in_device_group')

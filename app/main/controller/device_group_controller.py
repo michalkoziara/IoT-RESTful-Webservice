@@ -1,17 +1,14 @@
-import datetime
 import json
-import traceback
 
 from flask import Response
 from flask import request
-from werkzeug.exceptions import BadRequest
 
 from app import api
 from app.main.service.device_group_service import DeviceGroupService
 from app.main.service.log_service import LogService
-from app.main.model.user import User
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
-
+from app.main.util.response_utils import ResponseUtils
 
 _device_group_service_instance = DeviceGroupService.get_instance()
 _logger = LogService.get_instance()
@@ -19,79 +16,63 @@ _logger = LogService.get_instance()
 
 @api.route('/hubs/<product_key>', methods=['PUT'])
 def modify_device_group(product_key: str):
-    response = None
-    status = None
-    new_name = None
-    user = None
-    request_dict = None
+    auth_header = request.headers.get('Authorization')
 
-    if not request.is_json:
-        response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_MIMETYPE)
-        status = 400
-        _logger.log_exception(
-            dict(
-                type='Error',
-                creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                errorMessage=response['errorMessage'],
-            ),
-            product_key
-        )
-    else:
-        try:
-            request_dict = request.get_json()
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
 
-            try:
-                user = User.query.get(request_dict['userId'])  # TODO Replace user request with token user
-                new_name = request_dict['name']
-            except KeyError as e:
-                response = dict(errorMessage=Constants.RESPONSE_MESSAGE_BAD_REQUEST)
-                status = 400
-                _logger.log_exception(
-                    dict(
-                        type='Error',
-                        creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        errorMessage=response['errorMessage'],
-                        stackTrace=traceback.format_exc(),
-                        payload=json.dumps(request_dict)
-                    ),
-                    product_key
-                )
-        except BadRequest as e:
-            response = dict(errorMessage=e.description)
-            status = e.code
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    stackTrace=traceback.format_exc()
-                ),
-                product_key
-            )
+    response_message, status, request_dict = ResponseUtils.get_request_data(
+        request=request,
+        data_keys=['name'],
+        product_key=product_key,
+        is_logged=True,
+        with_payload=True
+    )
 
     if status is None:
-        result = _device_group_service_instance.change_name(
-            product_key,
-            new_name,
-            user)
+        new_name = request_dict['name']
 
-        if result is True:
-            response = dict(name=new_name)
-            status = 200
+        if error_message is None:
+            if user_info['is_admin']:
+                result = _device_group_service_instance.change_name(
+                    product_key,
+                    new_name,
+                    user_info['user_id'])
+            else:
+                result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
         else:
-            response = dict(errorMessage=Constants.RESPONSE_MESSAGE_CONFLICTING_DATA)
-            status = 409
-            _logger.log_exception(
-                dict(
-                    type='Error',
-                    creationDate=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                    errorMessage=response['errorMessage'],
-                    payload=json.dumps(request_dict)
-                ),
-                product_key
-            )
+            result = error_message
 
-    return Response(
-        response=json.dumps(response),
-        status=status,
-        mimetype='application/json')
+        return ResponseUtils.create_response(
+            result=result,
+            result_values=dict(name=new_name),
+            product_key=product_key,
+            is_logged=True,
+            payload=request_dict
+        )
+    else:
+        return Response(
+            response=json.dumps(dict(errorMessage=response_message)),
+            status=status,
+            mimetype='application/json')
+
+
+@api.route('/hubs/<product_key>', methods=['DELETE'])
+def delete_device_group(product_key: str):
+    auth_header = request.headers.get('Authorization')
+
+    error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
+
+    if error_message is None:
+        result = _device_group_service_instance.delete_device_group(
+            product_key,
+            user_info['user_id'],
+            user_info['is_admin']
+        )
+    else:
+        result = error_message
+
+    return ResponseUtils.create_response(
+        result=result,
+        product_key=product_key,
+        is_logged=True
+    )

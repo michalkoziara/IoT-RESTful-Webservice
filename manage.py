@@ -6,12 +6,12 @@ from flask_migrate import Migrate
 from flask_migrate import MigrateCommand
 from flask_script import Manager
 
+import app.main.controller
 import app.main.model
 from app import api
 from app.main import create_app
 from app.main import db
 from app.main.util.constants import Constants
-
 
 app = create_app(Constants.CURRENT_ENV)
 app.register_blueprint(api)

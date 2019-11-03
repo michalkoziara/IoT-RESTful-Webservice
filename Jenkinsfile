@@ -10,8 +10,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                checkout scm
                 echo 'Checkout..'
+                checkout scm
             }
         }
         stage('Build') {
@@ -21,23 +21,48 @@ pipeline {
                 python3 -m venv env
                 chmod 754 env/bin/activate
                 . env/bin/activate
-                which pip
                 python3 -m pip install -r requirements.txt
                 """
             }
         }
-        stage('Test') {
+        stage('Run unit tests') {
             steps {
-                echo 'Testing..'
+                echo 'Running unit tests..'
                 sh """
                 . env/bin/activate
-                pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-config=.coveragerc --junitxml=unit_test_report.xml
+                pytest app/test/unittest/ --cache-clear -rxs -v --junitxml=unit_test_report.xml
                 """
             }
             post {
                 always {
                     junit allowEmptyResults: true, testResults: 'unit_test_report.xml'
-
+                }
+            }
+        }
+        stage('Run integration tests') {
+            steps {
+                echo 'Running integration tests..'
+                sh """
+                . env/bin/activate
+                pytest app/test/integrationtest/ --cache-clear -rxs -v --junitxml=integration_test_report.xml
+                """
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'integration_test_report.xml'
+                }
+            }
+        }
+        stage('Send to static code analyser') {
+            steps {
+                echo 'Sending test data to static code analyser..'
+                sh """
+                . env/bin/activate
+                pytest app/test/ --cache-clear -rxs -v --cov=. --cov-report=xml --cov-config=.coveragerc
+                """
+            }
+            post {
+                always {
                     withCredentials([string(credentialsId: 'codacy-project-token', variable: 'CODACY_PROJECT_TOKEN')]) {
                         sh """
                         . env/bin/activate
@@ -48,7 +73,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to dev') {
+        stage('Deploy to development') {
             when {
                 branch 'dev'
             }
@@ -58,7 +83,7 @@ pipeline {
                 sh "git push -f git@heroku.com:iot-restful-webservice-dev.git HEAD:master"
             }
         }
-        stage('Deploy to prod') {
+        stage('Deploy to production') {
             when {
                 branch 'master'
             }

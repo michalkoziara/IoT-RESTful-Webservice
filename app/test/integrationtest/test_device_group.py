@@ -3,38 +3,41 @@ import json
 import pytest
 
 from app.main.model.device_group import DeviceGroup
+from app.main.repository.admin_repository import AdminRepository
+from app.main.repository.device_group_repository import DeviceGroupRepository
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
 
 def test_modify_device_group_should_change_device_group_name_when_valid_request(
         client,
-        create_admin,
-        create_device_groups):
-    product_key = 'test_product_key'
-    old_name = 'name'
-    admin = create_admin()
-
-    test_device_groups = create_device_groups(
-        [dict(
-            name=old_name,
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=admin.id
-        )]
-    )
-    test_device_group = test_device_groups[0]
-
-    new_name = 'new_name'
+        get_admin_default_values,
+        insert_admin,
+        get_device_group_default_values,
+        insert_device_group):
     content_type = 'application/json'
 
-    response = client.put('/api/hubs/' + product_key,
-                          data=json.dumps(
-                              dict(
-                                  name=new_name,
-                                  userId=admin.id)  # TODO Replace user request with token user
-                          ),
-                          content_type=content_type
-                          )
+    product_key = 'test_product_key'
+    old_name = 'name'
+    new_name = 'new_name'
+
+    admin = insert_admin()
+
+    device_group_values = get_device_group_default_values()
+    device_group_values['name'] = old_name
+    device_group_values['product_key'] = product_key
+    device_group_values['admin_id'] = admin.id
+
+    test_device_group = insert_device_group(device_group_values)
+
+    response = client.put(
+        '/api/hubs/' + product_key,
+        data=json.dumps(dict(name=new_name)),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 200
@@ -47,23 +50,20 @@ def test_modify_device_group_should_change_device_group_name_when_valid_request(
     assert changed_device_group.name == new_name
 
 
-def test_modify_device_group_should_return_error_message_when_mimetype_is_not_json(
-        client,
-        create_admin):
+def test_modify_device_group_should_return_error_message_when_mimetype_is_not_json(client):
+    content_type = 'text'
 
     product_key = 'test_product_key'
     new_name = 'new_name'
-    admin = create_admin()
-    content_type = 'text'
 
-    response = client.put('/api/hubs/' + product_key,
-                          data=json.dumps(
-                              dict(
-                                  name=new_name,
-                                  userId=admin.id)  # TODO Replace user request with token user
-                          ),
-                          content_type=content_type
-                          )
+    response = client.put(
+        '/api/hubs/' + product_key,
+        data=json.dumps(dict(name=new_name)),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token('admin_id', True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 400
@@ -81,19 +81,59 @@ def test_modify_device_group_should_return_error_message_when_bad_request(
         client,
         request_data,
         error_message):
-    product_key = 'product_key'
     content_type = 'application/json'
 
-    response = client.put('/api/hubs/' + product_key,
-                          data=request_data,
-                          content_type=content_type
-                          )
+    product_key = 'product_key'
+
+    response = client.put(
+        '/api/hubs/' + product_key,
+        data=request_data,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token('admin_id', True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
     assert error_message in response_data['errorMessage']
+
+
+def test_delete_device_group_should_delete_device_group_and_admin_when_valid_request(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_admin,
+        insert_sensor,
+        insert_sensor_type):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+
+    admin = insert_admin()
+
+    device_group_product_key = device_group.product_key
+    admin_id = admin.id
+
+    response = client.delete(
+        '/api/hubs/' + device_group.product_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    device_group_in_db = DeviceGroupRepository.get_instance().get_device_group_by_product_key(device_group_product_key)
+    admin_in_db = AdminRepository.get_instance().get_admin_by_id(admin_id)
+
+    assert device_group_in_db is None
+    assert admin_in_db is None
 
 
 if __name__ == '__main__':

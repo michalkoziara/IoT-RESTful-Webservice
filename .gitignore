@@ -1,6 +1,7 @@
 # Flask DB Boilerplate
 flask_boilerplate_test.db
 flask_boilerplate_main.db
+flask_boilerplate_test.db-journal
 
 # PyCharm
 .idea
@@ -71,6 +72,7 @@ db.sqlite3
 instance/
 .webassets-cache
 
+
 # Scrapy stuff:
 .scrapy
 
@@ -100,6 +102,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+webservice_venv/
 
 # Spyder project settings
 .spyderproject

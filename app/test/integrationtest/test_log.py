@@ -1,73 +1,35 @@
-import datetime
 import json
 
 import pytest
 
-from app.main import db
 from app.main.model.log import Log
+from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
-
-
-@pytest.fixture()
-def log_one() -> Log:
-    """ Return a sample log with id 1 """
-    yield Log(
-        id=1,
-        type='Error',
-        creation_date=datetime.datetime(1985, 4, 12, 23, 20, 50, 520000),
-        error_message='error message',
-        stack_trace='stack trace',
-        payload='payload',
-        time=10
-    )
-
-
-@pytest.fixture()
-def create_log_for_device_group():
-    """ Return a sample log with id 1 """
-    def _create_log(device_group_id: str) -> Log:
-        log = Log(
-            id=1,
-            type='Error',
-            creation_date=datetime.datetime(1985, 4, 12, 23, 20, 50, 520000),
-            error_message='error message',
-            stack_trace='stack trace',
-            payload='payload',
-            time=10,
-            device_group_id=device_group_id
-        )
-        db.session.add(log)
-        db.session.commit()
-
-        return log
-
-    yield _create_log
 
 
 def test_create_log_should_log_when_valid_request(
         client,
-        log_one,
-        create_device_groups):
-    product_key = 'test product key'
+        get_log_default_values,
+        get_device_group_default_values,
+        insert_device_group):
     content_type = 'application/json'
 
-    test_device_groups = create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=None
-        )]
-    )
-    test_device_group = test_device_groups[0]
+    product_key = 'test product key'
 
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+    device_group_values['user_id'] = None
+
+    test_device_group = insert_device_group(device_group_values)
+
+    log_default_values = get_log_default_values()
     log_values = dict(
-        type=log_one.type,
-        creationDate='1985-04-12T23:20:50.52Z',
-        errorMessage=log_one.error_message,
-        stackTrace=log_one.stack_trace,
-        payload=log_one.payload,
-        time=log_one.time
+        type=log_default_values['type'],
+        creationDate=log_default_values['creation_date'].strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        errorMessage=log_default_values['error_message'],
+        stackTrace=log_default_values['stack_trace'],
+        payload=log_default_values['payload'],
+        time=log_default_values['time']
     )
 
     response = client.post('/api/hubs/' + product_key + '/logs',
@@ -79,27 +41,29 @@ def test_create_log_should_log_when_valid_request(
     assert response.status_code == 201
 
     created_log = Log.query.filter(Log.device_group_id == test_device_group.id).first()
-    assert log_one.type == created_log.type
-    assert log_one.creation_date == created_log.creation_date
-    assert log_one.error_message == created_log.error_message
-    assert log_one.stack_trace == created_log.stack_trace
-    assert log_one.payload == created_log.payload
-    assert log_one.time == created_log.time
+    assert log_default_values['type'] == created_log.type
+    assert log_default_values['creation_date'] == created_log.creation_date
+    assert log_default_values['error_message'] == created_log.error_message
+    assert log_default_values['stack_trace'] == created_log.stack_trace
+    assert log_default_values['payload'] == created_log.payload
+    assert log_default_values['time'] == created_log.time
 
 
 def test_create_log_should_return_error_message_when_mimetype_is_not_json(
         client,
-        log_one):
-    product_key = 'test_product_key'
+        get_log_default_values):
     content_type = 'text'
 
+    product_key = 'test_product_key'
+
+    log_default_values = get_log_default_values()
     log_values = dict(
-        type=log_one.type,
-        creationDate='1985-04-12T23:20:50.52Z',
-        errorMessage=log_one.error_message,
-        stackTrace=log_one.stack_trace,
-        payload=log_one.payload,
-        time=log_one.time
+        type=log_default_values['type'],
+        creationDate=log_default_values['creation_date'].strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        errorMessage=log_default_values['error_message'],
+        stackTrace=log_default_values['stack_trace'],
+        payload=log_default_values['payload'],
+        time=log_default_values['time']
     )
 
     response = client.post('/api/hubs/' + product_key + '/logs',
@@ -123,8 +87,9 @@ def test_create_log_should_return_error_message_when_bad_request(
         client,
         request_data,
         error_message):
-    product_key = 'product_key'
     content_type = 'application/json'
+
+    product_key = 'product_key'
 
     response = client.post('/api/hubs/' + product_key + '/logs',
                            data=request_data,
@@ -140,62 +105,80 @@ def test_create_log_should_return_error_message_when_bad_request(
 
 def test_get_logs_should_return_error_message_when_bad_request(
         client,
-        create_device_groups,
-        create_admin,
-        create_log_for_device_group):
-    product_key = 'product_key'
+        get_device_group_default_values,
+        insert_device_group,
+        get_admin_default_values,
+        insert_admin,
+        get_log_default_values,
+        insert_log):
     content_type = 'application/json'
 
-    admin = create_admin()
-    test_device_groups = create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=admin.id
-        )]
-    )
-    test_device_group = test_device_groups[0]
-    create_log_for_device_group(test_device_group.id)
+    product_key = 'product_key'
 
-    response = client.get('/api/hubs/' + 'not' + product_key + '/logs',
-                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+
+    test_device_group = insert_device_group(device_group_values)
+
+    admin_values = get_admin_default_values()
+    admin_values['device_group'] = test_device_group
+
+    admin = insert_admin(admin_values)
+
+    log_default_values = get_log_default_values()
+    log_default_values['device_group_id'] = test_device_group.id
+    insert_log(log_default_values)
+
+    response = client.get(
+        '/api/hubs/' + 'not' + product_key + '/logs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
-    error_message = Constants.RESPONSE_MESSAGE_BAD_REQUEST
+    error_message = Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
     assert error_message == response_data['errorMessage']
 
 
 def test_get_logs_should_return_logs_when_valid_request(
         client,
-        create_device_groups,
-        create_admin,
-        create_log_for_device_group):
-    product_key = 'product_key'
+        get_device_group_default_values,
+        insert_device_group,
+        get_admin_default_values,
+        insert_admin,
+        get_log_default_values,
+        insert_log):
     content_type = 'application/json'
 
-    admin = create_admin()
-    test_device_groups = create_device_groups(
-        [dict(
-            name='name',
-            password='testing_possward',  # nosec
-            product_key=product_key,
-            user_id=admin.id
-        )]
-    )
-    test_device_group = test_device_groups[0]
-    log = create_log_for_device_group(test_device_group.id)
+    product_key = 'product_key'
 
-    response = client.get('/api/hubs/' + product_key + '/logs',
-                          data=json.dumps({'userId': admin.id}),  # TODO Replace user request with token user
-                          content_type=content_type
-                          )
+    device_group_values = get_device_group_default_values()
+    device_group_values['product_key'] = product_key
+
+    test_device_group = insert_device_group(device_group_values)
+
+    admin_values = get_admin_default_values()
+    admin_values['device_group'] = test_device_group
+
+    admin = insert_admin(admin_values)
+
+    log_default_values = get_log_default_values()
+    log_default_values['device_group_id'] = test_device_group.id
+    log = insert_log(log_default_values)
+
+    response = client.get(
+        '/api/hubs/' + product_key + '/logs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
 
     assert response is not None
     assert response.status_code == 200
