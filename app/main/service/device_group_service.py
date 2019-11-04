@@ -1,3 +1,7 @@
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.util.constants import Constants
@@ -19,6 +23,23 @@ class DeviceGroupService:
     def __init__(self):
         self._admin_repository = AdminRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
+
+    def get_device_groups_info(self, user_id: str) -> Tuple[str, Optional[List]]:
+        if not user_id:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_groups = self._device_group_repository_instance.get_device_groups_by_user_id(user_id)
+
+        response = []
+        for device_group in device_groups:
+            response.append(
+                {
+                    'productKey': device_group.product_key,
+                    'name': device_group.name
+                }
+            )
+
+        return Constants.RESPONSE_MESSAGE_OK, response
 
     def change_name(self, product_key: str, new_name: str, admin_id: str) -> bool:
         if (admin_id is None or

@@ -256,3 +256,40 @@ def test_delete_device_group_should_return_error_message_when_device_group_not_f
         result = device_group_service_instance.delete_device_group('product_key', 'admin.id', is_admin)
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+def test_get_device_groups_info_should_return_device_group_information_when_valid_user(
+        create_device_group,
+        create_user):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    device_group = create_device_group()
+    user = create_user()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_groups_by_user_id'
+    ) as get_device_groups_by_user_id_mock:
+        get_device_groups_by_user_id_mock.return_value = [device_group]
+
+        result, result_values = device_group_service_instance.get_device_groups_info(user.id)
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_OK
+
+    assert result_values
+    assert result_values[0]
+    assert 'productKey' in result_values[0]
+    assert result_values[0]['productKey'] == device_group.product_key
+    assert 'name' in result_values[0]
+    assert result_values[0]['name'] == device_group.name
+
+
+def test_get_device_groups_info_should_return_error_message_when_no_parameter_given():
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    result, result_values = device_group_service_instance.get_device_groups_info(None)
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+    assert not result_values
