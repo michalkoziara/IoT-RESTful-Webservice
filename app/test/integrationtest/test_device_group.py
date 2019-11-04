@@ -136,5 +136,80 @@ def test_delete_device_group_should_delete_device_group_and_admin_when_valid_req
     assert admin_in_db is None
 
 
+def test_get_device_groups_should_return_device_group_information_when_valid_request(
+        client,
+        insert_device_group,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['users'] = [user]
+    insert_user_group(user_group_values)
+
+    response = client.get(
+        '/api/hubs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 200
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert response_data[0]
+    assert 'productKey' in response_data[0]
+    assert response_data[0]['productKey'] == device_group.product_key
+    assert 'name' in response_data[0]
+    assert response_data[0]['name'] == device_group.name
+
+
+def test_get_device_groups_should_return_error_message_when_user_not_authorized(client):
+    content_type = 'application/json'
+
+    response = client.get(
+        '/api/hubs',
+        content_type=content_type,
+    )
+
+    assert response
+    assert response.status_code == 400
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
+
+
+def test_get_device_groups_should_return_no_privileges_error_message_when_user_is_admin(
+        client, insert_admin):
+    content_type = 'application/json'
+
+    admin = insert_admin()
+
+    response = client.get(
+        '/api/hubs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 403
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+    assert 'errorMessage' in response_data
+    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
 if __name__ == '__main__':
     pytest.main(['app/integrationtest/{}.py'.format(__file__)])
