@@ -119,17 +119,14 @@ class HubService:
 
         return Constants.RESPONSE_MESSAGE_CREATED
 
-    def set_devices_states_and_sensors_readings(self,
-                                                product_key: str,
-                                                sensors_readings: List[Dict],
-                                                devices_states: List[Dict]
-                                                ) -> str:
+    def set_devices_states(
+            self,
+            product_key: str,
+            devices_states: List[Dict]
+    ) -> str:
         # TODO add hub authentication
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
-
-        if not isinstance(sensors_readings, List) or not all(isinstance(values, dict) for values in sensors_readings):
-            return Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST
 
         if not isinstance(devices_states, List) or not all(isinstance(values, dict) for values in devices_states):
             return Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST
@@ -140,22 +137,7 @@ class HubService:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
         device_group_id = device_group.id
-
-        all_sensor_values_ok = True
         all_devices_values_ok = True
-
-        for values in sensors_readings:
-            if not self._sensor_service_instance.set_sensor_reading(device_group_id, values):
-                _logger.log_exception(
-                    dict(
-                        type='Info',
-                        creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        errorMessage='Wrong values passed to set sensor readings',
-                        payload=json.dumps(values)
-                    ),
-                    product_key
-                )
-                all_sensor_values_ok = False
 
         for values in devices_states:
             if not self._executive_device_service_instance.set_device_state(device_group_id, values):
@@ -170,7 +152,46 @@ class HubService:
                 )
                 all_devices_values_ok = False
 
-        if all_sensor_values_ok and all_devices_values_ok:
+        if all_devices_values_ok:
+            return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
+        else:
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+
+    def set_sensors_readings(
+            self,
+            product_key: str,
+            sensors_readings: List[Dict]
+    ) -> str:
+        # TODO add hub authentication
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not isinstance(sensors_readings, List) or not all(isinstance(values, dict) for values in sensors_readings):
+            return Constants.RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        device_group_id = device_group.id
+
+        all_sensor_values_ok = True
+
+        for values in sensors_readings:
+            if not self._sensor_service_instance.set_sensor_reading(device_group_id, values):
+                _logger.log_exception(
+                    dict(
+                        type='Info',
+                        creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        errorMessage='Wrong values passed to set sensor readings',
+                        payload=json.dumps(values)
+                    ),
+                    product_key
+                )
+                all_sensor_values_ok = False
+
+        if all_sensor_values_ok:
             return Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
         else:
             return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
