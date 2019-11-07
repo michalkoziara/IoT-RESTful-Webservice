@@ -288,10 +288,12 @@ class ExecutiveDeviceService:
         if not executive_type:
             return False
 
-        if not self._state_in_range(state, executive_type):
-            return False
+        if is_active:
+            if not self._state_in_range(state, executive_type):
+                return False
+            executive_device.state = state
+
         executive_device.is_active = is_active
-        executive_device.state = state
         return self._executive_device_repository_instance.update_database()
 
     def get_executive_device_state_value(self, executive_device: ExecutiveDevice, state: str = None):
