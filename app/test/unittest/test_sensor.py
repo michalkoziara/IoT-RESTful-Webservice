@@ -590,7 +590,7 @@ def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_par
     values = {
         'deviceKey': sensor.device_key,
         'readingValue': 0.5,
-        'isActive': False
+        'isActive': True
     }
 
     with patch.object(
@@ -612,12 +612,18 @@ def test_set_sensor_reading_should_set_sensor_reading_when_called_with_right_par
                         'save'
                 ) as save_mock:
                     save_mock.return_value = True
-                    get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
-                    reading_in_range_mock.return_value = True
+                    with patch.object(
+                            SensorRepository,
+                            'update_database'
+                    ) as update_database_mock:
+                        update_database_mock.return_value = True
 
-                    sensor_service_instance.set_sensor_reading(test_device_group_id, values)
-                    assert sensor.is_active == values['isActive']
-                    save_mock.assert_called()
+                        get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+                        reading_in_range_mock.return_value = True
+
+                        sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+                        assert sensor.is_active == values['isActive']
+                        save_mock.assert_called()
 
 
 def test_set_sensor_reading_should_not_set_sensor_reading_when_state_not_in_range(
@@ -634,7 +640,7 @@ def test_set_sensor_reading_should_not_set_sensor_reading_when_state_not_in_rang
     values = {
         'deviceKey': sensor.device_key,
         'readingValue': 0.5,
-        'isActive': False
+        'isActive': True
     }
 
     with patch.object(
@@ -653,7 +659,9 @@ def test_set_sensor_reading_should_not_set_sensor_reading_when_state_not_in_rang
             ) as reading_in_range_mock:
                 get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
                 reading_in_range_mock.return_value = False
-                assert not sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+
+                result = sensor_service_instance.set_sensor_reading(test_device_group_id, values)
+                assert not result
 
 
 def test_set_sensor_reading_should_not_set_sensor_reading_when_wrong_dict():

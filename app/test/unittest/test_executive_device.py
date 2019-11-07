@@ -338,7 +338,7 @@ def test_set_device_state_should_set_device_state_when_called_with_right_paramet
     values = {
         'deviceKey': executive_device.device_key,
         'state': 0.5,
-        'isActive': False
+        'isActive': True
     }
 
     with patch.object(
@@ -385,7 +385,7 @@ def test_set_device_state_should_not_set_device_state_when_state_not_in_range(
     values = {
         'deviceKey': executive_device.device_key,
         'state': 0.5,
-        'isActive': False
+        'isActive': True
     }
 
     with patch.object(

@@ -309,15 +309,16 @@ class SensorService:
         if not sensor_type:
             return False
 
-        if not self.reading_in_range(reading_value, sensor_type):
-            return False
+        if is_active:
+            if not self.reading_in_range(reading_value, sensor_type):
+                return False
+
+            sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id)
+            if not self._sensor_reading_repository_instance.save(sensor_reading):
+                return False
 
         sensor.is_active = is_active
-        sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id)
-        if not self._sensor_reading_repository_instance.save(sensor_reading):
-            return False
-
-        return True
+        return self._sensor_repository_instance.update_database()
 
     def get_senor_reading_value(self, sensor: Sensor, sensor_reading: SensorReading = None):
         sensor_type = self._sensor_type_repository_instance.get_sensor_type_by_id(sensor.sensor_type_id)
