@@ -240,7 +240,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
         {
             "deviceKey": sensor.device_key,
             "readingValue": sensor_reading_value_to_be_set,
-            "isActive": False
+            "isActive": True
         }
     ]
 
@@ -249,7 +249,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
         {
             "deviceKey": executive_device.device_key,
             "state": device_state_to_set,
-            "isActive": False
+            "isActive": True
         }
     ]
 
@@ -271,8 +271,8 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
     assert executive_device.state == str(device_state_to_set)
     created_sensor_reading = sensor_reading_repository_instance.get_sensor_readings_by_sensor_id(sensor.id)[0]
     assert created_sensor_reading.value == sensor_reading_value_to_be_set
-    assert not sensor.is_active
-    assert not executive_device.is_active
+    assert sensor.is_active
+    assert executive_device.is_active
 
 
 def test_set_devices_states_and_sensors_readings_should_update_devices_and_sensors_when_partially_valid_request(
@@ -309,7 +309,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
         {
             "deviceKey": sensor.device_key,
             "test": sensor_reading_value_to_be_set,
-            "isActive": False
+            "isActive": True
         }
     ]
 
@@ -318,7 +318,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
         {
             "deviceKey": executive_device.device_key,
             "state": device_state_to_set,
-            "isActive": False
+            "isActive": True
         }
     ]
 
@@ -340,7 +340,7 @@ def test_set_devices_states_and_sensors_readings_should_update_devices_and_senso
     assert Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA == response_data['errorMessage']
     assert executive_device.state == str(device_state_to_set)
     assert sensor.is_active
-    assert not executive_device.is_active
+    assert executive_device.is_active
 
 
 def test_set_devices_states_and_sensors_readings_should_return_error_message_when_wrong_request(
