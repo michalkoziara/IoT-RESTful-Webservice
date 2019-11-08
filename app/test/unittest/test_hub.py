@@ -164,7 +164,7 @@ def test_add_multiple_devices_to_device_group_should_return_positive_response_wh
     assert result == Constants.RESPONSE_MESSAGE_DEVICES_ADDED_TO_DEVICE_GROUP
 
 
-def test_add_multiple_devices_to_device_group_should_return_positive_response_when_called_with_right_parameters(
+def test_add_multiple_devices_to_device_group_should_return_negative_response_when_called_with_wrong_parameters(
         create_device_group
 ):
     hub_service_instance = HubService.get_instance()
