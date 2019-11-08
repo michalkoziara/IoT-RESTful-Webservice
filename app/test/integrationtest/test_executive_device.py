@@ -479,7 +479,7 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
     assert executive_device
     assert executive_device.device_group_id == device_group.id
     assert executive_device.name == 'test_device_name'
-    assert executive_device.state
+    assert not executive_device.state #TODO change this and remove not when state is set to default state
     assert executive_device.is_updated is False
     assert executive_device.is_active is False
     assert executive_device.is_updated is False
