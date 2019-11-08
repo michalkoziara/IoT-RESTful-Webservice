@@ -190,7 +190,7 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
 
     invalid_device_key = 'invalid ' + device_key
     response = client.post('/api/hubs/' + product_key + '/devices',
-                           data=json.dumps({'deviceKey': invalid_device_key}),
+                           data=json.dumps({'deviceKeys': [invalid_device_key]}),
                            content_type=content_type
                            )
 
@@ -198,7 +198,7 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     assert response.status_code == 400
 
     response_data = json.loads(response.data.decode())
-    error_message = Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
+    error_message = Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
     assert response_data['errorMessage'] == error_message
 
