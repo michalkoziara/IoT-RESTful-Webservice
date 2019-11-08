@@ -1,4 +1,3 @@
-
 import json
 
 import pytest
@@ -112,7 +111,7 @@ def test_create_device_should_add_unconfigured_device_to_device_group_when_valid
     assert unconfigured_device.device_group_id is None
 
     response = client.post('/api/hubs/' + product_key + '/devices',
-                           data=json.dumps({'deviceKey': device_key}),
+                           data=json.dumps({'deviceKeys': [device_key]}),
                            content_type=content_type
                            )
 
@@ -129,7 +128,7 @@ def test_create_device_should_return_error_message_when_mimetype_is_not_json(cli
     device_key = 'test device key'
 
     response = client.post('/api/hubs/' + product_key + '/devices',
-                           data=json.dumps({'deviceKey': device_key}),
+                           data=json.dumps({'deviceKeys': [device_key]}),
                            content_type=content_type
                            )
 
@@ -414,6 +413,7 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
     assert not executive_device.is_updated
     assert not sensor.is_updated
+
 
 def test_get_devices_configurations_should_return_error_message_when_invalid_request(client):
     content_type = 'application/json'
