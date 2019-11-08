@@ -140,6 +140,59 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
     assert not result_values['changedDevices']
 
 
+def test_add_multiple_devices_to_device_group_should_return_positive_response_when_called_with_right_parameters(
+        create_device_group
+):
+    hub_service_instance = HubService.get_instance()
+
+    device_group = create_device_group()
+    device_keys = ['test', 'test2']
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                HubService,
+                'add_device_to_device_group'
+        ) as add_device_to_device_group_mock:
+            add_device_to_device_group_mock.return_value = Constants.RESPONSE_MESSAGE_CREATED
+            result = hub_service_instance.add_multiple_devices_to_device_group(device_group.product_key,
+                                                                               device_keys)
+
+    assert result == Constants.RESPONSE_MESSAGE_DEVICES_ADDED_TO_DEVICE_GROUP
+
+
+def test_add_multiple_devices_to_device_group_should_return_negative_response_when_called_with_wrong_parameters(
+        create_device_group
+):
+    hub_service_instance = HubService.get_instance()
+
+    device_group = create_device_group()
+    device_keys = ['test', 'test2']
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                HubService,
+                'add_device_to_device_group'
+        ) as add_device_to_device_group_mock:
+            add_device_to_device_group_mock.return_value = 'test'
+
+            with patch.object(
+                    LogService,
+                    'log_exception'
+            ):
+                result = hub_service_instance.add_multiple_devices_to_device_group(device_group.product_key,
+                                                                                   device_keys)
+
+    assert result == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+
+
 def test_add_device_to_device_group_should_result_true_when_given_valid_keys(
         get_device_group_default_values,
         create_device_group,

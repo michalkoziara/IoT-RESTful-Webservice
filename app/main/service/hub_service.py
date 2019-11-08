@@ -119,6 +119,40 @@ class HubService:
 
         return Constants.RESPONSE_MESSAGE_CREATED
 
+    def add_multiple_devices_to_device_group(self, product_key: str, device_keys: List[str]):
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not isinstance(device_keys, List) or not all(isinstance(value, str) for value in device_keys):
+            return Constants.RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if device_group is None:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        device_group_product_key = device_group.product_key
+        all_devices_added = True
+
+        for device_key in device_keys:
+            result = self.add_device_to_device_group(device_group_product_key, device_key)
+            if result != Constants.RESPONSE_MESSAGE_CREATED:
+                _logger.log_exception(
+                    dict(
+                        type='Error',
+                        creationDate=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        errorMessage='Wrong values passed to add devices to device group: ' + result,
+                        payload=json.dumps(device_keys)
+                    ),
+                    product_key
+                )
+                all_devices_added = False
+
+        if all_devices_added:
+            return Constants.RESPONSE_MESSAGE_DEVICES_ADDED_TO_DEVICE_GROUP
+        else:
+            return Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+
     def set_devices_states(
             self,
             product_key: str,

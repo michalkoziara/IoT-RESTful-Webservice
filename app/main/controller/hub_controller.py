@@ -32,16 +32,16 @@ def create_device(product_key: str):
     # TODO add hub device authentication
     response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
-        data_keys=['deviceKey'],
+        data_keys=['deviceKeys'],
         product_key=product_key,
         is_logged=True,
         with_payload=True
     )
 
     if status is None:
-        device_key = request_dict['deviceKey']
+        device_keys = request_dict['deviceKeys']
 
-        result = _hub_service_instance.add_device_to_device_group(product_key, device_key)
+        result = _hub_service_instance.add_multiple_devices_to_device_group(product_key, device_keys)
 
         return ResponseUtils.create_response(
             result=result,
