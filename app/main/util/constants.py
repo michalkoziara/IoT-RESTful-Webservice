@@ -47,6 +47,7 @@ class Constants:
     RESPONSE_MESSAGE_SIGNATURE_EXPIRED = 'Signature expired.'
     RESPONSE_MESSAGE_UNCONFIGURED_DEVICE_NOT_FOUND = 'Unconfigure device not found.'
     RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES = 'States of devices and readings of sensors were updated'
+    RESPONSE_MESSAGE_DEVICES_ADDED_TO_DEVICE_GROUP = 'Unconfigured devices were added to device group'
     RESPONSE_MESSAGE_USER_ALREADY_EXISTS = 'User with given credentials already exists.'
     RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES = 'User does not have necessary privileges.'
     RESPONSE_MESSAGE_USER_GROUP_ALREADY_EXISTS = 'User group with given name already exists.'
