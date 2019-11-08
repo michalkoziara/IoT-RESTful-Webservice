@@ -243,7 +243,7 @@ def test_set_devices_states_should_update_devices_when_valid_request(
     assert response is not None
     assert response.status_code == 201
 
-    assert executive_device.state == str(device_state_to_set)
+    assert executive_device.state == device_state_to_set
     assert executive_device.is_active
 
 
