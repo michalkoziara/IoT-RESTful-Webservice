@@ -9,13 +9,13 @@ class ExecutiveDevice(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
-    state = db.Column(db.String(255), nullable=False)
+    state = db.Column(db.Float, nullable=False)
     is_updated = db.Column(db.Boolean, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
     is_assigned = db.Column(db.Boolean, nullable=False)
-    is_formula_used = db.Column(db.Boolean, nullable=True)  # changed to nullable = True
-    positive_state = db.Column(db.String(255), nullable=True)
-    negative_state = db.Column(db.String(255), nullable=True)
+    is_formula_used = db.Column(db.Boolean, nullable=True)
+    positive_state = db.Column(db.Float, nullable=True)
+    negative_state = db.Column(db.Float, nullable=True)
     device_key = db.Column(db.String(255), nullable=False, unique=True)
 
     executive_type_id = db.Column(db.Integer, db.ForeignKey('executive_type.id', ondelete="CASCADE"), nullable=False)
