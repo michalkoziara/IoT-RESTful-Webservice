@@ -1,4 +1,5 @@
 # pylint: disable=no-self-use
+from datetime import datetime
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -313,7 +314,7 @@ class SensorService:
             if not self.reading_in_range(reading_value, sensor_type):
                 return False
 
-            sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id)
+            sensor_reading = SensorReading(value=reading_value, sensor_id=sensor.id, date=datetime.utcnow())
             if not self._sensor_reading_repository_instance.save(sensor_reading):
                 return False
 
