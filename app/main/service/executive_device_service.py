@@ -239,7 +239,8 @@ class ExecutiveDeviceService:
 
         executive_device = ExecutiveDevice(
             name=device_name,
-            state="Not set",  # TODO add setting state to  executive_type.default_state
+            # state= executive_type.default_state,  # TODO add default_state state to executive_type.default_state
+            state=0,
             is_updated=False,
             is_active=False,
             is_assigned=False,
@@ -583,7 +584,7 @@ class ExecutiveDeviceService:
         elif executive_type.state_type == 'Decimal':
             return self._is_decimal_state_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
-            return is_bool(state)
+            return int(state) in [0, 1]
         else:
             return False
 

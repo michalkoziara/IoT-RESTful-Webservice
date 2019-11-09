@@ -722,7 +722,7 @@ def test_get_list_of_unassigned_executive_devices_should_error_message_when_one_
     assert result_values is None
 
 
-def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
+def test_add_executive_device_to_device_group_should_add_sensor_to_device_group_when_valid_request(
         create_device_group, create_unconfigured_device, create_executive_type, create_admin):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
@@ -761,8 +761,8 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                 ) as get_executive_device_by_name_and_user_group_id_mock:
                     get_executive_device_by_name_and_user_group_id_mock.return_value = None
 
-                    with patch.object(ExecutiveDevice, '__init__') as sensor_init_mock:
-                        sensor_init_mock.return_value = None
+                    with patch.object(ExecutiveDevice, '__init__') as exec_device_init_mock:
+                        exec_device_init_mock.return_value = None
                         with patch.object(
                                 BaseRepository,
                                 'save_but_do_not_commit') as  save_but_do_not_commit_mock:
@@ -785,9 +785,9 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
                                     )
 
     assert result == Constants.RESPONSE_MESSAGE_CREATED
-    sensor_init_mock.assert_called_with(
+    exec_device_init_mock.assert_called_with(
         name=device_name,
-        state="Not set",
+        state=0,
         is_updated=False,
         is_active=False,
         is_assigned=False,
@@ -805,7 +805,7 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
     update_database_mock.assert_called_once()
 
 
-def test_add_sensor_to_device_group_should_return_error_message_when_not_successfull_db_update(
+def test_add_executive_device_to_device_group_should_return_error_message_when_not_successfull_db_update(
         create_device_group, create_unconfigured_device, create_executive_type, create_admin):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
@@ -869,7 +869,7 @@ def test_add_sensor_to_device_group_should_return_error_message_when_not_success
     assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
     sensor_init_mock.assert_called_with(
         name=device_name,
-        state="Not set",
+        state=0,
         is_updated=False,
         is_active=False,
         is_assigned=False,
