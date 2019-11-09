@@ -467,6 +467,8 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
     executive_type_values['state_enumerators'] = create_state_enumerators(
         [get_state_enumerator_default_values()]
     )
+    executive_type_values['state_type'] = 'Enum'
+
     executive_types = create_executive_types([executive_type_values])
 
     formula_values = get_formula_default_values()

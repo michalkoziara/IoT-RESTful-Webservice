@@ -33,8 +33,6 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     formula = insert_formula()
     executive_device = insert_executive_device()
 
-    state_enumerator = insert_state_enumerator()
-
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
         content_type=content_type,
@@ -51,13 +49,13 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     assert response_data is not None
 
     assert response_data['name'] == executive_device.name
-    assert response_data['state'] == state_enumerator.text
+    assert response_data['state'] == executive_device.state
     assert response_data['isUpdated'] == executive_device.is_updated
     assert response_data['isActive'] == executive_device.is_active
     assert response_data['isAssigned'] == executive_device.is_assigned
     assert response_data['isFormulaUsed'] == executive_device.is_formula_used
-    assert response_data['isPositiveState'] == executive_device.positive_state
-    assert response_data['isNegativeState'] == executive_device.negative_state
+    assert response_data['positiveState'] == executive_device.positive_state
+    assert response_data['negativeState'] == executive_device.negative_state
     assert response_data['deviceKey'] == executive_device.device_key
     assert response_data['deviceTypeName'] == executive_type.name
     assert response_data['deviceUserGroup'] == user_group.name
@@ -423,7 +421,7 @@ def test_get_list_of_unassigned_executive_devices_should_return_error_message_wh
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
 
-def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid_request(
+def test_add_executive_device_to_device_group_should_add_executive_device_to_device_group_when_valid_request(
         client,
         insert_device_group,
         insert_admin,
@@ -479,7 +477,7 @@ def test_add_sensor_to_device_group_should_add_sensor_to_device_group_when_valid
     assert executive_device
     assert executive_device.device_group_id == device_group.id
     assert executive_device.name == 'test_device_name'
-    assert not executive_device.state #TODO change this and remove not when state is set to default state
+    assert executive_device.state == executive_type.default_state
     assert executive_device.is_updated is False
     assert executive_device.is_active is False
     assert executive_device.is_updated is False

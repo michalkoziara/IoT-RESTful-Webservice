@@ -46,16 +46,7 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request_an
         'stateType': executive_type.state_type,
         'stateRangeMin': executive_type.state_range_min,
         'stateRangeMax': executive_type.state_range_max,
-        'enumerator': [
-            {
-                'number': first_enumerator.number,
-                'text': first_enumerator.text
-            },
-            {
-                'number': second_enumerator.number,
-                'text': second_enumerator.text
-            }
-        ]
+        'defaultState': executive_type.default_state
     }
 
     with patch.object(
@@ -129,6 +120,7 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request_and_r
         'stateType': executive_type.state_type,
         'stateRangeMin': executive_type.state_range_min,
         'stateRangeMax': executive_type.state_range_max,
+        'defaultState': executive_type.default_state
     }
 
     with patch.object(
@@ -533,6 +525,7 @@ def test_create_executive_type_in_device_group_should_create_executive_type_when
                                     'text': 'one'
                                 }
                             ],
+                            1,
                             'admin_id'
                         )
 
@@ -561,6 +554,7 @@ def test_create_executive_type_in_device_group_should_return_error_message_when_
                     'text': 'one'
                 }
             ],
+            1,
             'admin_id'
         )
 
@@ -600,6 +594,7 @@ def test_create_executive_type_in_device_group_should_return_sensor_type_already
                         'text': 'one'
                     }
                 ],
+                1,
                 'admin_id'
             )
 
@@ -632,6 +627,7 @@ def test_create_sensor_type_in_device_group_should_return_bad_request_when_no_pa
                 'text': 'one'
             }
         ],
+        1,
         admin_id
     )
 
