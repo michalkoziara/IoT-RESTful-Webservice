@@ -356,7 +356,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
         insert_sensor,
         insert_state_enumerator,
         insert_sensor_reading_enumerator,
-        insert_formula):
+        insert_formula,
+        insert_deleted_device):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -388,11 +389,13 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     insert_state_enumerator()
     insert_formula()
 
+    deleted_device = insert_deleted_device()
+
     response = client.post(
         'api/hubs/' + device_group.product_key + '/devices/config',
         data=json.dumps(
             {
-                "devices": [executive_device.device_key, sensor.device_key]
+                "devices": [executive_device.device_key, sensor.device_key, deleted_device.device_key]
             }
         ),
         content_type=content_type
@@ -405,12 +408,15 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     assert response_data
     assert response_data['sensors']
     assert response_data['devices']
+    assert response_data['deletedDevices']
     assert len(response_data['sensors']) == 1
     assert len(response_data['devices']) == 1
+    assert len(response_data['deletedDevices']) == 1
     assert response_data['sensors'][0]['deviceKey'] == sensor.device_key
     assert response_data['devices'][0]['deviceKey'] == executive_device.device_key
     assert response_data['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
+    assert response_data['deletedDevices'][0] == deleted_device.device_key
     assert not executive_device.is_updated
     assert not sensor.is_updated
 

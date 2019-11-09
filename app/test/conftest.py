@@ -10,6 +10,7 @@ import pytest
 
 from app.main.model.admin import Admin
 from app.main.model.device_group import DeviceGroup
+from app.main.model.deleted_device import DeletedDevice
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
@@ -773,3 +774,48 @@ def create_logs():
         return logs
 
     return _create_logs
+
+
+@pytest.fixture
+def deleted_device_default_values(device_group_default_values) -> Dict[str, Optional[Union[int, str, List[Any]]]]:
+    return {
+        'id': 1,
+        'device_key': 'deleted device key',
+        'device_group_id': device_group_default_values['id']
+    }
+
+
+@pytest.fixture
+def get_deleted_device_default_values(deleted_device_default_values):
+    def _get_deleted_device_default_values() -> Dict[str, Optional[Union[int, str, List[Any]]]]:
+        return deepcopy(deleted_device_default_values)
+
+    return _get_deleted_device_default_values
+
+
+@pytest.fixture
+def create_deleted_device(create_deleted_devices, get_deleted_device_default_values):
+    def _create_deleted_device(values: Optional[Dict[str, str]] = None) -> DeletedDevice:
+        if not values:
+            values = get_deleted_device_default_values()
+
+        return create_deleted_devices([values])[0]
+
+    return _create_deleted_device
+
+
+@pytest.fixture
+def create_deleted_devices():
+    def _create_deleted_devices(values: List[Dict[str, Union[str, int, List[Any]]]]) -> List[DeletedDevice]:
+        deleted_devices = []
+        for value in values:
+            deleted_devices.append(
+                DeletedDevice(
+                    id=value['id'],
+                    device_key=value['device_key'],
+                    device_group_id=value['device_group_id'],
+                )
+            )
+        return deleted_devices
+
+    return _create_deleted_devices

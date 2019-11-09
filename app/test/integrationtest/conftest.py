@@ -7,9 +7,10 @@ from flask.testing import FlaskClient
 
 from app.main import db
 from app.main.config import TestingConfig
-from app.main.model import ReadingEnumerator
-from app.main.model import StateEnumerator
+from app.main.model.reading_enumerator import ReadingEnumerator
+from app.main.model.state_enumerator import StateEnumerator
 from app.main.model.admin import Admin
+from app.main.model.deleted_device import DeletedDevice
 from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
@@ -338,3 +339,23 @@ def insert_logs(create_logs, create_multiple_records):
         )
 
     return _insert_logs
+
+
+@pytest.fixture
+def insert_deleted_device(create_deleted_device, create_record):
+    def _insert_deleted_device(values: Optional[Dict[str, str]] = None) -> DeletedDevice:
+        return create_record(
+            create_deleted_device(values)
+        )
+
+    return _insert_deleted_device
+
+
+@pytest.fixture
+def insert_deleted_devices(create_deleted_devices, create_multiple_records):
+    def _insert_deleted_devices(values: List[Dict[str, str]]) -> List[DeletedDevice]:
+        return create_multiple_records(
+            create_deleted_devices(values)
+        )
+
+    return _insert_deleted_devices
