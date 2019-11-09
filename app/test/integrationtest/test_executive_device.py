@@ -2,8 +2,9 @@ import json
 
 from sqlalchemy import and_
 
-from app.main.model import ExecutiveDevice
-from app.main.model import UnconfiguredDevice
+from app.main.model.deleted_device import DeletedDevice
+from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.unconfigured_device import UnconfiguredDevice
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
@@ -656,8 +657,7 @@ def test_delete_executive_device_should_delete_executive_device_when_valid_reque
         get_sensor_default_values,
         insert_admin,
         insert_executive_device,
-        insert_executive_type,
-):
+        insert_executive_type):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -686,6 +686,10 @@ def test_delete_executive_device_should_delete_executive_device_when_valid_reque
         device_group.id)
 
     assert exec_device_in_db is None
+
+    deleted_devices = DeletedDevice.query.filter(DeletedDevice.device_key == exec_device_device_key).all()
+    assert deleted_devices
+    assert len(deleted_devices) == 1
 
 
 def test_delete_executive_device_should_not_delete_executive_device_when_not_valid_request(
