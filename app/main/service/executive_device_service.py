@@ -584,7 +584,7 @@ class ExecutiveDeviceService:
         elif executive_type.state_type == 'Decimal':
             return self._is_decimal_state_in_range(state, executive_type)
         elif executive_type.state_type == 'Boolean':
-            return is_bool(state)
+            return int(state) in [0, 1]
         else:
             return False
 
