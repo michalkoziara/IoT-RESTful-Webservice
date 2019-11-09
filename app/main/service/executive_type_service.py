@@ -49,7 +49,7 @@ class ExecutiveTypeService:
             range_min: int,
             range_max: int,
             enumerator: List,
-            default_state: float, #TODO Add this change to API map
+            default_state: float,
             admin_id: str) -> str:
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -173,7 +173,7 @@ class ExecutiveTypeService:
         senor_type_info['stateType'] = executive_type.state_type
         senor_type_info['stateRangeMin'] = executive_type.state_range_min
         senor_type_info['stateRangeMax'] = executive_type.state_range_max
-        senor_type_info['defaultState'] = executive_type.default_state #TODO Add this change to API map
+        senor_type_info['defaultState'] = executive_type.default_state
 
         if senor_type_info['stateType'] == 'Enum':
 
