@@ -9,8 +9,8 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.deleted_device_repository import DeletedDeviceRepository
+from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
 from app.main.repository.formula_repository import FormulaRepository

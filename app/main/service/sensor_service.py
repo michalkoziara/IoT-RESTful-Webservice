@@ -5,11 +5,11 @@ from typing import Optional
 from typing import Tuple
 
 from app.main.model.deleted_device import DeletedDevice
-from app.main.model.user import User
-from app.main.model.user_group import UserGroup
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
+from app.main.model.user import User
+from app.main.model.user_group import UserGroup
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository

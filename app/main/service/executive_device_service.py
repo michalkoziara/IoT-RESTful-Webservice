@@ -3,12 +3,12 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from app.main.model.deleted_device import DeletedDevice
+from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
 from app.main.model.user import User
 from app.main.model.user_group import UserGroup
-from app.main.model.executive_device import ExecutiveDevice
-from app.main.model.deleted_device import DeletedDevice
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
