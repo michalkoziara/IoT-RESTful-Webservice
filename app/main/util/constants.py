@@ -58,3 +58,4 @@ class Constants:
     RESPONSE_MESSAGE_USER_ALREADY_IN_DEVICE_GROUP = 'User already is a member of device group.'
     RESPONSE_MESSAGE_WRONG_DATA = 'Hub send wrong data'
     RESPONSE_MESSAGE_WRONG_PASSWORD = 'Wrong password.'
+    DEFAULT_STATE_NOT_IN_RANGE = 'Default state is not in range'

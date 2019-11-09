@@ -467,6 +467,8 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
     executive_type_values['state_enumerators'] = create_state_enumerators(
         [get_state_enumerator_default_values()]
     )
+    executive_type_values['state_type'] = 'Enum'
+
     executive_types = create_executive_types([executive_type_values])
 
     formula_values = get_formula_default_values()
@@ -527,6 +529,9 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
     assert result_values['devices'][0]['rule']
     assert result_values['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert result_values['devices'][0]['stateType'] == executive_type_values['state_type']
+
+    assert result_values['devices'][0]['defaultState'] == executive_types[0].default_state
+    assert result_values['devices'][0]['isFormulaUsed'] == executive_devices[0].is_formula_used
 
     assert result_values['devices'][0]['enumerator']
     assert len(result_values['devices'][0]['enumerator']) == 1

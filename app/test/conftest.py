@@ -189,9 +189,10 @@ def executive_type_default_values(device_group_default_values) -> Dict[str, Opti
     return {
         'id': 1,
         'name': 'executive type default name',
-        'state_type': 'Enum',
+        'state_type': 'Decimal',
         'state_range_min': 0.0,
         'state_range_max': 1.0,
+        'default_state': 0.5,
         'device_group_id': device_group_default_values['id'],
         'executive_devices': [],
         'state_enumerators': []
@@ -229,7 +230,8 @@ def create_executive_types():
                     state_range_min=value['state_range_min'],
                     state_range_max=value['state_range_max'],
                     device_group_id=value['device_group_id'],
-                    state_enumerators=value['state_enumerators']
+                    state_enumerators=value['state_enumerators'],
+                    default_state=value['default_state']
                 )
             )
             return executive_types

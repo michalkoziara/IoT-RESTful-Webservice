@@ -25,7 +25,11 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request(
     device_group.user_groups = [user_group]
     DeviceGroupRepository.get_instance().update_database()
 
-    executive_type = insert_executive_type()
+    executive_type_default_values = get_executive_type_default_values()
+    executive_type_default_values['state_type'] = 'Enum'
+    executive_type_default_values['default_state'] = 1
+
+    executive_type = insert_executive_type(executive_type_default_values)
     state_enumerator = insert_state_enumerator()
 
     response = client.get(
@@ -46,7 +50,8 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request(
                 'number': state_enumerator.number,
                 'text': state_enumerator.text
             }
-        ]
+        ],
+        'defaultState': executive_type.default_state
     }
 
     assert response is not None
@@ -158,7 +163,8 @@ def test_create_executive_type_should_create_executive_type_in_device_group_when
                         "number": 1,
                         "text": "one"
                     }
-                ]
+                ],
+                'defaultState': 1
             }
         ),
         content_type=content_type,
@@ -284,7 +290,8 @@ def test_create_executive_type_should_return_no_privileges_error_message_when_us
                         "number": 1,
                         "text": "one"
                     }
-                ]
+                ],
+                'defaultState': 1
             }
         ),
         content_type=content_type,
