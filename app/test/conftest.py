@@ -9,8 +9,8 @@ from typing import Union
 import pytest
 
 from app.main.model.admin import Admin
-from app.main.model.device_group import DeviceGroup
 from app.main.model.deleted_device import DeletedDevice
+from app.main.model.device_group import DeviceGroup
 from app.main.model.executive_device import ExecutiveDevice
 from app.main.model.executive_type import ExecutiveType
 from app.main.model.formula import Formula
