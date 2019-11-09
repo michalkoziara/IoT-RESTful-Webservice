@@ -343,9 +343,11 @@ class HubService:
                     {
                         'deviceKey': executive_device.device_key,
                         'state': executive_device.state,
+                        'defaultState': executive_type.default_state,
                         'positiveState': executive_device.positive_state,
                         'negativeState': executive_device.negative_state,
                         'rule': loads(formula.rule) if formula else None,
+                        'isFormulaUsed': executive_device.is_formula_used,
                         'stateType': executive_type.state_type if executive_type else None,
                         'rangeMin': executive_type.state_range_min if executive_type else None,
                         'rangeMax': executive_type.state_range_max if executive_type else None,

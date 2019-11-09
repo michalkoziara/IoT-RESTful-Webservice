@@ -92,14 +92,15 @@ class ExecutiveDeviceService:
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
         executive_device_info['isFormulaUsed'] = executive_device.is_formula_used
-        executive_device_info['isPositiveState'] = executive_device.positive_state
-        executive_device_info['isNegativeState'] = executive_device.negative_state
+        executive_device_info['positiveState'] = executive_device.positive_state
+        executive_device_info['negativeState'] = executive_device.negative_state
         executive_device_info['deviceKey'] = executive_device.device_key
 
         executive_device_type = self._executive_type_repository_instance.get_executive_type_by_id(
             executive_device.executive_type_id
         )
         executive_device_info['deviceTypeName'] = executive_device_type.name
+        executive_device_info['defaultState'] = executive_device_type.default_state
         if user_group:
             executive_device_info['deviceUserGroup'] = user_group.name
         else:
@@ -250,8 +251,7 @@ class ExecutiveDeviceService:
 
         executive_device = ExecutiveDevice(
             name=device_name,
-            # state= executive_type.default_state,  # TODO add default_state state to executive_type.default_state
-            state=0,
+            state=executive_type.default_state,
             is_updated=False,
             is_active=False,
             is_assigned=False,
@@ -327,7 +327,7 @@ class ExecutiveDeviceService:
         elif state_type == 'Boolean':
             if int(state) == 1:
                 state_value = True
-            else:
+            elif int(state) == 0:
                 state_value = False
 
         return state_value

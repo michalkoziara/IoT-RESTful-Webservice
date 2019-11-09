@@ -80,8 +80,8 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
     assert result_values['isFormulaUsed'] == executive_device.is_formula_used
-    assert result_values['isPositiveState'] == executive_device.positive_state
-    assert result_values['isNegativeState'] == executive_device.negative_state
+    assert result_values['positiveState'] == executive_device.positive_state
+    assert result_values['negativeState'] == executive_device.negative_state
     assert result_values['deviceKey'] == executive_device.device_key
     assert result_values['deviceTypeName'] == executive_type.name
     assert result_values['deviceUserGroup'] == user_group.name
@@ -150,8 +150,8 @@ def test_get_executive_device_info_should_return_device_info_when_user_is_not_in
     assert result_values['isUpdated'] == executive_device.is_updated
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
-    assert result_values['isPositiveState'] == executive_device.positive_state
-    assert result_values['isNegativeState'] == executive_device.negative_state
+    assert result_values['positiveState'] == executive_device.positive_state
+    assert result_values['negativeState'] == executive_device.negative_state
     assert result_values['deviceKey'] == executive_device.device_key
     assert result_values['deviceTypeName'] == executive_type.name
     assert result_values['deviceUserGroup'] is None
@@ -788,7 +788,7 @@ def test_add_executive_device_to_device_group_should_add_sensor_to_device_group_
     assert result == Constants.RESPONSE_MESSAGE_CREATED
     exec_device_init_mock.assert_called_with(
         name=device_name,
-        state=0,
+        state=executive_type.default_state,
         is_updated=False,
         is_active=False,
         is_assigned=False,
@@ -870,7 +870,7 @@ def test_add_executive_device_to_device_group_should_return_error_message_when_n
     assert result == Constants.RESPONSE_MESSAGE_CONFLICTING_DATA
     sensor_init_mock.assert_called_with(
         name=device_name,
-        state=0,
+        state=executive_type.default_state,
         is_updated=False,
         is_active=False,
         is_assigned=False,

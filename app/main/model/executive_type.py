@@ -15,6 +15,7 @@ class ExecutiveType(db.Model):
     state_type = db.Column(Enum(*_types, name="state_type"), nullable=False)
     state_range_min = db.Column(db.Float, nullable=False)
     state_range_max = db.Column(db.Float, nullable=False)
+    default_state = db.Column(db.Float,nullable=False)
 
     device_group_id = db.Column(db.Integer, db.ForeignKey('device_group.id', ondelete="CASCADE"), nullable=False)
 

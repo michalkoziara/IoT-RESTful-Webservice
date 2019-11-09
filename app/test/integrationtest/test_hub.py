@@ -366,8 +366,9 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     executive_type_values['state_type'] = 'Decimal'
     executive_type_values['state_range_min'] = 0
     executive_type_values['state_range_max'] = 1.0
+    executive_type_values['default_state'] = 0.6
 
-    insert_executive_type(executive_type_values)
+    executive_type = insert_executive_type(executive_type_values)
 
     executive_device_values = get_executive_device_default_values()
     executive_device_values['is_formula_used'] = True
@@ -416,6 +417,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     assert response_data['devices'][0]['deviceKey'] == executive_device.device_key
     assert response_data['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
+    assert response_data['devices'][0]['isFormulaUsed'] == executive_device.is_formula_used
+    assert response_data['devices'][0]['defaultState'] == executive_type.default_state
     assert response_data['deletedDevices'][0] == deleted_device.device_key
     assert not executive_device.is_updated
     assert not sensor.is_updated
