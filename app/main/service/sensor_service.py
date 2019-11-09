@@ -4,12 +4,14 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import User
-from app.main.model import UserGroup
+from app.main.model.deleted_device import DeletedDevice
 from app.main.model.sensor import Sensor
 from app.main.model.sensor_reading import SensorReading
 from app.main.model.sensor_type import SensorType
+from app.main.model.user import User
+from app.main.model.user_group import UserGroup
 from app.main.repository.admin_repository import AdminRepository
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.reading_enumerator_repository import ReadingEnumeratorRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
@@ -25,6 +27,7 @@ from app.main.util.utils import is_bool
 class SensorService:
     _instance = None
     _user_repository = None
+    _deleted_device_repository_instance = None
     _device_group_repository_instance = None
     _executive_device_repository_instance = None
     _sensor_repository_instance = None
@@ -45,6 +48,7 @@ class SensorService:
         self._sensor_reading_repository = SensorReadingRepository.get_instance()
         self._reading_enumerator_repository_instance = ReadingEnumeratorRepository.get_instance()
         self._sensor_reading_repository_instance = SensorReadingRepository.get_instance()
+        self._deleted_device_repository_instance = DeletedDeviceRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
         self._sensor_repository_instance = SensorRepository.get_instance()
         self._user_group_repository = UserGroupRepository.get_instance()
@@ -129,7 +133,14 @@ class SensorService:
         if not sensor:
             return Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
 
-        if self._sensor_repository_instance.delete(sensor):
+        deleted_device = DeletedDevice(
+            device_key=sensor.device_key,
+            device_group_id=sensor.device_group_id
+        )
+
+        self._sensor_repository_instance.delete_but_do_not_commit(sensor)
+
+        if self._deleted_device_repository_instance.save(deleted_device):
             return Constants.RESPONSE_MESSAGE_OK
         else:
             return Constants.RESPONSE_MESSAGE_ERROR

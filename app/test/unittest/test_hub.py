@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from app.main.repository.base_repository import BaseRepository
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -446,6 +447,8 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
         create_state_enumerators,
         get_sensor_reading_enumerator_default_values,
         create_sensor_reading_enumerators,
+        get_deleted_device_default_values,
+        create_deleted_devices,
         get_formula_default_values,
         create_formulas):
     hub_service_instance = HubService.get_instance()
@@ -473,6 +476,9 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
 
     formula_values = get_formula_default_values()
     formulas = create_formulas([formula_values])
+
+    deleted_device_values = get_deleted_device_default_values()
+    deleted_devices = create_deleted_devices([deleted_device_values])
 
     with patch.object(
             SensorRepository,
@@ -505,18 +511,25 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
                         get_formulas_by_ids_mock.return_value = formulas
 
                         with patch.object(
-                                BaseRepository,
-                                'update_database'
-                        ) as update_database_mock:
-                            update_database_mock.return_value = True
+                                DeletedDeviceRepository,
+                                'get_deleted_devices_by_product_key_and_device_keys'
+                        ) as get_deleted_devices_by_product_key_and_device_keys_mock:
+                            get_deleted_devices_by_product_key_and_device_keys_mock.return_value = deleted_devices
 
-                            result, result_values = hub_service_instance.get_devices_informations(
-                                'product_key',
-                                [
-                                    sensors[0].device_key,
-                                    executive_devices[0].device_key
-                                ]
-                            )
+                            with patch.object(BaseRepository, 'delete_but_do_not_commit'):
+                                with patch.object(
+                                        BaseRepository,
+                                        'update_database'
+                                ) as update_database_mock:
+                                    update_database_mock.return_value = True
+
+                                    result, result_values = hub_service_instance.get_devices_informations(
+                                        'product_key',
+                                        [
+                                            sensors[0].device_key,
+                                            executive_devices[0].device_key
+                                        ]
+                                    )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values
@@ -564,15 +577,21 @@ def test_get_devices_informations_should_return_empty_lists_when_valid_product_k
             get_executive_devices_by_product_key_and_device_keys_mock.return_value = None
 
             with patch.object(
-                    BaseRepository,
-                    'update_database'
-            ) as update_database_mock:
-                update_database_mock.return_value = True
+                    DeletedDeviceRepository,
+                    'get_deleted_devices_by_product_key_and_device_keys'
+            ) as get_deleted_devices_by_product_key_and_device_keys_mock:
+                get_deleted_devices_by_product_key_and_device_keys_mock.return_value = None
 
-                result, result_values = hub_service_instance.get_devices_informations(
-                    'product_key',
-                    ['test']
-                )
+                with patch.object(
+                        BaseRepository,
+                        'update_database'
+                ) as update_database_mock:
+                    update_database_mock.return_value = True
+
+                    result, result_values = hub_service_instance.get_devices_informations(
+                        'product_key',
+                        ['test']
+                    )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert result_values

@@ -6,6 +6,7 @@ import pytest
 from app.main.model import Sensor
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.base_repository import BaseRepository
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.sensor_reading_repository import SensorReadingRepository
 from app.main.repository.sensor_repository import SensorRepository
@@ -1688,8 +1689,9 @@ def test_modify_sensor_should_modify_sensor_when_valid_arguments_are_passed_and_
     assert result_values == expected_values
 
 
-def test_delete_sensor_should_delete_sensor_when_right_parameters_are_passed(create_sensor,
-                                                                             create_device_group):
+def test_delete_sensor_should_delete_sensor_when_right_parameters_are_passed(
+        create_sensor,
+        create_device_group):
     sensor_service_instance = SensorService.get_instance()
     sensor = create_sensor()
     admin_id = 1
@@ -1722,18 +1724,28 @@ def test_delete_sensor_should_delete_sensor_when_right_parameters_are_passed(cre
 
                 with patch.object(
                         SensorRepository,
-                        'delete'
-                ) as delete_mock:
-                    delete_mock.return_value = True
+                        'delete_but_do_not_commit'
+                ) as delete_but_do_not_commit:
+                    with patch.object(
+                            DeletedDeviceRepository,
+                            'save'
+                    ) as save_mock:
+                        save_mock.return_value = True
 
-                    result = sensor_service_instance.delete_sensor(sensor.device_key, 'product_key', admin_id, is_admin)
+                        result = sensor_service_instance.delete_sensor(
+                            sensor.device_key,
+                            'product_key',
+                            admin_id,
+                            is_admin
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
-    delete_mock.assert_called_once_with(sensor)
+    delete_but_do_not_commit.assert_called_once_with(sensor)
 
 
-def test_delete_sensor_should_return_error_message_when_unsuccessful_db_deletion(create_sensor,
-                                                                                 create_device_group):
+def test_delete_sensor_should_return_error_message_when_unsuccessful_db_deletion(
+        create_sensor,
+        create_device_group):
     sensor_service_instance = SensorService.get_instance()
     sensor = create_sensor()
     admin_id = 1
@@ -1766,14 +1778,23 @@ def test_delete_sensor_should_return_error_message_when_unsuccessful_db_deletion
 
                 with patch.object(
                         SensorRepository,
-                        'delete'
-                ) as delete_mock:
-                    delete_mock.return_value = False
+                        'delete_but_do_not_commit'
+                ) as delete_but_do_not_commit:
+                    with patch.object(
+                            DeletedDeviceRepository,
+                            'save'
+                    ) as save_mock:
+                        save_mock.return_value = False
 
-                    result = sensor_service_instance.delete_sensor(sensor.device_key, 'product_key', admin_id, is_admin)
+                        result = sensor_service_instance.delete_sensor(
+                            sensor.device_key,
+                            'product_key',
+                            admin_id,
+                            is_admin
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
-    delete_mock.assert_called_once_with(sensor)
+    delete_but_do_not_commit.assert_called_once_with(sensor)
 
 
 def test_delete_sensor_should_return_error_message_when_sensor_not_found(create_device_group):

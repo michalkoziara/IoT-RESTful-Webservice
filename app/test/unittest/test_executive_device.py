@@ -6,6 +6,7 @@ import pytest
 from app.main.model import ExecutiveDevice
 from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.base_repository import BaseRepository
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -1503,16 +1504,23 @@ def test_delete_executive_device_should_delete_sensor_when_right_parameters_are_
 
                 with patch.object(
                         ExecutiveDeviceRepository,
-                        'delete'
-                ) as delete_mock:
-                    delete_mock.return_value = True
+                        'delete_but_do_not_commit'
+                ) as delete_but_do_not_commit_mock:
+                    with patch.object(
+                            DeletedDeviceRepository,
+                            'save'
+                    ) as save_mock:
+                        save_mock.return_value = True
 
-                    result = executive_device_service_instance.delete_executive_device(executive_device.device_key,
-                                                                                       'product_key', admin_id,
-                                                                                       is_admin)
+                        result = executive_device_service_instance.delete_executive_device(
+                            executive_device.device_key,
+                            'product_key',
+                            admin_id,
+                            is_admin
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
-    delete_mock.assert_called_once_with(executive_device)
+    delete_but_do_not_commit_mock.assert_called_once_with(executive_device)
 
 
 def test_delete_executive_device_should_return_error_message_when_unsuccessful_db_deletion(
@@ -1551,16 +1559,23 @@ def test_delete_executive_device_should_return_error_message_when_unsuccessful_d
 
                 with patch.object(
                         ExecutiveDeviceRepository,
-                        'delete'
-                ) as delete_mock:
-                    delete_mock.return_value = False
+                        'delete_but_do_not_commit'
+                ) as delete_but_do_not_commit_mock:
+                    with patch.object(
+                            DeletedDeviceRepository,
+                            'save'
+                    ) as save_mock:
+                        save_mock.return_value = False
 
-                    result = executive_device_service_instance.delete_executive_device(executive_device.device_key,
-                                                                                       'product_key', admin_id,
-                                                                                       is_admin)
+                        result = executive_device_service_instance.delete_executive_device(
+                            executive_device.device_key,
+                            'product_key',
+                            admin_id,
+                            is_admin
+                        )
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
-    delete_mock.assert_called_once_with(executive_device)
+    delete_but_do_not_commit_mock.assert_called_once_with(executive_device)
 
 
 def test_delete_executive_should_return_error_message_when_admin_in_not_assigned_to_device_group(

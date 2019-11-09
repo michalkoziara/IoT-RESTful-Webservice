@@ -3,12 +3,14 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from app.main.model import ExecutiveType
-from app.main.model import Formula
-from app.main.model import User
-from app.main.model import UserGroup
+from app.main.model.deleted_device import DeletedDevice
 from app.main.model.executive_device import ExecutiveDevice
+from app.main.model.executive_type import ExecutiveType
+from app.main.model.formula import Formula
+from app.main.model.user import User
+from app.main.model.user_group import UserGroup
 from app.main.repository.admin_repository import AdminRepository
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -24,6 +26,7 @@ from app.main.util.utils import is_bool
 class ExecutiveDeviceService:
     _instance = None
 
+    _deleted_device_repository_instance = None
     _device_group_repository_instance = None
     _executive_device_repository_instance = None
     _executive_type_repository_instance = None
@@ -39,6 +42,7 @@ class ExecutiveDeviceService:
         return cls._instance
 
     def __init__(self):
+        self._deleted_device_repository_instance = DeletedDeviceRepository.get_instance()
         self._unconfigured_device_repository = UnconfiguredDeviceRepository.get_instance()
         self._state_enumerator_repository_instance = StateEnumeratorRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
@@ -140,7 +144,14 @@ class ExecutiveDeviceService:
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_EXECUTIVE_DEVICE_NOT_FOUND
 
-        if self._executive_device_repository_instance.delete(executive_device):
+        deleted_device = DeletedDevice(
+            device_key=executive_device.device_key,
+            device_group_id=executive_device.device_group_id
+        )
+
+        self._executive_device_repository_instance.delete_but_do_not_commit(executive_device)
+
+        if self._deleted_device_repository_instance.save(deleted_device):
             return Constants.RESPONSE_MESSAGE_OK
         else:
             return Constants.RESPONSE_MESSAGE_ERROR

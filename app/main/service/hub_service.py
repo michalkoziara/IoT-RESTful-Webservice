@@ -9,6 +9,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
+from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
 from app.main.repository.executive_type_repository import ExecutiveTypeRepository
@@ -29,6 +30,7 @@ class HubService:
 
     _device_group_repository_instance = None
     _formula_repository_instance = None
+    _deleted_device_repository_instance = None
     _executive_device_repository_instance = None
     _sensor_repository_instance = None
     _sensor_type_repository_instance = None
@@ -53,6 +55,7 @@ class HubService:
         self._sensor_type_repository_instance = SensorTypeRepository.get_instance()
 
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
+        self._deleted_device_repository_instance = DeletedDeviceRepository.get_instance()
         self._unconfigured_device_repository_instance = UnconfiguredDeviceRepository.get_instance()
         self._formula_repository_instance = FormulaRepository.get_instance()
 
@@ -354,12 +357,24 @@ class HubService:
 
                 executive_device.is_updated = False
 
+        deleted_devices = self._deleted_device_repository_instance.get_deleted_devices_by_product_key_and_device_keys(
+                product_key,
+                devices
+            )
+
+        deleted_device_keys = []
+        if deleted_devices:
+            for deleted_device in deleted_devices:
+                deleted_device_keys.append(deleted_device.device_key)
+                self._deleted_device_repository_instance.delete_but_do_not_commit(deleted_device)
+
         if not self._executive_type_repository.update_database():
             return Constants.RESPONSE_MESSAGE_ERROR, None
 
         result_values = {
             'sensors': sensor_infos,
-            'devices': device_infos
+            'devices': device_infos,
+            'deletedDevices': deleted_device_keys
         }
 
         return Constants.RESPONSE_MESSAGE_OK, result_values
