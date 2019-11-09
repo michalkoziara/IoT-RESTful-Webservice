@@ -20,7 +20,7 @@ def create_executive_type(product_key: str):
 
     response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
-        data_keys=['typeName', 'stateType', 'stateRangeMin', 'stateRangeMax', 'enumerator']
+        data_keys=['typeName', 'stateType', 'stateRangeMin', 'stateRangeMax', 'enumerator', 'defaultState']
     )
 
     if error_message is None:
@@ -30,6 +30,7 @@ def create_executive_type(product_key: str):
             state_range_min = request_dict['stateRangeMin']
             state_range_max = request_dict['stateRangeMax']
             enumerator = request_dict['enumerator']
+            default_state = request_dict['defaultState']
 
             if user_info['is_admin']:
                 result = _executive_type_service.create_executive_type_in_device_group(
@@ -39,6 +40,7 @@ def create_executive_type(product_key: str):
                     state_range_min,
                     state_range_max,
                     enumerator,
+                    default_state,
                     user_info['user_id'])
             else:
                 result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES

@@ -49,6 +49,7 @@ class ExecutiveTypeService:
             range_min: int,
             range_max: int,
             enumerator: List,
+            default_state: float, #TODO Add this change to API map
             admin_id: str) -> str:
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -113,6 +114,11 @@ class ExecutiveTypeService:
             executive_type.state_range_min = range_min
             executive_type.state_range_max = range_max
 
+        if not self.is_default_state_in_range(default_state, state_type, range_min, range_max, enumerator):
+            return Constants.DEFAULT_STATE_NOT_IN_RANGE
+
+        executive_type.default_state = default_state
+
         if not self._executive_type_repository.save(executive_type):
             return Constants.RESPONSE_MESSAGE_ERROR
 
@@ -167,6 +173,7 @@ class ExecutiveTypeService:
         senor_type_info['stateType'] = executive_type.state_type
         senor_type_info['stateRangeMin'] = executive_type.state_range_min
         senor_type_info['stateRangeMax'] = executive_type.state_range_max
+        senor_type_info['defaultState'] = executive_type.default_state #TODO Add this change to API map
 
         if senor_type_info['stateType'] == 'Enum':
 
@@ -216,3 +223,12 @@ class ExecutiveTypeService:
             names.append(executive_type.name)
 
         return Constants.RESPONSE_MESSAGE_OK, names
+
+    def is_default_state_in_range(self, state, state_type, range_min, range_max, enumerator):
+        if state_type == 'Decimal':
+            return isinstance(state, (int, float)) and range_min <= state <= range_max
+        elif state_type == 'Boolean':
+            return isinstance(state, (int, float)) and int(state) in [0, 1]
+        else:
+            possible_numbers = [enum['number'] for enum in enumerator]
+            return isinstance(state, (int, float)) and int(state) in possible_numbers
