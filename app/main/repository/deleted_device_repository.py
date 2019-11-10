@@ -18,17 +18,9 @@ class DeletedDeviceRepository(BaseRepository):
 
         return cls._instance
 
-    def get_deleted_devices_by_product_key_and_device_keys(
+    def get_deleted_devices_by_device_group_id(
             self,
-            product_key: str,
-            device_keys: List) -> List[DeletedDevice]:
+            device_group_id: str) -> List[DeletedDevice]:
         return DeletedDevice.query.filter(
-            and_(
-                DeletedDevice.device_key.in_(device_keys),
-                DeletedDevice.device_group_id.in_(
-                    DeviceGroup.query.with_entities(DeviceGroup.id).filter(
-                        DeviceGroup.product_key == product_key
-                    )
-                )
-            )
+            DeletedDevice.device_group_id == device_group_id
         ).all()

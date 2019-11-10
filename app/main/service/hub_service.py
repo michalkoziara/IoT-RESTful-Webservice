@@ -86,16 +86,33 @@ class HubService:
         for sensor in sensors:
             device_keys.append(sensor.device_key)
 
+        deleted_devices = self._deleted_device_repository_instance.get_deleted_devices_by_device_group_id(
+            device_group.id
+        )
+
+        deleted_device_keys = []
+        if deleted_devices:
+            for deleted_device in deleted_devices:
+                deleted_device_keys.append(deleted_device.device_key)
+                self._deleted_device_repository_instance.delete_but_do_not_commit(deleted_device)
+
+        if deleted_devices and not self._deleted_device_repository_instance.update_database():
+            return Constants.RESPONSE_MESSAGE_ERROR, None
+
+        devices = {}
         if device_keys:
-            devices = {
-                'isUpdated': True,
-                'changedDevices': device_keys
-            }
+            devices['isUpdated'] = True
+            devices['changedDevices'] = device_keys
         else:
-            devices = {
-                'isUpdated': False,
-                'changedDevices': []
-            }
+            devices['isUpdated'] = False
+            devices['changedDevices'] = []
+
+        if deleted_devices:
+            devices['isDeleted'] = True
+            devices['deletedDevices'] = deleted_device_keys
+        else:
+            devices['isDeleted'] = False
+            devices['deletedDevices'] = []
 
         return Constants.RESPONSE_MESSAGE_OK, devices
 
@@ -357,24 +374,12 @@ class HubService:
 
                 executive_device.is_updated = False
 
-        deleted_devices = self._deleted_device_repository_instance.get_deleted_devices_by_product_key_and_device_keys(
-                product_key,
-                devices
-            )
-
-        deleted_device_keys = []
-        if deleted_devices:
-            for deleted_device in deleted_devices:
-                deleted_device_keys.append(deleted_device.device_key)
-                self._deleted_device_repository_instance.delete_but_do_not_commit(deleted_device)
-
-        if not self._executive_type_repository.update_database():
+        if not self._executive_device_repository_instance.update_database():
             return Constants.RESPONSE_MESSAGE_ERROR, None
 
         result_values = {
             'sensors': sensor_infos,
-            'devices': device_infos,
-            'deletedDevices': deleted_device_keys
+            'devices': device_infos
         }
 
         return Constants.RESPONSE_MESSAGE_OK, result_values
