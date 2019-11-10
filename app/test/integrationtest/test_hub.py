@@ -13,7 +13,8 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
         get_executive_device_default_values,
         insert_executive_device,
         get_sensor_default_values,
-        insert_sensor):
+        insert_sensor,
+        insert_deleted_device):
     content_type = 'application/json'
 
     product_key = 'product_key'
@@ -43,6 +44,8 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
 
     insert_executive_device(executive_device_values)
 
+    deleted_device = insert_deleted_device()
+
     response = client.get('/api/hubs/' + product_key + '/states', content_type=content_type)
 
     assert response is not None
@@ -51,10 +54,14 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
 
     response_data = json.loads(response.data.decode())
     assert response_data['isUpdated']
+    assert response_data['isDeleted']
     assert response_data['changedDevices']
+    assert response_data['deletedDevices']
     assert len(response_data['changedDevices']) == 2
+    assert len(response_data['deletedDevices']) == 1
     assert response_data['changedDevices'][0] == executive_device_key
     assert response_data['changedDevices'][1] == sensor_key
+    assert response_data['deletedDevices'][0] == deleted_device.device_key
 
 
 def test_get_states_should_return_bad_request_message_when_invalid_request(
@@ -356,8 +363,7 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
         insert_sensor,
         insert_state_enumerator,
         insert_sensor_reading_enumerator,
-        insert_formula,
-        insert_deleted_device):
+        insert_formula):
     content_type = 'application/json'
 
     device_group = insert_device_group()
@@ -390,13 +396,11 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     insert_state_enumerator()
     insert_formula()
 
-    deleted_device = insert_deleted_device()
-
     response = client.post(
         'api/hubs/' + device_group.product_key + '/devices/config',
         data=json.dumps(
             {
-                "devices": [executive_device.device_key, sensor.device_key, deleted_device.device_key]
+                "devices": [executive_device.device_key, sensor.device_key]
             }
         ),
         content_type=content_type
@@ -409,17 +413,14 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
     assert response_data
     assert response_data['sensors']
     assert response_data['devices']
-    assert response_data['deletedDevices']
     assert len(response_data['sensors']) == 1
     assert len(response_data['devices']) == 1
-    assert len(response_data['deletedDevices']) == 1
     assert response_data['sensors'][0]['deviceKey'] == sensor.device_key
     assert response_data['devices'][0]['deviceKey'] == executive_device.device_key
     assert response_data['sensors'][0]['readingType'] == sensor_type_values['reading_type']
     assert response_data['devices'][0]['stateType'] == executive_type_values['state_type']
     assert response_data['devices'][0]['isFormulaUsed'] == executive_device.is_formula_used
     assert response_data['devices'][0]['defaultState'] == executive_type.default_state
-    assert response_data['deletedDevices'][0] == deleted_device.device_key
     assert not executive_device.is_updated
     assert not sensor.is_updated
 
