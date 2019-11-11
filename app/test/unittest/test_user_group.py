@@ -274,6 +274,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     device_group = create_device_group()
     first_device = create_executive_device()
     first_device.name = "device 1"
+    first_device.device_key = "device key 1"
     first_device.state = "state 1"
     first_device.is_active = False
 
@@ -283,6 +284,8 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
 
     second_device = create_executive_device()
     second_device.name = "device 2"
+    second_device.device_key = "device key 2"
+
     second_device.state = "state 2"
     second_device.is_active = True
     second_device.formula_id = formula.id
@@ -294,6 +297,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     expected_output_values = [
         {
             "name": first_device.name,
+            "deviceKey": first_device.device_key,
             "state": 1,
             "isActive": first_device.is_active,
             "formulaName": formula.name,
@@ -301,6 +305,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
         },
         {
             "name": second_device.name,
+            "deviceKey": second_device.device_key,
             "state": 1,
             "isActive": second_device.is_active,
             "formulaName": formula.name,
@@ -354,6 +359,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     device_group = create_device_group()
     first_device = create_executive_device()
     first_device.name = "device 1"
+    first_device.device_key = "device key 1"
     first_device.state = "state 1"
     first_device.is_active = False
 
@@ -361,6 +367,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
 
     second_device = create_executive_device()
     second_device.name = "device 2"
+    second_device.device_key = "device key 2"
     second_device.state = "state 2"
     second_device.is_active = True
     second_device.formula_id = None
@@ -372,6 +379,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
     expected_output_values = [
         {
             "name": first_device.name,
+            "deviceKey": first_device.device_key,
             "state": 1,
             "isActive": first_device.is_active,
             "formulaName": None,
@@ -379,6 +387,7 @@ def test_get_list_of_executive_devices_should_return_list_of_devices_infos_when_
         },
         {
             "name": second_device.name,
+            "deviceKey": second_device.device_key,
             "state": 1,
             "isActive": second_device.is_active,
             "formulaName": None,
@@ -574,6 +583,9 @@ def test_get_list_of_sensors_should_return_list_of_devices_infos_when_valid_requ
     first_sensor.name = 'sensor 1'
     second_sensor.name = 'sensor 2'
 
+    first_sensor.device_key = 'sensor device_key  1'
+    second_sensor.device_key = 'sensor device_key  2'
+
     first_sensor.is_active = True
     second_sensor.is_active = False
 
@@ -584,12 +596,14 @@ def test_get_list_of_sensors_should_return_list_of_devices_infos_when_valid_requ
     expected_output_values = [
         {
             "name": first_sensor.name,
+            "deviceKey": first_sensor.device_key,
             "isActive": first_sensor.is_active,
             'sensorReadingValue': 1
 
         },
         {
             "name": second_sensor.name,
+            "deviceKey": second_sensor.device_key,
             "isActive": second_sensor.is_active,
             'sensorReadingValue': 1
 

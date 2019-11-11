@@ -186,6 +186,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     assert isinstance(response_data, list)
     device_info = response_data[0]
     assert device_info['name'] == executive_device.name
+    assert device_info['deviceKey'] == executive_device.device_key
     assert device_info['isActive'] == executive_device.is_active
     assert device_info['state'] == state_value
     assert device_info['isFormulaUsed'] == executive_device.is_formula_used
@@ -245,6 +246,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     assert isinstance(response_data, list)
     device_info = response_data[0]
     assert device_info['name'] == executive_device.name
+    assert device_info['deviceKey'] == executive_device.device_key
     assert device_info['isActive'] == executive_device.is_active
     assert device_info['state'] == state_enumerator.text
     assert device_info['isFormulaUsed'] == executive_device.is_formula_used
@@ -327,6 +329,7 @@ def test_get_list_of_sensors_should_return_sensors_info_when_valid_request_and_s
     assert isinstance(response_data, list)
     device_info = response_data[0]
     assert device_info['name'] == sensor.name
+    assert device_info['deviceKey'] == sensor.device_key
     assert device_info['isActive'] == sensor.is_active
     assert device_info['sensorReadingValue'] == reading_value
 
