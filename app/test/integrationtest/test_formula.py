@@ -46,13 +46,13 @@ def test_create_formula_should_add_new_formula_to_use_group_when_valid_request(
                         "isNegated": True,
                         "value": 15,
                         "functor": "=>",
-                        "sensorName": sensor.name
+                        "deviceKey": sensor.device_key
                     },
                     "complexLeft": {
                         "isNegated": False,
                         "value": 10,
                         "functor": "=>",
-                        "sensorName": sensor.name
+                        "deviceKey": sensor.device_key
                     }
                 }
             }
@@ -161,13 +161,13 @@ def test_create_formula_should_return_invalid_formula_message_when_invalid_formu
                         "isNegated": False,
                         "value": 15,
                         "functor": "=>",
-                        "sensorName": sensor.name
+                        "deviceKey": sensor.device_key
                     },
                     "complexLeft": {
                         "isNegated": False,
                         "value": 10,
                         "functor": "<=",
-                        "sensorName": sensor.name
+                        "deviceKey": sensor.device_key
                     }
                 }
             }

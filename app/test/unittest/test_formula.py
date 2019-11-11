@@ -48,13 +48,13 @@ def test_add_formula_to_user_group_should_create_formula_when_valid_formula(
                 "isNegated": False,
                 "value": 15,
                 "functor": "==",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             },
             "complexLeft": {
                 "isNegated": False,
                 "value": 10,
                 "functor": "==",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             }
         }
     }
@@ -79,9 +79,9 @@ def test_add_formula_to_user_group_should_create_formula_when_valid_formula(
 
                 with patch.object(
                         SensorRepository,
-                        'get_sensors_by_device_group_id_and_user_group_id_and_names'
-                ) as get_sensors_by_device_group_id_and_user_group_id_and_names_mock:
-                    get_sensors_by_device_group_id_and_user_group_id_and_names_mock.return_value = [sensor]
+                        'get_sensors_by_device_group_id_and_user_group_id_and_device_keys'
+                ) as get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock:
+                    get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock.return_value = [sensor]
 
                     with patch.object(
                             SensorTypeRepository,
@@ -143,13 +143,13 @@ def test_add_formula_to_user_group_should_return_invalid_formula_message_when_in
                 "isNegated": False,
                 "value": 15,
                 "functor": "=>",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             },
             "complexLeft": {
                 "isNegated": False,
                 "value": 10,
                 "functor": "<=",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             }
         }
     }
@@ -174,9 +174,9 @@ def test_add_formula_to_user_group_should_return_invalid_formula_message_when_in
 
                 with patch.object(
                         SensorRepository,
-                        'get_sensors_by_device_group_id_and_user_group_id_and_names'
-                ) as get_sensors_by_device_group_id_and_user_group_id_and_names_mock:
-                    get_sensors_by_device_group_id_and_user_group_id_and_names_mock.return_value = [sensor]
+                        'get_sensors_by_device_group_id_and_user_group_id_and_device_keys'
+                ) as get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock:
+                    get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock.return_value = [sensor]
 
                     with patch.object(
                             SensorTypeRepository,
@@ -235,13 +235,13 @@ def test_add_formula_to_user_group_should_return_invalid_formula_message_when_in
                     "isNegated": False,
                     "value": 9,
                     "functor": "<=",
-                    "sensorName": sensor.name
+                    "deviceKey": sensor.device_key
                 },
                 "complexLeft": {
                     "isNegated": True,
                     "value": 11,
                     "functor": "<=",
-                    "sensorName": sensor.name
+                    "deviceKey": sensor.device_key
                 }
             },
             "complexLeft": {
@@ -273,9 +273,9 @@ def test_add_formula_to_user_group_should_return_invalid_formula_message_when_in
 
                 with patch.object(
                         SensorRepository,
-                        'get_sensors_by_device_group_id_and_user_group_id_and_names'
-                ) as get_sensors_by_device_group_id_and_user_group_id_and_names_mock:
-                    get_sensors_by_device_group_id_and_user_group_id_and_names_mock.return_value = [sensor]
+                        'get_sensors_by_device_group_id_and_user_group_id_and_device_keys'
+                ) as get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock:
+                    get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock.return_value = [sensor]
 
                     with patch.object(
                             SensorTypeRepository,
@@ -331,13 +331,13 @@ def test_add_formula_to_user_group_should_create_formula_when_valid_formula_with
                 "isNegated": True,
                 "value": True,
                 "functor": "==",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             },
             "complexLeft": {
                 "isNegated": False,
                 "value": False,
                 "functor": "==",
-                "sensorName": sensor.name
+                "deviceKey": sensor.device_key
             }
         }
     }
@@ -362,9 +362,9 @@ def test_add_formula_to_user_group_should_create_formula_when_valid_formula_with
 
                 with patch.object(
                         SensorRepository,
-                        'get_sensors_by_device_group_id_and_user_group_id_and_names'
-                ) as get_sensors_by_device_group_id_and_user_group_id_and_names_mock:
-                    get_sensors_by_device_group_id_and_user_group_id_and_names_mock.return_value = [sensor]
+                        'get_sensors_by_device_group_id_and_user_group_id_and_device_keys'
+                ) as get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock:
+                    get_sensors_by_device_group_id_and_user_group_id_and_device_keys_mock.return_value = [sensor]
 
                     with patch.object(
                             SensorTypeRepository,
