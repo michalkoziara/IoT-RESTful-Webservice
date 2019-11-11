@@ -216,30 +216,30 @@ class FormulaService:
             return Constants.RESPONSE_MESSAGE_DUPLICATE_FORMULA_NAME
 
         sensor_data = self._get_sensor_data_from_formula_data(formula_data['rule'])
-        sensor_names = sensor_data.keys()
+        sensor_keys = sensor_data.keys()
 
-        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_and_user_group_id_and_names(
+        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_and_user_group_id_and_device_keys(
             user_group.id,
             device_group.id,
-            sensor_names
+            sensor_keys
         )
 
-        if not sensor_names or not sensors or len(set(sensor_names)) != len(sensors):
+        if not sensor_keys or not sensors or len(set(sensor_keys)) != len(sensors):
             return Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
 
         sensor_type_ids = [sensor.sensor_type_id for sensor in sensors]
         sensor_types = self._sensor_type_repository_instance.get_sensor_types_by_ids(sensor_type_ids)
 
-        sensor_type_by_sensor_name = {}
+        sensor_type_by_sensor_key = {}
         for sensor in sensors:
             for sensor_type in sensor_types:
                 if sensor.sensor_type_id == sensor_type.id:
-                    sensor_type_by_sensor_name[sensor.name] = sensor_type
+                    sensor_type_by_sensor_key[sensor.device_key] = sensor_type
 
         for sensor in sensors:
-            value = sensor_data.get(sensor.name)['value']
-            functor = sensor_data.get(sensor.name)['functor']
-            sensor_type = sensor_type_by_sensor_name[sensor.name]
+            value = sensor_data.get(sensor.device_key)['value']
+            functor = sensor_data.get(sensor.device_key)['functor']
+            sensor_type = sensor_type_by_sensor_key[sensor.device_key]
 
             if ((sensor_type.reading_type == 'Decimal'
                  and not self._sensor_service_instance.reading_in_range(
@@ -257,13 +257,13 @@ class FormulaService:
 
         rule, lookup_table = self._create_expresion(formula_data['rule'])
         for value in lookup_table.values():
-            reading_type = sensor_type_by_sensor_name[value['sensorName']].reading_type
+            reading_type = sensor_type_by_sensor_key[value['deviceKey']].reading_type
             value['type'] = reading_type
 
             if reading_type == 'Enum':
                 possible_readings = \
                     self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
-                        sensor_type_by_sensor_name[value['sensorName']].id
+                        sensor_type_by_sensor_key[value['deviceKey']].id
                     )
                 value['number_of_reading_values'] = len(possible_readings)
 
@@ -324,10 +324,10 @@ class FormulaService:
                 and_inner_expression_text = and_inner_expression_text[1:]
 
             if and_inner_expression_text in values:
-                if values[and_inner_expression_text]['sensorName'] not in functor_ranges:
-                    functor_ranges[values[and_inner_expression_text]['sensorName']] = {}
+                if values[and_inner_expression_text]['deviceKey'] not in functor_ranges:
+                    functor_ranges[values[and_inner_expression_text]['deviceKey']] = {}
 
-                functor_range = functor_ranges[values[and_inner_expression_text]['sensorName']]
+                functor_range = functor_ranges[values[and_inner_expression_text]['deviceKey']]
                 value = values[and_inner_expression_text]['value']
 
                 if values[and_inner_expression_text]['functor'] == '==' and is_inner_expression_negative:
@@ -407,9 +407,9 @@ class FormulaService:
         return sensor_data
 
     def _get_sensor_data_from_formula_data_recursive(self, formula_data: dict, sensor_data: dict):
-        if is_dict_with_keys(formula_data, ['sensorName', 'value', 'functor']):
-            if formula_data['sensorName']:
-                sensor_data[formula_data['sensorName']] = {
+        if is_dict_with_keys(formula_data, ['deviceKey', 'value', 'functor']):
+            if formula_data['deviceKey']:
+                sensor_data[formula_data['deviceKey']] = {
                     'value': formula_data['value'],
                     'functor': formula_data['functor']
                 }
@@ -424,14 +424,14 @@ class FormulaService:
         return rule, lookup_table
 
     def _create_expresion_recursive(self, formula_data: dict, lookup_table: Dict[str, Any]) -> str:
-        if is_dict_with_keys(formula_data, ['isNegated', 'value', 'functor', 'sensorName']):
+        if is_dict_with_keys(formula_data, ['isNegated', 'value', 'functor', 'deviceKey']):
             if (formula_data['value'] is not None
                     and formula_data['isNegated'] is not None
                     and formula_data['functor']
-                    and formula_data['sensorName']):
+                    and formula_data['deviceKey']):
                 lookup_key = get_random_letters(16)
                 lookup_table[lookup_key] = {
-                    'sensorName': formula_data['sensorName'],
+                    'deviceKey': formula_data['deviceKey'],
                     'functor': formula_data['functor'],
                     'value': formula_data['value']
                 }

@@ -145,7 +145,7 @@ def _check_formula_request_data(request_dict):
 def _check_complex_formula_request_data(complex_request_dict):
     if is_dict_with_keys(
             complex_request_dict,
-            ['isNegated', 'value', 'functor', 'sensorName']):
+            ['isNegated', 'value', 'functor', 'deviceKey']):
         return True
 
     if not is_dict_with_keys(complex_request_dict, ['complexLeft', 'operator', 'complexRight']):
