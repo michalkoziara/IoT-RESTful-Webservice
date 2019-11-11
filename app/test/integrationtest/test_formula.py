@@ -35,7 +35,7 @@ def test_create_formula_should_add_new_formula_to_use_group_when_valid_request(
     formula_name = 'test'
 
     response = client.post(
-        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formula',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
                 "formulaName": formula_name,
@@ -86,7 +86,7 @@ def test_create_formula_should_return_error_message_when_invalid_request(
     user = insert_user()
 
     response = client.post(
-        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formula',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
                 "formulaName": 'test',
@@ -150,7 +150,7 @@ def test_create_formula_should_return_invalid_formula_message_when_invalid_formu
     formula_name = 'test'
 
     response = client.post(
-        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formula',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
                 "formulaName": formula_name,
