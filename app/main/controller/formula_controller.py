@@ -96,7 +96,7 @@ def get_formulas(product_key: str, user_group_name: str):
     )
 
 
-@api.route('/hubs/<product_key>/user-groups/<user_group_name>/formula', methods=['POST'])
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>/formulas', methods=['POST'])
 def create_formula(product_key: str, user_group_name: str):
     auth_header = request.headers.get('Authorization')
 
