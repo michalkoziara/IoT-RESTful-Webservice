@@ -45,7 +45,7 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
     expected_output_values = ['Master', 'second', 'third']
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups',
+        '/api/hubs/' + device_group.product_key + '/user-groups',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -96,7 +96,7 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_
     expected_output_values = ['Master', 'second', 'third']
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups',
+        '/api/hubs/' + device_group.product_key + '/user-groups',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
@@ -117,7 +117,7 @@ def test_get_list_of_user_groups_should_return_error_message_when_wrong_token(
     content_type = 'application/json'
 
     response = client.get(
-        '/api/hubs/' + 'device_group_product_key/user_groups',
+        '/api/hubs/' + 'device_group_product_key/user-groups',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer test'
@@ -169,7 +169,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     executive_device = insert_executive_device(executive_device_values)
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/executive_devices',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/executive-devices',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -229,7 +229,7 @@ def test_get_list_of_executive_devices_should_return_device_info_when_valid_requ
     executive_device = insert_executive_device(executive_device_values)
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/executive_devices',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/executive-devices',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -258,7 +258,7 @@ def test_get_list_of_executive_devices_should_return_error_message_when_wrong_to
     content_type = 'application/json'
 
     response = client.get(
-        '/api/hubs/' + 'device_group_product_key' + '/user_groups/' + 'user_group_name' + '/executive_devices',
+        '/api/hubs/' + 'device_group_product_key' + '/user-groups/' + 'user_group_name' + '/executive-devices',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer test'
@@ -312,7 +312,7 @@ def test_get_list_of_sensors_should_return_sensors_info_when_valid_request_and_s
     sensor = insert_sensor()
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/sensors',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/sensors',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -371,7 +371,7 @@ def test_get_list_of_sensors_should_return_sensors_info_when_valid_request_and_s
     sensor = insert_sensor()
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/sensors',
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/sensors',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -397,7 +397,7 @@ def test_get_list_of_sensors_should_return_error_message_when_wrong_token(
     content_type = 'application/json'
 
     response = client.get(
-        '/api/hubs/' + 'device_group_product_key' + '/user_groups/' + 'user_group_name' + '/sensors',
+        '/api/hubs/' + 'device_group_product_key' + '/user-groups/' + 'user_group_name' + '/sensors',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer test'
@@ -429,7 +429,7 @@ def test_delete_user_group_should_delete_user_group_when_valid_request(
     user_group_name = user_group.name
 
     response = client.delete(
-        '/api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name,
+        '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name,
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)

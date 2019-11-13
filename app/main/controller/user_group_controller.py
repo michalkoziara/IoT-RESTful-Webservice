@@ -49,7 +49,7 @@ def create_user_group(product_key: str):
     )
 
 
-@api.route('/hubs/<product_key>/user_groups', methods=['GET'])
+@api.route('/hubs/<product_key>/user-groups', methods=['GET'])
 def get_list_of_user_groups(product_key: str):
     auth_header = request.headers.get('Authorization')
 
@@ -73,7 +73,7 @@ def get_list_of_user_groups(product_key: str):
     )
 
 
-@api.route('/hubs/<product_key>/user_groups/<user_group_name>', methods=['DELETE'])
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>', methods=['DELETE'])
 def delete_user_group(product_key: str, user_group_name: str):
     auth_header = request.headers.get('Authorization')
 
@@ -96,7 +96,7 @@ def delete_user_group(product_key: str, user_group_name: str):
     )
 
 
-@api.route('/hubs/<product_key>/user_groups/<user_group_name>/executive_devices', methods=['GET'])
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>/executive-devices', methods=['GET'])
 def get_list_of_executive_devices(product_key: str, user_group_name: str):
     auth_header = request.headers.get('Authorization')
 
@@ -120,7 +120,7 @@ def get_list_of_executive_devices(product_key: str, user_group_name: str):
     )
 
 
-@api.route('/hubs/<product_key>/user_groups/<user_group_name>/sensors', methods=['GET'])
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>/sensors', methods=['GET'])
 def get_list_of_sensors(product_key: str, user_group_name: str):
     auth_header = request.headers.get('Authorization')
 

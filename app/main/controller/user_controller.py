@@ -96,7 +96,7 @@ def join_device_group():
     )
 
 
-@api.route('/hubs/<product_key>/user_groups/<user_group_name>/users', methods=['POST'])
+@api.route('/hubs/<product_key>/user-groups/<user_group_name>/users', methods=['POST'])
 def join_user_group(product_key, user_group_name):
     auth_header = request.headers.get('Authorization')
     error_message, user_info = Auth.get_user_info_from_auth_header(auth_header)
