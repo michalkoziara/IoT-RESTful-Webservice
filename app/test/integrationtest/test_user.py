@@ -321,7 +321,7 @@ def test_join_user_group_should_add_user_to_user_group_when_valid_request(
     user_group = insert_user_group(user_group_values)
 
     response = client.post(
-        'api/hubs/' + device_group.product_key + '/user_groups/' + user_group.name + '/users',
+        'api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/users',
         data=json.dumps(
             {
                 "password": user_group.password,
