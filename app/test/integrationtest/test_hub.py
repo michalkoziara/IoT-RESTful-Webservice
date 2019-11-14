@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import json
 
 import pytest
@@ -21,9 +23,16 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
     sensor_key = 'sensor device key'
     executive_device_key = 'executive device key'
 
+    password = "password"
+    device_group_password = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+
+    authorization_bytes = (product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
+
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = product_key
     device_group_values['user_id'] = None
+    device_group_values['password'] = device_group_password
 
     test_device_group = insert_device_group(device_group_values)
 
@@ -47,7 +56,7 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
     deleted_device = insert_deleted_device()
 
     response = client.get('/api/hubs/' + product_key + '/states', content_type=content_type,
-                          headers={"password": test_device_group.password})
+                          headers={"Authorization": authorization})
 
     assert response is not None
     assert response.status_code == 200
@@ -81,7 +90,7 @@ def test_get_states_should_return_bad_request_message_when_invalid_request(
 
     response = client.get('/api/hubs/' + 'not' + product_key + '/states',
                           content_type=content_type,
-                          headers={"password": test_device_group.password}
+                          headers={"Authorization": "Basic not" + test_device_group.password}
                           )
 
     assert response is not None
@@ -105,9 +114,15 @@ def test_create_device_should_add_unconfigured_device_to_device_group_when_valid
     product_key = 'product_key'
     device_key = 'test device key'
 
+    password = "password"
+
+    authorization_bytes = (product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
+
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = product_key
     device_group_values['user_id'] = None
+    device_group_values['password'] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
 
     device_group = insert_device_group(device_group_values)
 
@@ -122,7 +137,7 @@ def test_create_device_should_add_unconfigured_device_to_device_group_when_valid
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [device_key]}),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -140,7 +155,7 @@ def test_create_device_should_return_error_message_when_mimetype_is_not_json(cli
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [device_key]}),
                            content_type=content_type,
-                           headers={"password": "test"}
+                           headers={"Authorization": "test"}
                            )
 
     assert response is not None
@@ -166,7 +181,7 @@ def test_create_device_should_return_error_message_when_bad_request(
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=request_data,
                            content_type=content_type,
-                           headers={"password": "password"}
+                           headers={"Authorization": "password"}
                            )
 
     assert response is not None
@@ -187,11 +202,17 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     product_key = 'test product key'
     device_key = 'test device key'
 
+    password = "password"
+
+    authorization_bytes = (product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
+
     device_group_values = get_device_group_default_values()
     device_group_values['product_key'] = product_key
     device_group_values['user_id'] = None
+    device_group_values['password'] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
 
-    device_group = insert_device_group(device_group_values)
+    insert_device_group(device_group_values)
 
     unconfigured_device_values = get_unconfigured_device_default_values()
     unconfigured_device_values['device_key'] = device_key
@@ -204,7 +225,7 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [invalid_device_key]}),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -218,13 +239,21 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
 
 def test_set_devices_states_should_update_devices_when_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         insert_executive_device,
         get_executive_type_default_values,
         insert_executive_type):
     content_type = 'application/json'
 
-    device_group = insert_device_group()
+    password = "password"
+
+    device_group_values = get_device_group_default_values()
+    device_group_values["password"] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+    device_group = insert_device_group(device_group_values)
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
 
     executive_type_values = get_executive_type_default_values()
     executive_type_values['state_type'] = 'Decimal'
@@ -251,7 +280,7 @@ def test_set_devices_states_should_update_devices_when_valid_request(
     response = client.post('api/hubs/' + device_group.product_key + '/states',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -263,13 +292,20 @@ def test_set_devices_states_should_update_devices_when_valid_request(
 
 def test_set_devices_states_should_update_devices_when_partially_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         insert_executive_device,
         get_executive_type_default_values,
         insert_executive_type):
     content_type = 'application/json'
+    password = "password"
 
-    device_group = insert_device_group()
+    device_group_values = get_device_group_default_values()
+    device_group_values["password"] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+    device_group = insert_device_group(device_group_values)
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
 
     executive_type_values = get_executive_type_default_values()
     executive_type_values['state_type'] = 'Decimal'
@@ -296,7 +332,7 @@ def test_set_devices_states_should_update_devices_when_partially_valid_request(
     response = client.post('api/hubs/' + device_group.product_key + '/states',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -325,7 +361,7 @@ def test_set_devices_states_should_return_error_message_when_wrong_request(
     response = client.post('api/hubs/' + '1' + '/states',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": "password"}
+                           headers={"Authorization": "password"}
                            )
 
     assert response is not None
@@ -352,7 +388,7 @@ def test_set_devices_states_should_return_error_message_when_mimetype_is_not_jso
     response = client.post('api/hubs/' + '1' + '/states',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": "password"}
+                           headers={"Authorization": "password"}
                            )
 
     assert response is not None
@@ -363,6 +399,7 @@ def test_set_devices_states_should_return_error_message_when_mimetype_is_not_jso
 
 def test_get_devices_configurations_should_return_devices_configurations_when_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         get_executive_device_default_values,
         insert_executive_device,
@@ -376,7 +413,14 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
         insert_formula):
     content_type = 'application/json'
 
-    device_group = insert_device_group()
+    password = "password"
+
+    device_group_values = get_device_group_default_values()
+    device_group_values["password"] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+    device_group = insert_device_group(device_group_values)
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
 
     executive_type_values = get_executive_type_default_values()
     executive_type_values['state_type'] = 'Decimal'
@@ -414,7 +458,7 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
             }
         ),
         content_type=content_type,
-        headers={"password": device_group.password}
+        headers={"Authorization": authorization}
     )
 
     assert response is not None
@@ -443,7 +487,7 @@ def test_get_devices_configurations_should_return_error_message_when_invalid_req
         'api/hubs/' + 'invalid' + '/devices/config',
         data=json.dumps('invalid'),
         content_type=content_type,
-        headers={"password": "password"}
+        headers={"Authorization": "password"}
     )
 
     assert response is not None
@@ -456,6 +500,7 @@ def test_get_devices_configurations_should_return_error_message_when_invalid_req
 
 def test_set_sensors_readings_should_update_sensors_when_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         get_sensor_type_default_values,
         insert_sensor_type,
@@ -464,7 +509,14 @@ def test_set_sensors_readings_should_update_sensors_when_valid_request(
 
     content_type = 'application/json'
 
-    device_group = insert_device_group()
+    password = "password"
+
+    device_group_values = get_device_group_default_values()
+    device_group_values["password"] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+    device_group = insert_device_group(device_group_values)
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
 
     sensor_type_values = get_sensor_type_default_values()
     sensor_type_values['reading_type'] = 'Decimal'
@@ -490,7 +542,7 @@ def test_set_sensors_readings_should_update_sensors_when_valid_request(
     response = client.post('api/hubs/' + device_group.product_key + '/readings',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -503,13 +555,21 @@ def test_set_sensors_readings_should_update_sensors_when_valid_request(
 
 def test_set_sensors_readings_should_update_sensors_when_partially_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         get_sensor_type_default_values,
         insert_sensor_type,
         insert_sensor):
     content_type = 'application/json'
 
-    device_group = insert_device_group()
+    password = "password"
+
+    device_group_values = get_device_group_default_values()
+    device_group_values["password"] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+    device_group = insert_device_group(device_group_values)
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
 
     sensor_type_values = get_sensor_type_default_values()
     sensor_type_values['reading_type'] = 'Decimal'
@@ -535,7 +595,7 @@ def test_set_sensors_readings_should_update_sensors_when_partially_valid_request
     response = client.post('api/hubs/' + device_group.product_key + '/readings',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": device_group.password}
+                           headers={"Authorization": authorization}
                            )
 
     assert response is not None
@@ -563,7 +623,7 @@ def test_set_sensors_readings_should_return_error_message_when_wrong_request(
     response = client.post('api/hubs/' + '1' + '/readings',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": "password"}
+                           headers={"Authorization": "password"}
                            )
 
     assert response is not None
@@ -590,7 +650,7 @@ def test_set_sensors_readings_should_return_error_message_when_mimetype_is_not_j
     response = client.post('api/hubs/' + '1' + '/readings',
                            data=json.dumps(data_json),
                            content_type=content_type,
-                           headers={"password": "password"}
+                           headers={"Authorization": "password"}
                            )
 
     assert response is not None

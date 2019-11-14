@@ -1,3 +1,5 @@
+import base64
+import hashlib
 from unittest.mock import patch, Mock
 
 import pytest
@@ -83,9 +85,9 @@ def test_get_changed_devices_for_device_group_should_return_device_keys_when_val
                                           'update_database'
                                           ) as update_database_mock:
                             with patch.object(HubService,
-                                              'is_password_correct'
-                                              ) as is_password_correct_mock:
-                                is_password_correct_mock.return_value = True
+                                              'is_authorization_correct'
+                                              ) as is_authorization_correct_mock:
+                                is_authorization_correct_mock.return_value = True
                                 update_database_mock.return_value = True
                                 result, result_values = hub_service_instance.get_changed_devices_for_device_group(
                                     test_product_key,
@@ -170,9 +172,9 @@ def test_get_changed_devices_for_device_group_should_not_return_device_keys_when
                     get_deleted_devices_by_device_group_id_mock.return_value = []
 
                     with patch.object(HubService,
-                                      'is_password_correct'
-                                      ) as is_password_correct_mock:
-                        is_password_correct_mock.return_value = True
+                                      'is_authorization_correct'
+                                      ) as is_authorization_correct_mock:
+                        is_authorization_correct_mock.return_value = True
 
                         result, result_values = hub_service_instance.get_changed_devices_for_device_group(
                             test_product_key,
@@ -205,9 +207,9 @@ def test_add_multiple_devices_to_device_group_should_return_positive_response_wh
         ) as add_device_to_device_group_mock:
             add_device_to_device_group_mock.return_value = Constants.RESPONSE_MESSAGE_CREATED
             with patch.object(HubService,
-                              'is_password_correct'
-                              ) as is_password_correct_mock:
-                is_password_correct_mock.return_value = True
+                              'is_authorization_correct'
+                              ) as is_authorization_correct_mock:
+                is_authorization_correct_mock.return_value = True
                 result = hub_service_instance.add_multiple_devices_to_device_group(device_group.product_key,
                                                                                    "test_password",
                                                                                    device_keys)
@@ -238,9 +240,13 @@ def test_add_multiple_devices_to_device_group_should_return_negative_response_wh
                     LogService,
                     'log_exception'
             ):
-                result = hub_service_instance.add_multiple_devices_to_device_group(device_group.product_key,
-                                                                                   device_group.password,
-                                                                                   device_keys)
+                with patch.object(HubService,
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
+                    result = hub_service_instance.add_multiple_devices_to_device_group(device_group.product_key,
+                                                                                       device_group.password,
+                                                                                       device_keys)
 
     assert result == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
@@ -276,9 +282,9 @@ def test_add_device_to_device_group_should_result_true_when_given_valid_keys(
                 update_database_mock.return_value = True
 
                 with patch.object(HubService,
-                                  'is_password_correct'
-                                  ) as is_password_correct_mock:
-                    is_password_correct_mock.return_value = True
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
                     result = hub_service_instance.add_device_to_device_group(
                         test_product_key,
                         "test_password",
@@ -352,9 +358,9 @@ def test_add_device_to_device_group_should_result_false_when_no_unconfigured_dev
             get_unconfigured_device_by_device_key_mock.return_value = None
 
             with patch.object(HubService,
-                              'is_password_correct'
-                              ) as is_password_correct_mock:
-                is_password_correct_mock.return_value = True
+                              'is_authorization_correct'
+                              ) as is_authorization_correct_mock:
+                is_authorization_correct_mock.return_value = True
 
                 result = hub_service_instance.add_device_to_device_group(
                     test_product_key,
@@ -385,11 +391,15 @@ def test_set_sensors_readings_should_return_update_info_when_called_with_right_p
                 'set_sensor_reading'
         ) as _set_sensor_reading_mock:
             _set_sensor_reading_mock.return_value = True
+            with patch.object(HubService,
+                              'is_authorization_correct'
+                              ) as is_authorization_correct_mock:
+                is_authorization_correct_mock.return_value = True
 
-            result = hub_service_instance.set_sensors_readings(
-                device_group.product_key,
-                device_group.password,
-                sensors_readings)
+                result = hub_service_instance.set_sensors_readings(
+                    device_group.product_key,
+                    device_group.password,
+                    sensors_readings)
     assert result == Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
 
 
@@ -418,10 +428,15 @@ def test_set_sensors_readings_should_return_partial_success_message_when_called_
                     'log_exception'
             ) as log_exception_mock:
                 log_exception_mock.side_effects = None
-                result = hub_service_instance.set_sensors_readings(
-                    device_group.product_key,
-                    device_group.password,
-                    sensors_readings)
+
+                with patch.object(HubService,
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
+                    result = hub_service_instance.set_sensors_readings(
+                        device_group.product_key,
+                        device_group.password,
+                        sensors_readings)
     assert result == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
 
@@ -494,11 +509,16 @@ def test_add_device_to_device_group_should_result_error_message_when_save_failed
             with patch.object(UnconfiguredDeviceRepository, 'update_database') as update_database_mock:
                 update_database_mock.return_value = False
 
-                result = hub_service_instance.add_device_to_device_group(
-                    test_product_key,
-                    device_group.password,
-                    test_device_key
-                )
+                with patch.object(HubService,
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
+
+                    result = hub_service_instance.add_device_to_device_group(
+                        test_product_key,
+                        device_group.password,
+                        test_device_key
+                    )
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
 
@@ -581,9 +601,9 @@ def test_get_devices_informations_should_return_device_informations_when_valid_p
                             update_database_mock.return_value = True
 
                             with patch.object(HubService,
-                                              'is_password_correct'
-                                              ) as is_password_correct_mock:
-                                is_password_correct_mock.return_value = True
+                                              'is_authorization_correct'
+                                              ) as is_authorization_correct_mock:
+                                is_authorization_correct_mock.return_value = True
 
                                 with patch.object(DeviceGroupRepository,
                                                   'get_device_group_by_product_key'
@@ -651,9 +671,9 @@ def test_get_devices_informations_should_return_empty_lists_when_valid_product_k
                 update_database_mock.return_value = True
 
                 with patch.object(HubService,
-                                  'is_password_correct'
-                                  ) as is_password_correct_mock:
-                    is_password_correct_mock.return_value = True
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
 
                     with patch.object(DeviceGroupRepository,
                                       'get_device_group_by_product_key'
@@ -680,9 +700,9 @@ def test_get_devices_informations_should_return_error_message_when_no_parameter(
     hub_service_instance = HubService.get_instance()
 
     with patch.object(HubService,
-                      'is_password_correct'
-                      ) as is_password_correct_mock:
-        is_password_correct_mock.return_value = True
+                      'is_authorization_correct'
+                      ) as is_authorization_correct_mock:
+        is_authorization_correct_mock.return_value = True
 
         with patch.object(DeviceGroupRepository,
                           'get_device_group_by_product_key'
@@ -690,10 +710,10 @@ def test_get_devices_informations_should_return_error_message_when_no_parameter(
             get_device_group_by_product_key_mock.return_value = Mock(spec=DeviceGroup)
 
             result, result_values = hub_service_instance.get_devices_informations(
-                    product_key,
-                    "test_password",
-                    devices
-                )
+                product_key,
+                "test_password",
+                devices
+            )
 
     assert result == error_message
     assert not result_values
@@ -722,10 +742,15 @@ def test_set_devices_states_should_return_update_info_when_called_with_right_par
         ) as _set_device_state_mock:
             _set_device_state_mock.return_value = True
 
-            result = hub_service_instance.set_devices_states(
-                device_group.product_key,
-                device_group.password,
-                devices_states)
+            with patch.object(HubService,
+                              'is_authorization_correct'
+                              ) as is_authorization_correct_mock:
+                is_authorization_correct_mock.return_value = True
+
+                result = hub_service_instance.set_devices_states(
+                    device_group.product_key,
+                    device_group.password,
+                    devices_states)
     assert result == Constants.RESPONSE_MESSAGE_UPDATED_SENSORS_AND_DEVICES
 
 
@@ -758,10 +783,15 @@ def test_set_devices_states_should_return_partial_success_message_when_called_wi
             ) as log_exception_mock:
                 log_exception_mock.side_effects = None
 
-                result = hub_service_instance.set_devices_states(
-                    device_group.product_key,
-                    device_group.password,
-                    devices_states)
+                with patch.object(HubService,
+                                  'is_authorization_correct'
+                                  ) as is_authorization_correct_mock:
+                    is_authorization_correct_mock.return_value = True
+
+                    result = hub_service_instance.set_devices_states(
+                        device_group.product_key,
+                        device_group.password,
+                        devices_states)
 
     assert result == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
@@ -808,6 +838,21 @@ def test_set_devices_states_should_return_device_states_error_when_called_with_w
         devices_states)
 
     assert result == Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_LIST
+
+
+def test_is_authorization_correct_should_return_true_if_right_authentication_is_passed(
+        create_device_group
+):
+    hub_service_instance = HubService.get_instance()
+    device_group = create_device_group()
+
+    password = "password"
+    device_group.password = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+
+    authorization_bytes = (device_group.product_key + ":" + password).encode()
+    authorization = "Basic " + base64.b64encode(authorization_bytes).decode()
+
+    assert hub_service_instance.is_authorization_correct(device_group, authorization)
 
 
 if __name__ == '__main__':
