@@ -46,7 +46,8 @@ def test_get_states_should_return_keys_of_updated_devices_when_valid_request(
 
     deleted_device = insert_deleted_device()
 
-    response = client.get('/api/hubs/' + product_key + '/states', content_type=content_type)
+    response = client.get('/api/hubs/' + product_key + '/states', content_type=content_type,
+                          headers={"password": test_device_group.password})
 
     assert response is not None
     assert response.status_code == 200
@@ -76,10 +77,11 @@ def test_get_states_should_return_bad_request_message_when_invalid_request(
     device_group_values['product_key'] = product_key
     device_group_values['user_id'] = None
 
-    insert_device_group(device_group_values)
+    test_device_group = insert_device_group(device_group_values)
 
     response = client.get('/api/hubs/' + 'not' + product_key + '/states',
-                          content_type=content_type
+                          content_type=content_type,
+                          headers={"password": test_device_group.password}
                           )
 
     assert response is not None
@@ -119,7 +121,8 @@ def test_create_device_should_add_unconfigured_device_to_device_group_when_valid
 
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [device_key]}),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -136,7 +139,8 @@ def test_create_device_should_return_error_message_when_mimetype_is_not_json(cli
 
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [device_key]}),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "test"}
                            )
 
     assert response is not None
@@ -161,7 +165,8 @@ def test_create_device_should_return_error_message_when_bad_request(
 
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=request_data,
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "password"}
                            )
 
     assert response is not None
@@ -186,7 +191,7 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     device_group_values['product_key'] = product_key
     device_group_values['user_id'] = None
 
-    insert_device_group(device_group_values)
+    device_group = insert_device_group(device_group_values)
 
     unconfigured_device_values = get_unconfigured_device_default_values()
     unconfigured_device_values['device_key'] = device_key
@@ -198,7 +203,8 @@ def test_create_device_should_return_error_message_when_invalid_request_values(
     invalid_device_key = 'invalid ' + device_key
     response = client.post('/api/hubs/' + product_key + '/devices',
                            data=json.dumps({'deviceKeys': [invalid_device_key]}),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -244,7 +250,8 @@ def test_set_devices_states_should_update_devices_when_valid_request(
 
     response = client.post('api/hubs/' + device_group.product_key + '/states',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -288,7 +295,8 @@ def test_set_devices_states_should_update_devices_when_partially_valid_request(
 
     response = client.post('api/hubs/' + device_group.product_key + '/states',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -316,7 +324,8 @@ def test_set_devices_states_should_return_error_message_when_wrong_request(
 
     response = client.post('api/hubs/' + '1' + '/states',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "password"}
                            )
 
     assert response is not None
@@ -342,7 +351,8 @@ def test_set_devices_states_should_return_error_message_when_mimetype_is_not_jso
 
     response = client.post('api/hubs/' + '1' + '/states',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "password"}
                            )
 
     assert response is not None
@@ -403,7 +413,8 @@ def test_get_devices_configurations_should_return_devices_configurations_when_va
                 "devices": [executive_device.device_key, sensor.device_key]
             }
         ),
-        content_type=content_type
+        content_type=content_type,
+        headers={"password": device_group.password}
     )
 
     assert response is not None
@@ -431,7 +442,8 @@ def test_get_devices_configurations_should_return_error_message_when_invalid_req
     response = client.post(
         'api/hubs/' + 'invalid' + '/devices/config',
         data=json.dumps('invalid'),
-        content_type=content_type
+        content_type=content_type,
+        headers={"password": "password"}
     )
 
     assert response is not None
@@ -477,7 +489,8 @@ def test_set_sensors_readings_should_update_sensors_when_valid_request(
 
     response = client.post('api/hubs/' + device_group.product_key + '/readings',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -521,7 +534,8 @@ def test_set_sensors_readings_should_update_sensors_when_partially_valid_request
 
     response = client.post('api/hubs/' + device_group.product_key + '/readings',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": device_group.password}
                            )
 
     assert response is not None
@@ -548,7 +562,8 @@ def test_set_sensors_readings_should_return_error_message_when_wrong_request(
 
     response = client.post('api/hubs/' + '1' + '/readings',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "password"}
                            )
 
     assert response is not None
@@ -574,7 +589,8 @@ def test_set_sensors_readings_should_return_error_message_when_mimetype_is_not_j
 
     response = client.post('api/hubs/' + '1' + '/readings',
                            data=json.dumps(data_json),
-                           content_type=content_type
+                           content_type=content_type,
+                           headers={"password": "password"}
                            )
 
     assert response is not None
