@@ -178,7 +178,7 @@ class ExecutiveTypeService:
         if senor_type_info['stateType'] == 'Enum':
 
             possible_states = []
-            type_state_enumerators = self._state_enumerator_repository.get_state_enumerators_by_sensor_type_id(
+            type_state_enumerators = self._state_enumerator_repository.get_state_enumerators_by_executive_type_id(
                 executive_type.id
             )
             for enumerator in type_state_enumerators:

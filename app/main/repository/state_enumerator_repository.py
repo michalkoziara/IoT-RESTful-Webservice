@@ -17,7 +17,7 @@ class StateEnumeratorRepository(BaseRepository):
 
         return cls._instance
 
-    def get_state_enumerators_by_sensor_type_id(self, executive_type_id: str) -> List[StateEnumerator]:
+    def get_state_enumerators_by_executive_type_id(self, executive_type_id: str) -> List[StateEnumerator]:
         return StateEnumerator.query.filter(
             StateEnumerator.executive_type_id == executive_type_id
         ).all()

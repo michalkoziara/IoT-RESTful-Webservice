@@ -205,7 +205,8 @@ class UserGroupService:
             list_of_executive_devices_info.append({
                 "name": executive_device.name,
                 "deviceKey": executive_device.device_key,
-                "state": self._executive_device_service.get_executive_device_state_value(executive_device),
+                "state": self._executive_device_service.get_executive_device_state_value(
+                    executive_device, executive_device.state),
                 "isActive": executive_device.is_active,
                 "formulaName": formula_name,
                 "isFormulaUsed": executive_device.is_formula_used

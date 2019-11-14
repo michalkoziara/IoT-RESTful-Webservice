@@ -11,7 +11,7 @@ from app.main.service.executive_type_service import ExecutiveTypeService
 from app.main.util.constants import Constants
 
 
-def test_get_executive_type_info_should_return_sensor_info_when_valid_request_and_reading_type_is_enum(
+def test_get_executive_type_info_should_return_executive_type_info_when_valid_request_and_reading_type_is_enum(
         get_executive_type_default_values,
         create_executive_type,
         get_state_enumerator_default_values,
@@ -69,7 +69,7 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request_an
 
                 with patch.object(
                         StateEnumeratorRepository,
-                        'get_state_enumerators_by_sensor_type_id'
+                        'get_state_enumerators_by_executive_type_id'
                 ) as get_state_enumerators_by_sensor_type_id_mock:
                     get_state_enumerators_by_sensor_type_id_mock.return_value = [
                         first_enumerator,
