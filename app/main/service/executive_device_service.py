@@ -87,7 +87,8 @@ class ExecutiveDeviceService:
 
         executive_device_info = {}
         executive_device_info['name'] = executive_device.name
-        executive_device_info['state'] = self.get_executive_device_state_value(executive_device)
+        executive_device_info['state'] = self.get_executive_device_state_value(
+            executive_device, executive_device.state)
         executive_device_info['isUpdated'] = executive_device.is_updated
         executive_device_info['isActive'] = executive_device.is_active
         executive_device_info['isAssigned'] = executive_device.is_assigned
@@ -104,7 +105,7 @@ class ExecutiveDeviceService:
             executive_device.executive_type_id
         )
         executive_device_info['deviceTypeName'] = executive_device_type.name
-        executive_device_info['defaultState'] =  self.get_executive_device_state_value(
+        executive_device_info['defaultState'] = self.get_executive_device_state_value(
             executive_device,
             executive_device_type.default_state)
         if user_group:
@@ -314,13 +315,13 @@ class ExecutiveDeviceService:
         executive_device.is_active = is_active
         return self._executive_device_repository_instance.update_database()
 
-    def get_executive_device_state_value(self, executive_device: ExecutiveDevice, state: str = None):
+    def get_executive_device_state_value(self, executive_device: ExecutiveDevice, state: str):
+        if state is None:
+            return None
+
         executive_device_type = self._executive_type_repository_instance.get_executive_type_by_id(
             executive_device.executive_type_id)
         state_type = executive_device_type.state_type
-
-        if state is None:
-            state = executive_device.state
 
         state_value = None
         if state_type == 'Enum':
@@ -366,7 +367,7 @@ class ExecutiveDeviceService:
         if is_admin:
             return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
-        if not name or not type_name or not state:
+        if not name or not type_name or state is None:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
@@ -427,6 +428,9 @@ class ExecutiveDeviceService:
         if not status:
             self._executive_device_repository_instance.rollback_session()
             return error_message, None
+
+        positive_state = self._get_device_state_to_set(positive_state, new_executive_type)
+        negative_state = self._get_device_state_to_set(negative_state, new_executive_type)
 
         status, formula, error_message = self._change_device_formula_related_fields(
             executive_device, formula_name,
@@ -543,11 +547,43 @@ class ExecutiveDeviceService:
             executive_device.name = name
             return True, None
 
+    def _get_device_state_to_set(self, state, executive_type: ExecutiveType):
+        if executive_type.state_type == 'Enum':
+            state_to_set = self._get_enum_state_to_set(state, executive_type)
+        elif executive_type.state_type == 'Boolean':
+            state_to_set = self._get_boolean_state_to_set(state)
+        else:
+            state_to_set = float(state)
+
+        return state_to_set
+
+    def _get_enum_state_to_set(self, state: str, executive_type):
+        state_enumerator = self._state_enumerator_repository_instance.get_state_enumerators_by_executive_type_id(
+            executive_type.id)
+
+        for enum in state_enumerator:
+            if enum.text == state:
+                return enum.number
+
+        return None
+
+    def _get_boolean_state_to_set(self, state):
+        if state is True:
+            return 1
+        elif state is False:
+            return 0
+        else:
+            return None
+
     def _change_device_state(self, executive_device: ExecutiveDevice, state: float, executive_type: ExecutiveType
                              ) -> (bool, Optional[str]):
 
-        if self._state_in_range(state, executive_type):
-            executive_device.state = state
+        state_to_set = self._get_device_state_to_set(
+            state, executive_type
+        )
+
+        if state_to_set is not None and self._state_in_range(state_to_set, executive_type):
+            executive_device.state = state_to_set
             return True, None
         else:
             return False, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
@@ -595,7 +631,7 @@ class ExecutiveDeviceService:
         else:
             return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
 
-    def _state_in_range(self, state: str, executive_type: ExecutiveType) -> bool:
+    def _state_in_range(self, state: float, executive_type: ExecutiveType) -> bool:
         if executive_type.state_type == 'Enum':
             return self._is_enum_state_right(state, executive_type)
         elif executive_type.state_type == 'Decimal':
@@ -608,7 +644,7 @@ class ExecutiveDeviceService:
     def _is_enum_state_right(self, state: int, executive_type: ExecutiveType) -> bool:
         if isinstance(state, str):
             return False
-        possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_sensor_type_id(
+        possible_states = self._state_enumerator_repository_instance.get_state_enumerators_by_executive_type_id(
             executive_type.id)
         if int(state) in [possible_state.number for possible_state in possible_states]:
             return True
