@@ -9,6 +9,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
+from app.main.model import DeviceGroup
 from app.main.repository.deleted_device_repository import DeletedDeviceRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.executive_device_repository import ExecutiveDeviceRepository
@@ -61,7 +62,9 @@ class HubService:
 
     def get_changed_devices_for_device_group(
             self,
-            product_key: str) -> Tuple[str, Optional[Dict[str, Union[bool, List[str]]]]]:
+            product_key: str,
+            password_hash: str
+    ) -> Tuple[str, Optional[Dict[str, Union[bool, List[str]]]]]:
 
         if product_key is None:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -70,6 +73,9 @@ class HubService:
 
         if device_group is None:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD, None
 
         executive_devices = self._executive_device_repository_instance.get_updated_executive_devices_by_device_group_id(
             device_group.id
@@ -116,7 +122,7 @@ class HubService:
 
         return Constants.RESPONSE_MESSAGE_OK, devices
 
-    def add_device_to_device_group(self, product_key: str, device_key: str) -> bool:
+    def add_device_to_device_group(self, product_key: str, password_hash: str, device_key: str) -> bool:
         if product_key is None or device_key is None:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
@@ -124,6 +130,9 @@ class HubService:
 
         if device_group is None:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         unconfigured_device = self._unconfigured_device_repository_instance.get_unconfigured_device_by_device_key(
             device_key
@@ -139,7 +148,7 @@ class HubService:
 
         return Constants.RESPONSE_MESSAGE_CREATED
 
-    def add_multiple_devices_to_device_group(self, product_key: str, device_keys: List[str]):
+    def add_multiple_devices_to_device_group(self, product_key: str, password_hash: str, device_keys: List[str]):
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
@@ -151,11 +160,14 @@ class HubService:
         if device_group is None:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
+
         device_group_product_key = device_group.product_key
         all_devices_added = True
 
         for device_key in device_keys:
-            result = self.add_device_to_device_group(device_group_product_key, device_key)
+            result = self.add_device_to_device_group(device_group_product_key, password_hash, device_key)
             if result != Constants.RESPONSE_MESSAGE_CREATED:
                 _logger.log_exception(
                     dict(
@@ -176,6 +188,7 @@ class HubService:
     def set_devices_states(
             self,
             product_key: str,
+            password_hash: str,
             devices_states: List[Dict]
     ) -> str:
         # TODO add hub authentication
@@ -189,6 +202,9 @@ class HubService:
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         device_group_id = device_group.id
         all_devices_values_ok = True
@@ -214,6 +230,7 @@ class HubService:
     def set_sensors_readings(
             self,
             product_key: str,
+            password_hash: str,
             sensors_readings: List[Dict]
     ) -> str:
         # TODO add hub authentication
@@ -227,6 +244,9 @@ class HubService:
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         device_group_id = device_group.id
 
@@ -253,10 +273,16 @@ class HubService:
     def get_devices_informations(
             self,
             product_key: str,
+            password_hash: str,
             devices: List) -> Tuple[str, Optional[Dict[str, Any]]]:
 
-        if not product_key:
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
+
+        if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not self.is_password_correct(device_group, password_hash):
+            return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD, None
 
         if not devices:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEYS_NOT_LIST, None
@@ -383,3 +409,6 @@ class HubService:
         }
 
         return Constants.RESPONSE_MESSAGE_OK, result_values
+
+    def is_password_correct(self, device_group: DeviceGroup, password_hash: str):
+        return device_group.password == password_hash

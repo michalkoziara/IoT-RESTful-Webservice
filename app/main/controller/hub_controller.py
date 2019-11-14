@@ -17,7 +17,8 @@ _logger = LogService.get_instance()
 @api.route('/hubs/<product_key>/states', methods=['GET'])
 def get_states(product_key):
     # TODO add hub device authentication
-    result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key)
+    password = request.headers.get("password", None)
+    result, result_values = _hub_service_instance.get_changed_devices_for_device_group(product_key, password)
 
     return ResponseUtils.create_response(
         result=result,
@@ -40,8 +41,8 @@ def create_device(product_key: str):
 
     if status is None:
         device_keys = request_dict['deviceKeys']
-
-        result = _hub_service_instance.add_multiple_devices_to_device_group(product_key, device_keys)
+        password = request.headers.get("password", None)
+        result = _hub_service_instance.add_multiple_devices_to_device_group(product_key, password, device_keys)
 
         return ResponseUtils.create_response(
             result=result,
@@ -69,9 +70,11 @@ def set_devices_states(product_key):
 
     if status is None:
         devices_states = request_dict['devices']
+        password = request.headers.get("password", None)
 
         result = _hub_service_instance.set_devices_states(
             product_key,
+            password,
             devices_states
         )
 
@@ -100,9 +103,10 @@ def set_sensors_readings(product_key):
 
     if status is None:
         sensors_readings = request_dict['sensors']
-
+        password = request.headers.get("password", None)
         result = _hub_service_instance.set_sensors_readings(
             product_key,
+            password,
             sensors_readings
         )
 
@@ -132,9 +136,10 @@ def get_devices_configurations(product_key):
 
     if status is None:
         devices = request_dict['devices']
-
+        password = request.headers.get("password", None)
         result, result_values = _hub_service_instance.get_devices_informations(
             product_key,
+            password,
             devices
         )
 
