@@ -31,6 +31,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
     formula = create_formula()
     user_group = create_user_group()
 
+
     test_user_id = 1
 
     with patch.object(
@@ -80,8 +81,9 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
     assert result_values['isFormulaUsed'] == executive_device.is_formula_used
-    assert result_values['positiveState'] == executive_device.positive_state
-    assert result_values['negativeState'] == executive_device.negative_state
+    assert result_values['positiveState'] == "test"
+    assert result_values['negativeState'] == "test"
+    assert result_values['defaultState'] == "test"
     assert result_values['deviceKey'] == executive_device.device_key
     assert result_values['deviceTypeName'] == executive_type.name
     assert result_values['deviceUserGroup'] == user_group.name
@@ -150,8 +152,9 @@ def test_get_executive_device_info_should_return_device_info_when_user_is_not_in
     assert result_values['isUpdated'] == executive_device.is_updated
     assert result_values['isActive'] == executive_device.is_active
     assert result_values['isAssigned'] == executive_device.is_assigned
-    assert result_values['positiveState'] == executive_device.positive_state
-    assert result_values['negativeState'] == executive_device.negative_state
+    assert result_values['positiveState'] == "test"
+    assert result_values['negativeState'] == "test"
+    assert result_values['defaultState'] == "test"
     assert result_values['deviceKey'] == executive_device.device_key
     assert result_values['deviceTypeName'] == executive_type.name
     assert result_values['deviceUserGroup'] is None
