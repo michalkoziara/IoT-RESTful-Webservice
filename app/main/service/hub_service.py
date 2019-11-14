@@ -276,6 +276,9 @@ class HubService:
             password_hash: str,
             devices: List) -> Tuple[str, Optional[Dict[str, Any]]]:
 
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
