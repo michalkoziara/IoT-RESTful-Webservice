@@ -549,6 +549,8 @@ class ExecutiveDeviceService:
             return True, None
 
     def _get_device_state_to_set(self, state, executive_type: ExecutiveType):
+        if state is None:
+            return None
         if executive_type.state_type == 'Enum':
             state_to_set = self._get_enum_state_to_set(state, executive_type)
         elif executive_type.state_type == 'Boolean':
