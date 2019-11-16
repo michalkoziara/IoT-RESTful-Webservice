@@ -628,7 +628,7 @@ class ExecutiveDeviceService:
             executive_device.formula_id = None
             executive_device.positive_state = None
             executive_device.negative_state = None
-            executive_device.is_formula_used = None
+            executive_device.is_formula_used = False
             return True, None, None
 
         else:
