@@ -325,10 +325,11 @@ class ExecutiveDeviceService:
 
         state_value = None
         if state_type == 'Enum':
-            state_value = \
-                self._state_enumerator_repository_instance.get_state_enumerator_by_executive_type_id_and_number(
-                    executive_device_type.id,
-                    int(state)).text
+            state_enumerator = self._state_enumerator_repository_instance.get_state_enumerator_by_executive_type_id_and_number(
+                executive_device_type.id,
+                int(state))
+            if state_enumerator is not None:
+                state_value = state_enumerator.text
         elif state_type == 'Decimal':
             state_value = float(state)
         elif state_type == 'Boolean':

@@ -168,14 +168,14 @@ class ExecutiveTypeService:
         if not executive_type:
             return Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND, None
 
-        senor_type_info = {}
-        senor_type_info['name'] = executive_type.name
-        senor_type_info['stateType'] = executive_type.state_type
-        senor_type_info['stateRangeMin'] = executive_type.state_range_min
-        senor_type_info['stateRangeMax'] = executive_type.state_range_max
-        senor_type_info['defaultState'] = executive_type.default_state
+        executive_type_info = {}
+        executive_type_info['name'] = executive_type.name
+        executive_type_info['stateType'] = executive_type.state_type
+        executive_type_info['stateRangeMin'] = executive_type.state_range_min
+        executive_type_info['stateRangeMax'] = executive_type.state_range_max
+        executive_type_info['defaultState'] = executive_type.default_state
 
-        if senor_type_info['stateType'] == 'Enum':
+        if executive_type_info['stateType'] == 'Enum':
 
             possible_states = []
             type_state_enumerators = self._state_enumerator_repository.get_state_enumerators_by_executive_type_id(
@@ -188,9 +188,9 @@ class ExecutiveTypeService:
                         'text': enumerator.text,
                     }
                 )
-            senor_type_info['enumerator'] = possible_states
+            executive_type_info['enumerator'] = possible_states
 
-        return Constants.RESPONSE_MESSAGE_OK, senor_type_info
+        return Constants.RESPONSE_MESSAGE_OK, executive_type_info
 
     def get_list_of_types_names(self, product_key: str, admin_id: str) -> Tuple[str, Optional[List[str]]]:
 
