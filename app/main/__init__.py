@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -12,6 +13,7 @@ def create_app(config_name):
 
     if (config_name == 'dev'):
         app.config.from_pyfile('application.cfg', silent=True)
+        CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     db.init_app(app)
 
