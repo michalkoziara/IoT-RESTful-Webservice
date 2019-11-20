@@ -6,6 +6,8 @@ class Constants:
 
     CURRENT_ENV = os.environ.get('APP_ENV', 'dev')
 
+    API_URL = os.environ.get('API_URL')
+
     DATABASE_URL_PROD = os.environ.get('DATABASE_URL')
     DATABASE_URL_TEST = 'sqlite:///' + os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'flask_boilerplate_test.db')
