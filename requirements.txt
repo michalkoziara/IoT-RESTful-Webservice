@@ -16,6 +16,7 @@ coverage==4.5.3
 cryptography==2.7
 Flask==1.0.2
 Flask-Bcrypt==0.7.1
+Flask-Cors==3.0.8
 Flask-Migrate==2.4.0
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.0
