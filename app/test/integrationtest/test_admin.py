@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 import pytest
@@ -19,6 +20,7 @@ def test_register_admin_should_create_admin_when_valid_request(
 
     device_group_values = get_device_group_default_values()
     device_group_values['admin_id'] = None
+    device_group_values['password'] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
 
     device_group = insert_device_group(device_group_values)
 
@@ -30,7 +32,7 @@ def test_register_admin_should_create_admin_when_valid_request(
                 'password': password,
                 'username': username,
                 'productKey': device_group.product_key,
-                'productPassword': device_group.password
+                'productPassword': password
             }
         ),
         content_type=content_type
@@ -61,8 +63,12 @@ def test_register_admin_should_return_user_already_exists_message_when_duplicate
 
     user = insert_user()
 
+    password = "password"
+
     device_group_values = get_device_group_default_values()
     device_group_values['admin_id'] = None
+    device_group_values['password'] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+
 
     device_group = insert_device_group(device_group_values)
 
@@ -74,7 +80,7 @@ def test_register_admin_should_return_user_already_exists_message_when_duplicate
                 'password': user.password,
                 'username': user.username,
                 'productKey': device_group.product_key,
-                'productPassword': device_group.password
+                'productPassword': password
             }
         ),
         content_type=content_type
