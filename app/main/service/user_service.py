@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Any, Dict, Union
+from typing import Optional, Dict
 from typing import Tuple
 
 import flask_bcrypt
