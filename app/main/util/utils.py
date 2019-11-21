@@ -1,6 +1,8 @@
+import hashlib
 import random
 import string
 
+from app.main import Constants
 from app.main.model import DeviceGroup
 from app.main.model import User
 
@@ -32,3 +34,16 @@ def is_dict_with_keys(data_object, keys) -> bool:
 
 def get_random_letters(number_of_letters: int) -> str:
     return ''.join(random.choice(string.ascii_letters) for x in range(number_of_letters))
+
+
+def is_password_hash_correct(password: str, device_group_password: str):
+    if password is None:
+        return False
+
+    password_hash = get_password_hash(password)
+
+    return device_group_password == password_hash
+
+
+def get_password_hash(password: str):
+    return hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()

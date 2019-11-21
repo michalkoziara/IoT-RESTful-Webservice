@@ -12,6 +12,7 @@ from app.main.repository.user_repository import UserRepository
 from app.main.service.executive_device_service import ExecutiveDeviceService
 from app.main.service.sensor_service import SensorService
 from app.main.util.constants import Constants
+from app.main.util.utils import get_password_hash
 
 
 class UserGroupService:
@@ -81,7 +82,7 @@ class UserGroupService:
 
         user_group = UserGroup(
             name=group_name,
-            password=password,
+            password=get_password_hash(password),
             device_group_id=device_group.id
         )
 

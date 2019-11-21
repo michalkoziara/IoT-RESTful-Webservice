@@ -34,13 +34,18 @@ def test_create_admin_should_return_success_message_when_valid_parameters(
                 with patch.object(AdminRepository, 'save') as save_mock:
                     save_mock.return_value = True
 
-                    result = admin_service_instance.create_admin(
-                        'username',
-                        'email',
-                        'password',
-                        'product_key',
-                        device_group.password
-                    )
+                    with patch(
+                            'app.main.service.admin_service.is_password_hash_correct'
+                    ) as password_check_mock:
+                        password_check_mock.return_value = True
+
+                        result = admin_service_instance.create_admin(
+                            'username',
+                            'email',
+                            'password',
+                            'product_key',
+                            device_group.password
+                        )
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_CREATED
@@ -134,13 +139,18 @@ def test_create_user_should_return_error_message_when_save_failed(
                 with patch.object(AdminRepository, 'save') as save_mock:
                     save_mock.return_value = False
 
-                    result = admin_service_instance.create_admin(
-                        'username',
-                        'email',
-                        'password',
-                        'product_key',
-                        device_group.password
-                    )
+                    with patch(
+                            'app.main.service.admin_service.is_password_hash_correct'
+                    ) as password_check_mock:
+                        password_check_mock.return_value = True
+
+                        result = admin_service_instance.create_admin(
+                            'username',
+                            'email',
+                            'password',
+                            'product_key',
+                            device_group.password
+                        )
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_ERROR

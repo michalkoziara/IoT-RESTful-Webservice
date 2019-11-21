@@ -7,6 +7,7 @@ from app.main.repository.admin_repository import AdminRepository
 from app.main.repository.device_group_repository import DeviceGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
+from app.main.util.utils import is_password_hash_correct
 
 
 class AdminService:
@@ -43,14 +44,7 @@ class AdminService:
         if not device_group or device_group.admin_id:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
-        # TODO hub device authentication
-        # try:
-        #     is_password_correct = flask_bcrypt.check_password_hash(device_group.password, product_password)
-        # except ValueError:
-        #     return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
-        is_password_correct = (device_group.password == product_password)
-
-        if not is_password_correct:
+        if not is_password_hash_correct(product_password, device_group.password):
             return Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
 
         password_hash = flask_bcrypt.generate_password_hash(password).decode('utf-8')

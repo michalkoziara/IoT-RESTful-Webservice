@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 import flask_bcrypt
@@ -8,6 +9,7 @@ from sqlalchemy import and_
 from app.main.model.user import User
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
+from app.main.util.utils import get_password_hash
 
 
 def test_login_should_return_auth_token_when_valid_request(
@@ -305,13 +307,19 @@ def test_register_user_group_should_return_bad_request_message_when_bad_request(
 
 def test_join_device_group_should_add_user_to_device_groups_master_group_when_valid_request(
         client,
+        get_device_group_default_values,
         insert_device_group,
         get_user_group_default_values,
         insert_user_group,
         insert_user):
     content_type = 'application/json'
 
-    device_group = insert_device_group()
+    password = "password"
+
+    device_group_values = get_device_group_default_values()
+    device_group_values['password'] = hashlib.sha224((password + Constants.SECRET_KEY).encode()).hexdigest()
+
+    device_group = insert_device_group(device_group_values)
 
     master_user_group_values = get_user_group_default_values()
     master_user_group_values['name'] = 'Master'
@@ -325,7 +333,7 @@ def test_join_device_group_should_add_user_to_device_groups_master_group_when_va
         data=json.dumps(
             {
                 "productKey": device_group.product_key,
-                "productPassword": device_group.password,
+                "productPassword": password,
             }
         ),
         content_type=content_type,
@@ -352,22 +360,29 @@ def test_join_user_group_should_add_user_to_user_group_when_valid_request(
     device_group = insert_device_group()
     user = insert_user()
 
+
     master_user_group_values = get_user_group_default_values()
+    password = master_user_group_values['password']
+
+
     master_user_group_values['name'] = 'Master'
     master_user_group_values['id'] += 1
     master_user_group_values['users'] = [user]
+    master_user_group_values['password'] = get_password_hash(password)
+
 
     insert_user_group(master_user_group_values)
 
     user_group_values = get_user_group_default_values()
     user_group_values['name'] = 'test'
+    user_group_values['password'] = get_password_hash(password)
     user_group = insert_user_group(user_group_values)
 
     response = client.post(
         'api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/users',
         data=json.dumps(
             {
-                "password": user_group.password,
+                "password": password,
             }
         ),
         content_type=content_type,
