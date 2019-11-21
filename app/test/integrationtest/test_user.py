@@ -44,6 +44,49 @@ def test_login_should_return_auth_token_when_valid_request(
     payload = jwt.decode(response_data['authToken'], Constants.SECRET_KEY)
     assert payload['sub'] == user.id
 
+    assert response_data['isAdmin'] is False
+    assert response_data['username'] == user.username
+
+
+def test_login_should_return_auth_token_when_valid_request_and_user_is_admin(
+        client,
+        get_admin_default_values,
+        insert_admin
+        ):
+    content_type = 'application/json'
+
+    admin_values = get_admin_default_values()
+
+    admin_password = admin_values['password']
+    admin_values['password'] = flask_bcrypt.generate_password_hash(admin_password).decode('utf-8')
+
+    admin = insert_admin(admin_values)
+
+    response = client.post(
+        'api/users/login',
+        data=json.dumps(
+            {
+                'email': admin.email,
+                'password': admin_password
+            }
+        ),
+        content_type=content_type
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data
+
+    payload = jwt.decode(response_data['authToken'], Constants.SECRET_KEY)
+    assert payload['sub'] == admin.id
+
+    assert response_data['isAdmin'] is True
+    assert response_data['username'] == admin.username
+
+
 
 def test_login_should_return_error_message_when_mimetype_is_not_json(
         client,
