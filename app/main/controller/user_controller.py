@@ -25,9 +25,9 @@ def login():
         email = request_dict['email']
         password = request_dict['password']
 
-        result, token = _user_service_instance.create_auth_token(email, password)
+        result, result_values = _user_service_instance.create_auth_token(email, password)
 
-        return ResponseUtils.create_response(result=result, result_values=dict(authToken=token))
+        return ResponseUtils.create_response(result=result, result_values=result_values)
     else:
         return Response(
             response=json.dumps(dict(errorMessage=response_message)),

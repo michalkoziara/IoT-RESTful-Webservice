@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 from typing import Tuple
 
 import flask_bcrypt
@@ -35,7 +35,7 @@ class UserService:
         self._user_repository_instance = UserRepository.get_instance()
         self._user_group_repository_instance = UserGroupRepository.get_instance()
 
-    def create_auth_token(self, email: str, password: str) -> Tuple[str, Optional[str]]:
+    def create_auth_token(self, email: str, password: str) -> Tuple[str, Optional[Dict]]:
         user = self._user_repository_instance.get_user_by_email(email)
         is_admin = False
 
@@ -56,7 +56,9 @@ class UserService:
 
         token = Auth.encode_auth_token(user.id, is_admin)
 
-        return Constants.RESPONSE_MESSAGE_OK, token
+        response = {"authToken": token, "isAdmin": is_admin, 'username': user.username}
+
+        return Constants.RESPONSE_MESSAGE_OK, response
 
     def create_user(self, username: str, email: str, password: str) -> str:
         if not username or not email or not password:

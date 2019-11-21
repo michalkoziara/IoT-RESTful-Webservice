@@ -28,14 +28,17 @@ def test_create_auth_token_should_return_auth_token_when_valid_user_credentials(
     with patch.object(UserRepository, 'get_user_by_email') as get_user_by_email_mock:
         get_user_by_email_mock.return_value = user
 
-        result, token = user_service_instance.create_auth_token(user.email, user_password)
+        result, result_values = user_service_instance.create_auth_token(user.email, user_password)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_OK
-    assert token
+    assert result_values
 
-    payload = jwt.decode(token, Constants.SECRET_KEY)
+    payload = jwt.decode(result_values['authToken'], Constants.SECRET_KEY)
     assert payload['sub'] == user.id
+
+    assert result_values['username'] == user.username
+    assert result_values['isAdmin'] is False
 
 
 def test_create_auth_token_should_return_invalid_credentials_message_when_no_user_with_given_email(
@@ -56,11 +59,11 @@ def test_create_auth_token_should_return_invalid_credentials_message_when_no_use
         with patch.object(AdminRepository, 'get_admin_by_email') as get_admin_by_email:
             get_admin_by_email.return_value = None
 
-            result, token = user_service_instance.create_auth_token(user.email, user_password)
+            result, result_values = user_service_instance.create_auth_token(user.email, user_password)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
-    assert token is None
+    assert result_values is None
 
 
 def test_create_auth_token_should_return_invalid_credentials_message_when_invalid_password(
@@ -78,11 +81,11 @@ def test_create_auth_token_should_return_invalid_credentials_message_when_invali
     with patch.object(UserRepository, 'get_user_by_email') as get_user_by_email_mock:
         get_user_by_email_mock.return_value = user
 
-        result, token = user_service_instance.create_auth_token(user.email, 'not' + user_password)
+        result, result_values = user_service_instance.create_auth_token(user.email, 'not' + user_password)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
-    assert token is None
+    assert result_values is None
 
 
 def test_create_auth_token_should_return_invalid_credentials_message_when_checking_hash_failed(create_user):
@@ -93,11 +96,11 @@ def test_create_auth_token_should_return_invalid_credentials_message_when_checki
     with patch.object(UserRepository, 'get_user_by_email') as get_user_by_email_mock:
         get_user_by_email_mock.return_value = user
 
-        result, token = user_service_instance.create_auth_token(user.email, user.password)
+        result, result_values = user_service_instance.create_auth_token(user.email, user.password)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_INVALID_CREDENTIALS
-    assert token is None
+    assert result_values is None
 
 
 def test_create_user_should_return_success_message_when_valid_parameters():
