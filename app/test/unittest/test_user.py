@@ -211,9 +211,14 @@ def test_add_user_to_device_group_should_add_user_to_device_groups_master_group_
                                   ) as update_database_mock:
                     update_database_mock.return_value = True
 
-                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                            user.id, False,
-                                                                            device_group.password)
+                    with patch(
+                            'app.main.service.user_service.is_password_hash_correct'
+                    ) as password_check_mock:
+                        password_check_mock.return_value = True
+
+                        result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                                user.id, False,
+                                                                                device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     update_database_mock.assert_called_once()
@@ -251,9 +256,14 @@ def test_add_user_to_device_group_should_return_error_message_when_db_upgrade_wa
                                   ) as update_database_mock:
                     update_database_mock.return_value = False
 
-                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                            user.id, False,
-                                                                            device_group.password)
+                    with patch(
+                            'app.main.service.user_service.is_password_hash_correct'
+                    ) as password_check_mock:
+                        password_check_mock.return_value = True
+
+                        result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                                user.id, False,
+                                                                                device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
     update_database_mock.assert_called_once()
@@ -292,9 +302,14 @@ def test_add_user_to_device_group_should_return_error_message_when_user_already_
                                   ) as update_database_mock:
                     update_database_mock.return_value = True
 
-                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                            user.id, False,
-                                                                            device_group.password)
+                    with patch(
+                            'app.main.service.user_service.is_password_hash_correct'
+                    ) as password_check_mock:
+                        password_check_mock.return_value = True
+
+                        result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                                user.id, False,
+                                                                                device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_DEVICE_GROUP
 
@@ -324,9 +339,14 @@ def test_add_user_to_device_group_should_return_error_message_when_master_user_g
                               ) as get_user_group_by_name_and_device_group_id_mock:
                 get_user_group_by_name_and_device_group_id_mock.return_value = None
 
-                result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                        user.id, False,
-                                                                        device_group.password)
+                with patch(
+                        'app.main.service.user_service.is_password_hash_correct'
+                ) as password_check_mock:
+                    password_check_mock.return_value = True
+
+                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                            user.id, False,
+                                                                            device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
 
@@ -359,9 +379,14 @@ def test_add_user_to_device_group_should_return_error_message_when_user_is_admin
                               ) as get_user_group_by_name_and_device_group_id_mock:
                 get_user_group_by_name_and_device_group_id_mock.return_value = master_user_group
 
-                result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                        user.id, True,
-                                                                        device_group.password)
+                with patch(
+                        'app.main.service.user_service.is_password_hash_correct'
+                ) as password_check_mock:
+                    password_check_mock.return_value = True
+
+                    result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                            user.id, True,
+                                                                            device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
@@ -385,9 +410,14 @@ def test_add_user_to_device_group_should_return_error_message_when_user_not_foun
                           ) as get_user_by_id_mock:
             get_user_by_id_mock.return_value = None
 
-            result = user_service_instance.add_user_to_device_group(device_group.product_key,
-                                                                    'user.id', False,
-                                                                    device_group.password)
+            with patch(
+                    'app.main.service.user_service.is_password_hash_correct'
+            ) as password_check_mock:
+                password_check_mock.return_value = True
+
+                result = user_service_instance.add_user_to_device_group(device_group.product_key,
+                                                                        'user.id', False,
+                                                                        device_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
@@ -502,9 +532,14 @@ def test_add_user_to_user_group_should_add_user_to_device_group_when_right_param
                                       ) as update_database_mock:
                         update_database_mock.return_value = True
 
-                        result = user_service_instance.add_user_to_user_group("product_key", 1,
-                                                                              False, "user_group_name",
-                                                                              user_group.password)
+                        with patch(
+                                'app.main.service.user_service.is_password_hash_correct'
+                        ) as password_check_mock:
+                            password_check_mock.return_value = True
+
+                            result = user_service_instance.add_user_to_user_group("product_key", 1,
+                                                                                  False, "user_group_name",
+                                                                                  user_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert user in user_group.users
@@ -549,9 +584,14 @@ def test_add_user_to_user_group_should_return_error_message_when_unsuccessful_db
                                       ) as update_database_mock:
                         update_database_mock.return_value = False
 
-                        result = user_service_instance.add_user_to_user_group("product_key", 1,
-                                                                              False, "user_group_name",
-                                                                              user_group.password)
+                        with patch(
+                                'app.main.service.user_service.is_password_hash_correct'
+                        ) as password_check_mock:
+                            password_check_mock.return_value = True
+
+                            result = user_service_instance.add_user_to_user_group("product_key", 1,
+                                                                                  False, "user_group_name",
+                                                                                  user_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_ERROR
     assert user in user_group.users
@@ -598,9 +638,14 @@ def test_add_user_to_user_group_should_add_user_to_device_group_when_user_alread
                                       ) as update_database_mock:
                         update_database_mock.return_value = True
 
-                        result = user_service_instance.add_user_to_user_group("product_key", 1,
-                                                                              False, "user_group_name",
-                                                                              user_group.password)
+                        with patch(
+                                'app.main.service.user_service.is_password_hash_correct'
+                        ) as password_check_mock:
+                            password_check_mock.return_value = True
+
+                            result = user_service_instance.add_user_to_user_group("product_key", 1,
+                                                                                  False, "user_group_name",
+                                                                                  user_group.password)
 
     assert result == Constants.RESPONSE_MESSAGE_USER_ALREADY_IN_USER_GROUP
 

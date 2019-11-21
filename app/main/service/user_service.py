@@ -12,6 +12,8 @@ from app.main.repository.user_repository import UserRepository
 from app.main.util.auth_utils import Auth
 from app.main.util.constants import Constants
 
+from app.main.util.utils import is_password_hash_correct
+
 
 class UserService:
     _instance = None
@@ -95,7 +97,7 @@ class UserService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
 
-        if password != device_group.password:
+        if not is_password_hash_correct(password, device_group.password):
             return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         user = self._user_repository_instance.get_user_by_id(user_id)
@@ -151,7 +153,7 @@ class UserService:
         if not user_group:
             return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
 
-        if password != user_group.password:
+        if not is_password_hash_correct(password, user_group.password):
             return Constants.RESPONSE_MESSAGE_WRONG_PASSWORD
 
         if user not in user_group.users:
