@@ -815,7 +815,7 @@ def test_get_list_of_sensors_should_return_error_message_one_of_parameters_in_no
 ):
     sensor_service_instance = SensorService.get_instance()
 
-    result, result_values = sensor_service_instance.get_list_of_sensors(
+    result, _ = sensor_service_instance.get_list_of_sensors(
         product_key,
         user_id,
         is_admin

@@ -639,7 +639,7 @@ def test_get_list_of_executive_devices_should_return_empty_list_when_device_grou
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
-        result, result_values = executive_device_service_instance.get_list_of_executive_devices(
+        result, _ = executive_device_service_instance.get_list_of_executive_devices(
             'device_group.product_key',
             'device_group.admin_id',
             True
