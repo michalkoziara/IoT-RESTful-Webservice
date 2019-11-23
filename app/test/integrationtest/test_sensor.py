@@ -202,6 +202,85 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     assert response_data['values'] == expected_values
 
 
+##
+
+def test_get_get_list_of_sensors_should_return_list_of_sensors_info_when_is_is_admin_of_device_group(
+        client,
+        insert_device_group,
+        get_sensor_default_values,
+        insert_sensor,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    device_group.admin_id = admin.id
+
+    user_group_values = get_user_group_default_values()
+    user_group_values['name'] = 'Master'
+
+    user_group = insert_user_group(user_group_values)
+
+    first_sensor_values = get_sensor_default_values()
+    second_sensor_values = get_sensor_default_values()
+    third_sensor_values = get_sensor_default_values()
+
+    first_sensor_values['name'] = 'first'
+    second_sensor_values['name'] = 'second'
+    third_sensor_values['name'] = 'second'
+
+    first_sensor_values['user_group_id'] = user_group.id
+    second_sensor_values['user_group_id'] = None
+    third_sensor_values['user_group_id'] = None
+
+    second_sensor_values['id'] += 1
+    third_sensor_values['id'] += 2
+
+    second_sensor_values['device_key'] += '1'
+    third_sensor_values['device_key'] += '2'
+
+    first_sensor = insert_sensor(first_sensor_values)
+    second_sensor = insert_sensor(second_sensor_values)
+    third_sensor = insert_sensor(third_sensor_values)
+
+    expected_output_values = [
+        {
+            'name': first_sensor.name,
+            'isActive': first_sensor.is_active
+        },
+        {
+            'name': second_sensor.name,
+            'isActive': second_sensor.is_active
+        },
+        {
+            'name': third_sensor.name,
+            'isActive': third_sensor.is_active
+        }
+
+    ]
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/sensors',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data == expected_output_values
+
+
+##
+
+
 def test_get_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
         client,
         insert_device_group,

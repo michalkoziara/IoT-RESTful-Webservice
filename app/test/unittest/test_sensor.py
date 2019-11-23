@@ -721,6 +721,129 @@ def test_is_decimal_reading_in_range_should_return_false_when_value_not_in_range
     assert not sensor_service_instance._is_decimal_reading_in_range(value, sensor_type)
 
 
+def test_get_list_of_sensors_should_return_list_of_sensors_when_user_is_admin_of_device_group(
+        get_sensor_default_values,
+        create_sensor,
+        create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+    second_sensor_values = get_sensor_default_values()
+    second_sensor_values['id'] += 1
+    second_sensor_values['name'] = 'second sensor'
+    first_sensor = create_sensor()
+    second_sensor = create_sensor()
+
+    expected_output_values = [
+        {
+            'name': first_sensor.name,
+            'isActive': first_sensor.is_active
+        },
+        {
+            'name': second_sensor.name,
+            'isActive': second_sensor.is_active
+        }
+    ]
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorRepository,
+                'get_sensors_by_device_group_id'
+        ) as get_sensors_by_device_group_id_mock:
+            get_sensors_by_device_group_id_mock.return_value = [
+                first_sensor,
+                second_sensor]
+
+            result, result_values = sensor_service_instance.get_list_of_sensors(
+                device_group.product_key,
+                device_group.admin_id,
+                True
+            )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values == expected_output_values
+
+
+def test_get_list_of_sensors_should_return_error_message_when_user_is_not_admin(
+        create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        result, result_values = sensor_service_instance.get_list_of_sensors(
+            device_group.product_key,
+            device_group.admin_id,
+            False
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
+def test_get_list_of_sensors_should_return_error_message_when_device_group_not_found():
+    sensor_service_instance = SensorService.get_instance()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = None
+
+        result, result_values = sensor_service_instance.get_list_of_sensors(
+            'device_group.product_key',
+            'device_group.admin_id',
+            False
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
+
+
+@pytest.mark.parametrize("product_key, user_id, is_admin, expected_result", [
+    ('product_key', None, False, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    ('product_key', 'user_id', None, Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED),
+    (None, 'user_id', False, Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND)
+])
+def test_get_list_of_sensors_should_return_error_message_one_of_parameters_in_none(
+        product_key, user_id, is_admin, expected_result
+):
+    sensor_service_instance = SensorService.get_instance()
+
+    result, result_values = sensor_service_instance.get_list_of_sensors(
+        product_key,
+        user_id,
+        is_admin
+    )
+
+    assert result == expected_result
+
+
+def test_get_list_of_sensors_should_return_error_message_when_user_is_not_admin_of_device_group(
+        create_device_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        result, result_values = sensor_service_instance.get_list_of_sensors(
+            device_group.product_key,
+            1 + device_group.admin_id,
+            True
+        )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+
+
 def test_get_list_of_unassigned_sensors_should_return_list_of_unassigned_sensors_when_user_is_not_admin_and_right_parameters_are_passed(
         get_sensor_default_values,
         create_sensor,
