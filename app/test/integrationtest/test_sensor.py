@@ -202,8 +202,6 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
     assert response_data['values'] == expected_values
 
 
-##
-
 def test_get_get_list_of_sensors_should_return_list_of_sensors_info_when_is_is_admin_of_device_group(
         client,
         insert_device_group,
@@ -276,9 +274,6 @@ def test_get_get_list_of_sensors_should_return_list_of_sensors_info_when_is_is_a
     response_data = json.loads(response.data.decode())
     assert response_data is not None
     assert response_data == expected_output_values
-
-
-##
 
 
 def test_get_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_when_valid_request_and_user_is_not_admin(
