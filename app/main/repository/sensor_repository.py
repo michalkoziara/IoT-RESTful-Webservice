@@ -26,6 +26,11 @@ class SensorRepository(BaseRepository):
             )
         ).all()
 
+    def get_sensors_by_device_group_id(self, device_group_id: str) -> List[Sensor]:
+        return Sensor.query.filter(
+            Sensor.device_group_id == device_group_id
+        ).all()
+
     def get_sensor_by_device_key_and_device_group_id(self, device_key: str, device_group_id: int) -> Sensor:
         return Sensor.query.filter(
             and_(

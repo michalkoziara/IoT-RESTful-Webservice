@@ -145,6 +145,39 @@ class SensorService:
         else:
             return Constants.RESPONSE_MESSAGE_ERROR
 
+    def get_list_of_sensors(self, product_key: str,
+                            user_id: str,
+                            is_admin: bool
+                            ) -> Tuple[bool, Optional[List[dict]]]:
+        if not product_key:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if not user_id or is_admin is None:
+            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+        device_group = self._device_group_repository_instance.get_device_group_by_product_key(
+            product_key)
+
+        if not device_group:
+            return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if is_admin is False or device_group.admin_id != user_id:
+            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+        values = []
+
+        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id(
+            device_group.id)
+
+        for sensor in sensors:
+            sensor_info = {
+                'name': sensor.name,
+                'isActive': sensor.is_active
+            }
+            values.append(sensor_info)
+
+        return Constants.RESPONSE_MESSAGE_OK, values
+
     def get_list_of_unassigned_sensors(self, product_key: str,
                                        user_id: str,
                                        is_admin: bool
