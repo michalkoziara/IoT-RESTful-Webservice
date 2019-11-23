@@ -559,7 +559,7 @@ def test_get_list_of_executive_devices_should_return_error_message_when_user_is_
                 first_executive_device_values,
                 second_executive_device_values]
 
-            result, result_values = executive_device_service_instance.get_list_of_executive_devices(
+            result, _ = executive_device_service_instance.get_list_of_executive_devices(
                 device_group.product_key,
                 device_group.admin_id,
                 False
@@ -595,7 +595,7 @@ def test_get_list_of_executive_devices_should_return_error_message_when_user_is_
                 first_executive_device_values,
                 second_executive_device_values]
 
-            result, result_values = executive_device_service_instance.get_list_of_executive_devices(
+            result, _ = executive_device_service_instance.get_list_of_executive_devices(
                 device_group.product_key,
                 5 + device_group.admin_id,
                 True

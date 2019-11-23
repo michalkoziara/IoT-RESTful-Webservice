@@ -779,7 +779,7 @@ def test_get_list_of_sensors_should_return_error_message_when_user_is_not_admin(
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = device_group
 
-        result, result_values = sensor_service_instance.get_list_of_sensors(
+        result, _ = sensor_service_instance.get_list_of_sensors(
             device_group.product_key,
             device_group.admin_id,
             False
@@ -796,7 +796,7 @@ def test_get_list_of_sensors_should_return_error_message_when_device_group_not_f
             'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
         get_device_group_by_product_key_mock.return_value = None
 
-        result, result_values = sensor_service_instance.get_list_of_sensors(
+        result, _ = sensor_service_instance.get_list_of_sensors(
             'device_group.product_key',
             'device_group.admin_id',
             False
