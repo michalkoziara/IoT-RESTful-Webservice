@@ -178,7 +178,6 @@ def test_get_sensor_readings_should_return_sensors_readings_when_valid_request(
             'value': sensor_readings[0].value,
             'date': str(sensor_readings[0].date)
         }
-
     ]
 
     assert sensor.user_group_id == user_group.id
