@@ -58,8 +58,7 @@ def delete_sensor(product_key: str, device_key: str):
     )
 
 
-# TODO change this route to /sensors/unassigned
-@api.route('/hubs/<product_key>/sensors', methods=['GET'])
+@api.route('/hubs/<product_key>/sensors/unassigned', methods=['GET'])
 def get_unassigned_sensors_in_device_group(product_key: str):
     auth_header = request.headers.get('Authorization')
 

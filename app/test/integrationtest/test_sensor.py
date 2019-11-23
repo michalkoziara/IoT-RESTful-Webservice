@@ -258,7 +258,7 @@ def test_get_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_w
     ]
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/sensors',
+        '/api/hubs/' + device_group.product_key + '/sensors/unassigned',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
@@ -326,7 +326,7 @@ def test_get_list_of_unassigned_sensors_should_return_list_of_sensors_info_when_
     ]
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/sensors',
+        '/api/hubs/' + device_group.product_key + '/sensors/unassigned',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
@@ -363,7 +363,7 @@ def test_get_get_list_of_unassigned_sensors_should_return_error_message_when_val
     assert user not in user_group.users
 
     response = client.get(
-        '/api/hubs/' + device_group.product_key + '/sensors',
+        '/api/hubs/' + device_group.product_key + '/sensors/unassigned',
         content_type=content_type,
         headers={
             'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
