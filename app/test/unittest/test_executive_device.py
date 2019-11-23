@@ -658,7 +658,7 @@ def test_get_list_of_executive_devices_should_return_empty_list_when_one_of_para
 ):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
-    result, result_values = executive_device_service_instance.get_list_of_executive_devices(
+    result, _ = executive_device_service_instance.get_list_of_executive_devices(
         product_key,
         user_id,
         is_admin
