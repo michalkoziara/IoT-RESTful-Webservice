@@ -24,13 +24,19 @@ class DeviceGroupService:
         self._admin_repository = AdminRepository.get_instance()
         self._device_group_repository_instance = DeviceGroupRepository.get_instance()
 
-    def get_device_groups_info(self, user_id: str) -> Tuple[str, Optional[List]]:
-        if not user_id:
+    def get_device_groups_info(self, user_id: str, is_admin: bool) -> Tuple[str, Optional[List]]:
+        if not user_id or is_admin is None:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        device_groups = self._device_group_repository_instance.get_device_groups_by_user_id(user_id)
+        if is_admin is True:
+            device_groups = [self._device_group_repository_instance.get_device_group_by_admin_id(user_id)]
+        else:
+            device_groups = self._device_group_repository_instance.get_device_groups_by_user_id(user_id)
 
         response = []
+        if device_groups is None:
+            return Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND, None
+
         for device_group in device_groups:
             response.append(
                 {
