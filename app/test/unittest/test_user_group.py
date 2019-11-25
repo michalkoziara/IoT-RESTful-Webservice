@@ -74,7 +74,7 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
                         False
                     )
     assert result == Constants.RESPONSE_MESSAGE_OK
-    assert result_values == expected_output_values
+    assert result_values['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_valid_request_and_user_is_admin(
@@ -134,7 +134,7 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
                         True
                     )
     assert result == Constants.RESPONSE_MESSAGE_OK
-    assert result_values == expected_output_values
+    assert result_values['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_return_error_message_when_user_is_admin_in_different_device_group(

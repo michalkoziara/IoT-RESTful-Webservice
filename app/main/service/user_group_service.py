@@ -144,7 +144,7 @@ class UserGroupService:
                           }
                 list_of_user_groups.append(values)
 
-        return Constants.RESPONSE_MESSAGE_OK, list_of_user_groups
+        return Constants.RESPONSE_MESSAGE_OK, {'userGroups': list_of_user_groups}
 
     def delete_user_group(self, user_group_name: str, product_key: str, admin_id: str, is_admin: bool):
         if not product_key:
