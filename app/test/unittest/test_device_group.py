@@ -299,7 +299,7 @@ def test_get_device_groups_info_should_return_device_group_information_when_vali
             DeviceGroupRepository,
             'get_device_group_by_admin_id'
     ) as get_device_group_by_admin_id_mock:
-        get_device_group_by_admin_id_mock.return_value = [device_group]
+        get_device_group_by_admin_id_mock.return_value = device_group
 
         result, result_values = device_group_service_instance.get_device_groups_info(admin.id, True)
 
