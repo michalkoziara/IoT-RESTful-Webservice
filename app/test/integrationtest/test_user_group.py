@@ -42,7 +42,11 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
 
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
 
-    expected_output_values = ['Master', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': True, 'name': 'Master'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'}
+    ]
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/user-groups',
@@ -93,7 +97,11 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_
 
     assert device_group.admin_id == admin.id
 
-    expected_output_values = ['Master', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': False, 'name': 'Master'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'}
+    ]
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/user-groups',
