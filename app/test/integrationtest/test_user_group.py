@@ -42,7 +42,11 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
 
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
 
-    expected_output_values = ['Master', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': True, 'name': 'Master'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'}
+    ]
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/user-groups',
@@ -58,7 +62,7 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request(
 
     response_data = json.loads(response.data.decode())
     assert response_data is not None
-    assert response_data == expected_output_values
+    assert response_data['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_and_user_is_admin(
@@ -93,7 +97,11 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_
 
     assert device_group.admin_id == admin.id
 
-    expected_output_values = ['Master', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': False, 'name': 'Master'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'}
+    ]
 
     response = client.get(
         '/api/hubs/' + device_group.product_key + '/user-groups',
@@ -109,7 +117,7 @@ def test_get_list_of_user_groups_should_return_list_of_names_when_valid_request_
 
     response_data = json.loads(response.data.decode())
     assert response_data is not None
-    assert response_data == expected_output_values
+    assert response_data['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_error_message_when_wrong_token(

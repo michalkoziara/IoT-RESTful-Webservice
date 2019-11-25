@@ -41,7 +41,11 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
     first_user_group.users = [user]
 
-    expected_output_values = ['first', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': True, 'name': 'first'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'},
+    ]
 
     with patch.object(
             DeviceGroupRepository,
@@ -70,7 +74,7 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
                         False
                     )
     assert result == Constants.RESPONSE_MESSAGE_OK
-    assert result_values == expected_output_values
+    assert result_values['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_valid_request_and_user_is_admin(
@@ -97,7 +101,11 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
 
     device_group.user_groups = [first_user_group, second_user_group, third_user_group]
 
-    expected_output_values = ['first', 'second', 'third']
+    expected_output_values = [
+        {'isAssignedTo': False, 'name': 'first'},
+        {'isAssignedTo': False, 'name': 'second'},
+        {'isAssignedTo': False, 'name': 'third'},
+    ]
 
     with patch.object(
             DeviceGroupRepository,
@@ -126,7 +134,7 @@ def test_get_list_of_user_groups_should_return_list_of_user_groups_names_when_va
                         True
                     )
     assert result == Constants.RESPONSE_MESSAGE_OK
-    assert result_values == expected_output_values
+    assert result_values['userGroups'] == expected_output_values
 
 
 def test_get_list_of_user_groups_should_return_return_error_message_when_user_is_admin_in_different_device_group(

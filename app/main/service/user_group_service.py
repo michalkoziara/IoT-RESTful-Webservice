@@ -122,14 +122,29 @@ class UserGroupService:
             if device_group.admin_id != admin.id:
                 return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
-        names = []
+        list_of_user_groups = []
 
         user_groups = self._user_group_repository.get_user_groups_by_device_group_id(device_group.id)
 
-        for user_group in user_groups:
-            names.append(user_group.name)
+        if is_admin is True:
+            for user_group in user_groups:
+                values = {'name': user_group.name,
+                          'isAssignedTo': False
+                          }
+                list_of_user_groups.append(values)
 
-        return Constants.RESPONSE_MESSAGE_OK, names
+        else:
+            user = self._user_repository.get_user_by_id(user_id)
+            if user is None:
+                return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+            for user_group in user_groups:
+                values = {'name': user_group.name,
+                          'isAssignedTo': user in user_group.users
+                          }
+                list_of_user_groups.append(values)
+
+        return Constants.RESPONSE_MESSAGE_OK, {'userGroups': list_of_user_groups}
 
     def delete_user_group(self, user_group_name: str, product_key: str, admin_id: str, is_admin: bool):
         if not product_key:
