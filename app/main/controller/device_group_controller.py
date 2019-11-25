@@ -22,10 +22,8 @@ def get_device_groups():
     result_values = None
 
     if error_message is None:
-        if not user_info['is_admin']:
-            result, result_values = _device_group_service_instance.get_device_groups_info(user_info['user_id'])
-        else:
-            result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+        result, result_values = _device_group_service_instance.get_device_groups_info(
+            user_info['user_id'], user_info['is_admin'])
     else:
         result = error_message
 
