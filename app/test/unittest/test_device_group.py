@@ -272,7 +272,36 @@ def test_get_device_groups_info_should_return_device_group_information_when_vali
     ) as get_device_groups_by_user_id_mock:
         get_device_groups_by_user_id_mock.return_value = [device_group]
 
-        result, result_values = device_group_service_instance.get_device_groups_info(user.id)
+        result, result_values = device_group_service_instance.get_device_groups_info(user.id, False)
+
+    assert result
+    assert result == Constants.RESPONSE_MESSAGE_OK
+
+    assert result_values
+    assert result_values[0]
+    assert 'productKey' in result_values[0]
+    assert result_values[0]['productKey'] == device_group.product_key
+    assert 'name' in result_values[0]
+    assert result_values[0]['name'] == device_group.name
+
+
+def test_get_device_groups_info_should_return_device_group_information_when_valid_admin(
+        create_device_group,
+        create_admin):
+    device_group_service_instance = DeviceGroupService.get_instance()
+
+    device_group = create_device_group()
+    admin = create_admin()
+
+    assert device_group.admin_id == admin.id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_admin_id'
+    ) as get_device_group_by_admin_id_mock:
+        get_device_group_by_admin_id_mock.return_value = [device_group]
+
+        result, result_values = device_group_service_instance.get_device_groups_info(admin.id, True)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -288,7 +317,7 @@ def test_get_device_groups_info_should_return_device_group_information_when_vali
 def test_get_device_groups_info_should_return_error_message_when_no_parameter_given():
     device_group_service_instance = DeviceGroupService.get_instance()
 
-    result, result_values = device_group_service_instance.get_device_groups_info(None)
+    result, result_values = device_group_service_instance.get_device_groups_info(None, False)
 
     assert result
     assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED

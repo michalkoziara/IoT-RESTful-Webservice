@@ -188,11 +188,14 @@ def test_get_device_groups_should_return_error_message_when_user_not_authorized(
     assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
 
 
-def test_get_device_groups_should_return_no_privileges_error_message_when_user_is_admin(
-        client, insert_admin):
+def test_get_device_groups_should_return_only_one_device_group_info_when_user_is_admin(
+        client, insert_admin, insert_device_group):
     content_type = 'application/json'
 
+    device_group = insert_device_group()
     admin = insert_admin()
+
+    assert device_group.admin_id == admin.id
 
     response = client.get(
         '/api/hubs',
@@ -203,12 +206,14 @@ def test_get_device_groups_should_return_no_privileges_error_message_when_user_i
     )
 
     assert response
-    assert response.status_code == 403
+    assert response.status_code == 200
 
     response_data = json.loads(response.data.decode())
-    assert response_data
-    assert 'errorMessage' in response_data
-    assert response_data['errorMessage'] == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert response_data[0]
+    assert 'productKey' in response_data[0]
+    assert response_data[0]['productKey'] == device_group.product_key
+    assert 'name' in response_data[0]
+    assert response_data[0]['name'] == device_group.name
 
 
 if __name__ == '__main__':
