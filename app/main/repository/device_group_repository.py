@@ -26,6 +26,9 @@ class DeviceGroupRepository(BaseRepository):
             )
         ).first()
 
+    def get_device_group_by_admin_id(self, admin_id: str) -> DeviceGroup:
+        return DeviceGroup.query.filter(DeviceGroup.admin_id == admin_id).first()
+
     def get_device_group_by_product_key(self, product_key: str) -> DeviceGroup:
         return DeviceGroup.query.filter(DeviceGroup.product_key == product_key).first()
 
