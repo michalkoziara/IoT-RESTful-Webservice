@@ -501,10 +501,12 @@ def test_get_list_of_executive_devices_should_return_list_of_executive_devices_w
     expected_output_values = [
         {
             'name': first_executive_device_values.name,
+            'deviceKey': first_executive_device_values.device_key,
             'isActive': first_executive_device_values.is_active
         },
         {
             'name': second_executive_device_values.name,
+            'deviceKey': second_executive_device_values.device_key,
             'isActive': second_executive_device_values.is_active
         }
     ]
@@ -683,10 +685,12 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_unassign
     expected_output_values = [
         {
             'name': first_executive_device_values.name,
+            'deviceKey': first_executive_device_values.device_key,
             'isActive': first_executive_device_values.is_active
         },
         {
             'name': second_executive_device_values.name,
+            'deviceKey': second_executive_device_values.device_key,
             'isActive': second_executive_device_values.is_active
         }
     ]
@@ -735,10 +739,12 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_unassign
     expected_output_values = [
         {
             'name': first_executive_device_values.name,
+            'deviceKey': first_executive_device_values.device_key,
             'isActive': first_executive_device_values.is_active
         },
         {
             'name': second_executive_device_values.name,
+            'deviceKey': second_executive_device_values.device_key,
             'isActive': second_executive_device_values.is_active
         }
     ]
