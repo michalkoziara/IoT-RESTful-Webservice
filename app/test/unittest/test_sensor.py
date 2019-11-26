@@ -737,10 +737,12 @@ def test_get_list_of_sensors_should_return_list_of_sensors_when_user_is_admin_of
     expected_output_values = [
         {
             'name': first_sensor.name,
+            'deviceKey': first_sensor.device_key,
             'isActive': first_sensor.is_active
         },
         {
             'name': second_sensor.name,
+            'deviceKey': second_sensor.device_key,
             'isActive': second_sensor.is_active
         }
     ]
@@ -860,10 +862,12 @@ def test_get_list_of_unassigned_sensors_should_return_list_of_unassigned_sensors
     expected_output_values = [
         {
             'name': first_sensor.name,
+            'deviceKey': first_sensor.device_key,
             'isActive': first_sensor.is_active
         },
         {
             'name': second_sensor.name,
+            'deviceKey': second_sensor.device_key,
             'isActive': second_sensor.is_active
         }
     ]
@@ -913,10 +917,12 @@ def test_get_list_of_unassigned_sensors_should_return_list_of_unassigned_sensors
     expected_output_values = [
         {
             'name': first_sensor.name,
+            'deviceKey': first_sensor.device_key,
             'isActive': first_sensor.is_active
         },
         {
             'name': second_sensor.name,
+            'deviceKey': second_sensor.device_key,
             'isActive': second_sensor.is_active
         }
     ]

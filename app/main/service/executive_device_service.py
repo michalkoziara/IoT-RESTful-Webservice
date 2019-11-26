@@ -191,6 +191,7 @@ class ExecutiveDeviceService:
         for executive_device in executive_devices:
             executive_device_info = {
                 'name': executive_device.name,
+                'deviceKey': executive_device.device_key,
                 'isActive': executive_device.is_active
             }
             values.append(executive_device_info)
@@ -233,6 +234,7 @@ class ExecutiveDeviceService:
         for executive_device in executive_devices:
             executive_device_info = {
                 'name': executive_device.name,
+                'deviceKey': executive_device.device_key,
                 'isActive': executive_device.is_active
             }
             values.append(executive_device_info)
