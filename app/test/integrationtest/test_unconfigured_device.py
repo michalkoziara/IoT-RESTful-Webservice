@@ -56,7 +56,7 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
 
     response_data = json.loads(response.data.decode())
     assert len(response_data) == 1
-    assert response_data[0] == device_key
+    assert response_data['deviceKeys'][0] == device_key
 
 
 def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid_request(

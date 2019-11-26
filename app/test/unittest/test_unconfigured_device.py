@@ -51,7 +51,7 @@ def test_get_unconfigured_device_keys_for_device_group_should_return_device_keys
 
     assert result == Constants.RESPONSE_MESSAGE_OK
     assert len(result_values) == 1
-    assert result_values[0] == test_device_key
+    assert result_values["deviceKeys"][0] == test_device_key
 
 
 def test_get_unconfigured_device_keys_for_device_group_should_not_return_device_keys_when_none_parameter(

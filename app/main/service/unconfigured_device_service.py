@@ -47,4 +47,4 @@ class UnconfiguredDeviceService:
         for unconfigured_device in unconfigured_devices:
             devices_keys.append(unconfigured_device.device_key)
 
-        return Constants.RESPONSE_MESSAGE_OK, devices_keys
+        return Constants.RESPONSE_MESSAGE_OK, {'deviceKeys': devices_keys}
