@@ -518,7 +518,7 @@ def test_get_list_of_executive_devices_should_return_list_of_executive_devices_w
 
         with patch.object(
                 ExecutiveDeviceRepository,
-                'get_updated_executive_devices_by_device_group_id'
+                'get_executive_devices_by_device_group_id'
         ) as get_updated_executive_devices_by_device_group_id_mock:
             get_updated_executive_devices_by_device_group_id_mock.return_value = [
                 first_executive_device_values,
@@ -619,7 +619,7 @@ def test_get_list_of_executive_devices_should_return_empty_list_when_there_are_n
 
         with patch.object(
                 ExecutiveDeviceRepository,
-                'get_updated_executive_devices_by_device_group_id'
+                'get_executive_devices_by_device_group_id'
         ) as get_updated_executive_devices_by_device_group_id_mock:
             get_updated_executive_devices_by_device_group_id_mock.return_value = []
 
