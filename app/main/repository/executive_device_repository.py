@@ -26,6 +26,9 @@ class ExecutiveDeviceRepository(BaseRepository):
             )
         ).all()
 
+    def get_executive_devices_by_device_group_id(self, device_group_id: str) -> List[ExecutiveDevice]:
+        return ExecutiveDevice.query.filter(ExecutiveDevice.device_group_id == device_group_id).all()
+
     def get_executive_device_by_device_key_and_device_group_id(
             self,
             device_key: str,

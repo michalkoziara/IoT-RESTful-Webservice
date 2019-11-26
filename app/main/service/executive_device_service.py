@@ -186,7 +186,7 @@ class ExecutiveDeviceService:
         values = []
 
         executive_devices = self._executive_device_repository_instance \
-            .get_updated_executive_devices_by_device_group_id(device_group.id)
+            .get_executive_devices_by_device_group_id(device_group.id)
 
         for executive_device in executive_devices:
             executive_device_info = {
