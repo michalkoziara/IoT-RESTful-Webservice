@@ -172,6 +172,7 @@ class SensorService:
         for sensor in sensors:
             sensor_info = {
                 'name': sensor.name,
+                'deviceKey': sensor.device_key,
                 'isActive': sensor.is_active
             }
             values.append(sensor_info)
@@ -212,6 +213,7 @@ class SensorService:
         for sensor in sensors:
             sensor_info = {
                 'name': sensor.name,
+                'deviceKey': sensor.device_key,
                 'isActive': sensor.is_active
             }
             values.append(sensor_info)

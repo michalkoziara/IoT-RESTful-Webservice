@@ -293,10 +293,12 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_
     expected_output_values = [
         {
             'name': second_executive_device.name,
+            'deviceKey': second_executive_device.device_key,
             'isActive': second_executive_device.is_active
         },
         {
             'name': third_executive_device.name,
+            'deviceKey': third_executive_device.device_key,
             'isActive': third_executive_device.is_active
         }
 
@@ -319,7 +321,7 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_
     assert response_data == expected_output_values
 
 
-def test_get_list_of_executive_devices_should_return_list_of_sensors_info_when_user_is_admin_in_device_group(
+def test_get_list_of_executive_devices_should_return_list_of_executive_devices_info_when_user_is_admin_in_device_group(
         client,
         insert_device_group,
         get_executive_device_default_values,
@@ -364,14 +366,17 @@ def test_get_list_of_executive_devices_should_return_list_of_sensors_info_when_u
     expected_output_values = [
         {
             'name': first_executive_device.name,
+            'deviceKey': first_executive_device.device_key,
             'isActive': first_executive_device.is_active
         },
         {
             'name': second_executive_device.name,
+            'deviceKey': second_executive_device.device_key,
             'isActive': second_executive_device.is_active
         },
         {
             'name': third_executive_device.name,
+            'deviceKey': third_executive_device.device_key,
             'isActive': third_executive_device.is_active
         }
 
@@ -434,10 +439,12 @@ def test_get_list_of_unassigned_executive_devices_should_return_list_of_sensors_
     expected_output_values = [
         {
             'name': second_executive_device.name,
+            'deviceKey': second_executive_device.device_key,
             'isActive': second_executive_device.is_active
         },
         {
             'name': third_executive_device.name,
+            'deviceKey': third_executive_device.device_key,
             'isActive': third_executive_device.is_active
         }
 
