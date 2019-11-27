@@ -22,7 +22,8 @@ def get_sensor(product_key: str, device_key: str):
         result, result_values = _sensor_service_instance.get_sensor_info(
             device_key,
             product_key,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message

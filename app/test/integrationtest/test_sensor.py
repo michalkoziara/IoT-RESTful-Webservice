@@ -63,6 +63,57 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_request(
     assert response_data['readingValue'] == sensor_reading.value
 
 
+def test_get_sensor_info_should_return_sensor_info_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        insert_sensor,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_sensor_type,
+        insert_sensor_reading,
+        get_sensor_type_default_values):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    user_group_values = get_user_group_default_values()
+
+    insert_user_group(user_group_values)
+    sensor_type_values = get_sensor_type_default_values()
+    sensor_type_values['reading_type'] = 'Decimal'
+    sensor_type = insert_sensor_type(sensor_type_values)
+    sensor = insert_sensor()
+
+    sensor_reading = insert_sensor_reading()
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+
+    assert response_data
+    assert response_data['name'] == sensor.name
+    assert response_data['isUpdated'] == sensor.is_updated
+    assert response_data['isActive'] == sensor.is_active
+    assert response_data['isAssigned'] == sensor.is_assigned
+    assert response_data['deviceKey'] == sensor.device_key
+    assert response_data['sensorTypeName'] == sensor_type.name
+    assert response_data['sensorTypeName'] == sensor_type.name
+    assert response_data['readingValue'] == sensor_reading.value
+
+
 def test_get_sensor_info_should_not_return_sensor_info_when_bad_product_key(
         client,
         insert_device_group,

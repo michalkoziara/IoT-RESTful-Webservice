@@ -53,7 +53,8 @@ class ExecutiveDeviceService:
         self._user_repository = UserRepository.get_instance()
         self._admin_repository = AdminRepository.get_instance()
 
-    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[str, Optional[dict]]:
+    def get_executive_device_info(self, device_key: str, product_key: str, user_id: str, is_admin: bool) -> Tuple[
+        str, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -61,13 +62,17 @@ class ExecutiveDeviceService:
         if not device_key:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
-        if not user_id:
+        if not user_id or is_admin is None:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
+
+        if is_admin is True:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_device = self._executive_device_repository_instance \
             .get_executive_device_by_device_key_and_device_group_id(
@@ -78,12 +83,19 @@ class ExecutiveDeviceService:
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
-        user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(
-            user_id,
-            device_key
-        )
-        if not user_group and executive_device.user_group_id is not None:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        user_group = None
+
+        if executive_device.user_group_id is not None:
+            if is_admin is False:
+
+                user_group = self._user_group_repository.get_user_group_by_user_id_and_executive_device_device_key(
+                    user_id,
+                    device_key
+                )
+                if not user_group and executive_device.user_group_id is not None:
+                    return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            else:
+                user_group = self._user_group_repository.get_user_group_by_id(executive_device.user_group_id)
 
         executive_device_info = {}
         executive_device_info['name'] = executive_device.name
@@ -108,14 +120,14 @@ class ExecutiveDeviceService:
         executive_device_info['defaultState'] = self.get_executive_device_state_value(
             executive_device,
             executive_device_type.default_state)
+
         if user_group:
             executive_device_info['deviceUserGroup'] = user_group.name
         else:
             executive_device_info['deviceUserGroup'] = None
 
-        formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
-
-        if formula:
+        if executive_device.formula_id:
+            formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
             executive_device_info['formulaName'] = formula.name
         else:
             executive_device_info['formulaName'] = None

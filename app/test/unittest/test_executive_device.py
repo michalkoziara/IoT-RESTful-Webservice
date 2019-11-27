@@ -69,7 +69,81 @@ def test_get_executive_device_info_should_return_device_info_when_valid_product_
                             result, result_values = executive_device_service_instance.get_executive_device_info(
                                 executive_device.device_key,
                                 device_group.product_key,
-                                test_user_id
+                                test_user_id,
+                                False
+                            )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values
+    assert result_values['name'] == executive_device.name
+    assert result_values['state'] == "test"
+    assert result_values['isUpdated'] == executive_device.is_updated
+    assert result_values['isActive'] == executive_device.is_active
+    assert result_values['isAssigned'] == executive_device.is_assigned
+    assert result_values['isFormulaUsed'] == executive_device.is_formula_used
+    assert result_values['positiveState'] == "test"
+    assert result_values['negativeState'] == "test"
+    assert result_values['defaultState'] == "test"
+    assert result_values['deviceKey'] == executive_device.device_key
+    assert result_values['deviceTypeName'] == executive_type.name
+    assert result_values['deviceUserGroup'] == user_group.name
+    assert result_values['formulaName'] == formula.name
+
+
+def test_get_executive_device_info_should_return_device_info_when_valid_user_is_admin(
+        create_executive_device,
+        create_device_group,
+        create_executive_type,
+        create_formula,
+        create_user_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    executive_type = create_executive_type()
+    executive_device = create_executive_device()
+    formula = create_formula()
+    user_group = create_user_group()
+
+    test_user_id = device_group.admin_id
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_device_key_and_device_group_id'
+    ) as get_executive_device_by_device_key_and_device_group_id_mock:
+        get_executive_device_by_device_key_and_device_group_id_mock.return_value = executive_device
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_id'
+        ) as get_executive_type_by_id_mock:
+            get_executive_type_by_id_mock.return_value = executive_type
+
+            with patch.object(
+                    DeviceGroupRepository,
+                    'get_device_group_by_product_key'
+            ) as get_device_group_by_product_key_mock:
+                get_device_group_by_product_key_mock.return_value = device_group
+
+                with patch.object(FormulaRepository, 'get_formula_by_id') as get_formula_by_id_mock:
+                    get_formula_by_id_mock.return_value = formula
+
+                    with patch.object(
+                            UserGroupRepository,
+                            'get_user_group_by_id'
+                    ) as get_user_group_by_id_mock:
+                        get_user_group_by_id_mock.return_value = user_group
+
+                        with patch.object(
+                                ExecutiveDeviceService,
+                                'get_executive_device_state_value'
+                        ) as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = "test"
+
+                            result, result_values = executive_device_service_instance.get_executive_device_info(
+                                executive_device.device_key,
+                                device_group.product_key,
+                                test_user_id,
+                                True
                             )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -141,7 +215,79 @@ def test_get_executive_device_info_should_return_device_info_when_user_is_not_in
                             result, result_values = executive_device_service_instance.get_executive_device_info(
                                 executive_device.device_key,
                                 device_group.product_key,
-                                test_user_id
+                                test_user_id,
+                                False
+                            )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values
+    assert result_values['name'] == executive_device.name
+    assert result_values['state'] == "test"
+    assert result_values['isUpdated'] == executive_device.is_updated
+    assert result_values['isActive'] == executive_device.is_active
+    assert result_values['isAssigned'] == executive_device.is_assigned
+    assert result_values['positiveState'] == "test"
+    assert result_values['negativeState'] == "test"
+    assert result_values['defaultState'] == "test"
+    assert result_values['deviceKey'] == executive_device.device_key
+    assert result_values['deviceTypeName'] == executive_type.name
+    assert result_values['deviceUserGroup'] is None
+    assert result_values['formulaName'] == formula.name
+
+
+def test_get_executive_device_info_should_return_device_info_when_device_is_not_in_any_group_and_user_is_admin_admin(
+        create_executive_device,
+        create_device_group,
+        create_executive_type,
+        create_formula):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    executive_type = create_executive_type()
+    executive_device = create_executive_device()
+    executive_device.user_group_id = None
+    formula = create_formula()
+
+    test_user_id = device_group.admin_id
+
+    with patch.object(
+            ExecutiveDeviceRepository,
+            'get_executive_device_by_device_key_and_device_group_id'
+    ) as get_executive_device_by_device_key_and_device_group_id_mock:
+        get_executive_device_by_device_key_and_device_group_id_mock.return_value = executive_device
+
+        with patch.object(
+                ExecutiveTypeRepository,
+                'get_executive_type_by_id'
+        ) as get_executive_type_by_id_mock:
+            get_executive_type_by_id_mock.return_value = executive_type
+
+            with patch.object(
+                    DeviceGroupRepository,
+                    'get_device_group_by_product_key'
+            ) as get_device_group_by_product_key_mock:
+                get_device_group_by_product_key_mock.return_value = device_group
+
+                with patch.object(FormulaRepository, 'get_formula_by_id') as get_formula_by_id_mock:
+                    get_formula_by_id_mock.return_value = formula
+
+                    with patch.object(
+                            UserGroupRepository,
+                            'get_user_group_by_user_id_and_executive_device_device_key'
+                    ) as get_user_group_by_user_id_and_executive_device_device_key_mock:
+                        get_user_group_by_user_id_and_executive_device_device_key_mock.return_value = None
+
+                        with patch.object(
+                                ExecutiveDeviceService,
+                                'get_executive_device_state_value'
+                        ) as get_executive_device_state_value_mock:
+                            get_executive_device_state_value_mock.return_value = "test"
+
+                            result, result_values = executive_device_service_instance.get_executive_device_info(
+                                executive_device.device_key,
+                                device_group.product_key,
+                                test_user_id,
+                                True
                             )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -171,7 +317,8 @@ def test_get_executive_device_info_should_not_return_device_info_when_no_user_id
     result, result_values = executive_device_service_instance.get_executive_device_info(
         executive_device.device_key,
         device_group.product_key,
-        None
+        None,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
@@ -187,7 +334,8 @@ def test_get_executive_device_info_should_not_return_device_info_when_no_device_
     result, result_values = executive_device_service_instance.get_executive_device_info(
         None,
         device_group.product_key,
-        test_user_id
+        test_user_id,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
@@ -204,7 +352,8 @@ def test_get_executive_device_info_should_not_return_device_info_when_no_product
     result, result_values = executive_device_service_instance.get_executive_device_info(
         executive_device.device_key,
         None,
-        test_user_id
+        test_user_id,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -240,8 +389,35 @@ def test_get_executive_device_info_should_not_return_device_info_when_user_is_no
 
                 result, result_values = executive_device_service_instance.get_executive_device_info(
                     executive_device.device_key,
-                    device_group.product_key, test_user_id
+                    device_group.product_key,
+                    test_user_id,
+                    False
                 )
+
+    assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
+    assert result_values is None
+
+
+def test_get_executive_device_info_should_not_return_error_message_when_admin_is_not_admin_of_device_group(
+        create_device_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    device_group = create_device_group()
+    test_user_id = device_group.admin_id + 2
+    test_device_key = '1'
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key'
+    ) as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        result, result_values = executive_device_service_instance.get_executive_device_info(
+            test_device_key,
+            device_group.product_key,
+            test_user_id,
+            True
+        )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     assert result_values is None
@@ -249,7 +425,6 @@ def test_get_executive_device_info_should_not_return_device_info_when_user_is_no
 
 def test_get_executive_device_info_should_not_return_device_info_when_executive_device_is_not_in_device_group(
         create_device_group,
-        create_executive_device,
         create_user_group):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
@@ -279,7 +454,8 @@ def test_get_executive_device_info_should_not_return_device_info_when_executive_
                 result, result_values = executive_device_service_instance.get_executive_device_info(
                     test_device_key,
                     device_group.product_key,
-                    test_user_id
+                    test_user_id,
+                    False
                 )
 
     assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
@@ -319,7 +495,8 @@ def test_get_executive_device_info_should_not_return_device_info_when_device_gro
                 result, result_values = executive_device_service_instance.get_executive_device_info(
                     test_device_key,
                     device_group.product_key,
-                    test_user_id
+                    test_user_id,
+                    False
                 )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND

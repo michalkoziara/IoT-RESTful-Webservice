@@ -56,7 +56,8 @@ class SensorService:
         self._unconfigured_device_repository = UnconfiguredDeviceRepository.get_instance()
         self._admin_repository = AdminRepository.get_instance()
 
-    def get_sensor_info(self, device_key: str, product_key: str, user_id: str) -> Tuple[bool, Optional[dict]]:
+    def get_sensor_info(self, device_key: str, product_key: str, user_id: str, is_admin: bool) -> Tuple[
+        bool, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -80,13 +81,23 @@ class SensorService:
         if not sensor:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
 
-        user_group = self._user_group_repository.get_user_group_by_user_id_and_sensor_device_key(
-            user_id,
-            device_key
-        )
+        user_group = None
 
-        if not user_group and sensor.user_group_id is not None:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        if sensor.user_group_id is not None:
+            if is_admin is False:
+
+                user_group = self._user_group_repository.get_user_group_by_user_id_and_sensor_device_key(
+                    user_id,
+                    device_key
+                )
+
+                if not user_group and sensor.user_group_id is not None:
+                    return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            else:
+                if device_group.admin_id != user_id:
+                    return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+                user_group = self._user_group_repository.get_user_group_by_id(sensor.user_group_id)
 
         senor_info = {}
         senor_info['name'] = sensor.name
