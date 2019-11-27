@@ -22,7 +22,8 @@ def get_executive_device(product_key: str, device_key: str):
         result, result_values = _executive_device_service_instance.get_executive_device_info(
             device_key,
             product_key,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message

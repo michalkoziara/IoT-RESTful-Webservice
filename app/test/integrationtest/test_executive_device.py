@@ -62,6 +62,55 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     assert response_data['deviceUserGroup'] == user_group.name
     assert response_data['formulaName'] == formula.name
 
+def test_get_executive_device_info_should_return_device_info_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        insert_executive_device,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group,
+        insert_executive_type,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+
+    user_group_values = get_user_group_default_values()
+
+    user_group = insert_user_group(user_group_values)
+    executive_type = insert_executive_type()
+    formula = insert_formula()
+    executive_device = insert_executive_device()
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+
+    assert response_data['name'] == executive_device.name
+    assert response_data['state'] == executive_device.state
+    assert response_data['isUpdated'] == executive_device.is_updated
+    assert response_data['isActive'] == executive_device.is_active
+    assert response_data['isAssigned'] == executive_device.is_assigned
+    assert response_data['isFormulaUsed'] == executive_device.is_formula_used
+    assert response_data['positiveState'] == executive_device.positive_state
+    assert response_data['negativeState'] == executive_device.negative_state
+    assert response_data['deviceKey'] == executive_device.device_key
+    assert response_data['deviceTypeName'] == executive_type.name
+    assert response_data['deviceUserGroup'] == user_group.name
+    assert response_data['formulaName'] == formula.name
+
 
 def test_get_executive_device_info_should_return_user_does_not_have_privileges_error_when_not_known_user_id(
         client,
