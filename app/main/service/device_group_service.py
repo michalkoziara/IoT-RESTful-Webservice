@@ -34,8 +34,8 @@ class DeviceGroupService:
             device_groups = self._device_group_repository_instance.get_device_groups_by_user_id(user_id)
 
         response = []
-        if device_groups is None:
-            return Constants.RESPONSE_MESSAGE_DEVICE_STATES_NOT_FOUND, None
+        if device_groups == [] or device_groups == [None]:
+            return Constants.RESPONSE_MESSAGE_OK, []
 
         for device_group in device_groups:
             response.append(
