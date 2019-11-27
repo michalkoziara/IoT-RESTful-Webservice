@@ -58,7 +58,64 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
                         result, result_values = sensor_service_instance.get_sensor_info(
                             sensor.device_key,
                             device_group.product_key,
-                            test_user_id
+                            test_user_id,
+                            False
+                        )
+
+    assert result == Constants.RESPONSE_MESSAGE_OK
+    assert result_values
+    assert result_values['name'] == sensor.name
+    assert result_values['isUpdated'] == sensor.is_updated
+    assert result_values['isActive'] == sensor.is_active
+    assert result_values['isAssigned'] == sensor.is_assigned
+    assert result_values['deviceKey'] == sensor.device_key
+    assert result_values['sensorTypeName'] == sensor_type.name
+    assert result_values['sensorUserGroup'] == user_group.name
+    assert result_values['readingValue'] == 1
+
+
+def test_get_sensor_info_should_return_sensor_info_when_valid_user_is_admin(
+        create_sensor,
+        create_sensor_type,
+        create_device_group,
+        create_user_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    device_group = create_device_group()
+    sensor_type = create_sensor_type()
+    sensor = create_sensor()
+    user_group = create_user_group()
+
+    test_user_id = device_group.admin_id
+
+    with patch.object(
+            DeviceGroupRepository,
+            'get_device_group_by_product_key') as get_device_group_by_product_key_mock:
+        get_device_group_by_product_key_mock.return_value = device_group
+
+        with patch.object(
+                SensorRepository,
+                'get_sensor_by_device_key_and_device_group_id'
+        ) as get_sensor_by_device_key_and_device_group_id_mock:
+            get_sensor_by_device_key_and_device_group_id_mock.return_value = sensor
+
+            with patch.object(
+                    UserGroupRepository,
+                    'get_user_group_by_id'
+            ) as get_user_group_by_id_mock:
+                get_user_group_by_id_mock.return_value = user_group
+
+                with patch.object(SensorTypeRepository, 'get_sensor_type_by_id') as get_sensor_type_by_id_mock:
+                    get_sensor_type_by_id_mock.return_value = sensor_type
+
+                    with patch.object(SensorService, 'get_senor_reading_value') as get_senor_reading_value_mock:
+                        get_senor_reading_value_mock.return_value = 1
+
+                        result, result_values = sensor_service_instance.get_sensor_info(
+                            sensor.device_key,
+                            device_group.product_key,
+                            test_user_id,
+                            True
                         )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -76,8 +133,7 @@ def test_get_sensor_info_should_return_sensor_info_when_valid_product_key_device
 def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_user_group(
         create_sensor,
         create_sensor_type,
-        create_device_group,
-        create_user_group):
+        create_device_group):
     sensor_service_instance = SensorService.get_instance()
 
     device_group = create_device_group()
@@ -113,7 +169,8 @@ def test_get_sensor_info_should_return_sensor_info_when_sensor_is_not_in_any_use
                         result, result_values = sensor_service_instance.get_sensor_info(
                             sensor.device_key,
                             device_group.product_key,
-                            test_user_id
+                            test_user_id,
+                            False
                         )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -139,7 +196,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_no_user_id(
     result, result_values = sensor_service_instance.get_sensor_info(
         sensor.device_key,
         device_group.product_key,
-        None
+        None,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
@@ -155,7 +213,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_no_device_key(create
     result, result_values = sensor_service_instance.get_sensor_info(
         None,
         device_group.product_key,
-        test_user_id
+        test_user_id,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
@@ -171,7 +230,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_no_product_key(creat
     result, result_values = sensor_service_instance.get_sensor_info(
         sensor.device_key,
         None,
-        test_user_id
+        test_user_id,
+        False
     )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -212,7 +272,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_user_is_not_in_the_s
                     result, result_values = sensor_service_instance.get_sensor_info(
                         sensor.device_key,
                         device_group.product_key,
-                        test_user_id
+                        test_user_id,
+                        False
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
@@ -255,7 +316,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_sensor_is_not_in_dev
                     result, result_values = sensor_service_instance.get_sensor_info(
                         test_sensor_id,
                         device_group.product_key,
-                        test_user_id
+                        test_user_id,
+                        False
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND
@@ -297,7 +359,8 @@ def test_get_sensor_info_should_not_return_sensor_info_when_device_group_does_no
                     result, result_values = sensor_service_instance.get_sensor_info(
                         sensor.device_key,
                         device_group.product_key,
-                        test_user_id
+                        test_user_id,
+                        False
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
