@@ -171,6 +171,51 @@ def test_get_device_groups_should_return_device_group_information_when_valid_req
     assert response_data[0]['name'] == device_group.name
 
 
+def test_get_device_groups_should_return_empty_list_when_user_not_in_any_device_group(
+        client,
+        insert_user):
+    content_type = 'application/json'
+
+    user = insert_user()
+
+    response = client.get(
+        '/api/hubs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response
+    assert response.status_code == 200
+
+    response_data = json.loads(response.data.decode())
+    assert response_data == []
+
+def test_get_device_groups_should_return_empty_list_when_admin_not_in_any_device_group(
+        client,
+        insert_admin):
+    content_type = 'application/json'
+
+    admin = insert_admin()
+
+    response = client.get(
+        '/api/hubs',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response
+    assert response.status_code == 200
+
+    response_data = json.loads(response.data.decode())
+    assert response_data == []
+
+
+
+
 def test_get_device_groups_should_return_error_message_when_user_not_authorized(client):
     content_type = 'application/json'
 
