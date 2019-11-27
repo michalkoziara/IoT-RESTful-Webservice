@@ -126,9 +126,8 @@ class ExecutiveDeviceService:
         else:
             executive_device_info['deviceUserGroup'] = None
 
-        formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
-
-        if formula:
+        if executive_device.formula_id:
+            formula = self._formula_repository.get_formula_by_id(executive_device.formula_id)
             executive_device_info['formulaName'] = formula.name
         else:
             executive_device_info['formulaName'] = None
