@@ -170,7 +170,7 @@ def get_sensor_readings(product_key: str, device_key: str):
     )
 
 
-@api.route('/hubs/<product_key>/sensors/<device_key>', methods=['POST'])
+@api.route('/hubs/<product_key>/sensors/<device_key>', methods=['PUT'])
 def modify_sensor(product_key: str, device_key: str):
     auth_header = request.headers.get('Authorization')
     result_values = None

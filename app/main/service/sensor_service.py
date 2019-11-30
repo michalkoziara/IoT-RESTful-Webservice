@@ -551,8 +551,10 @@ class SensorService:
         else:
             if new_user_group is not None:
                 sensor.user_group_id = new_user_group.id
+                sensor.is_assigned = True
             else:
                 sensor.user_group_id = None
+                sensor.is_assigned = False
             return True, None
 
     def _change_sensor_type(self, sensor: Sensor,
