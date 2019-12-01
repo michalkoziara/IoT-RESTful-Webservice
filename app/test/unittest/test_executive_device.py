@@ -1770,6 +1770,104 @@ def test__change_device_formula_related_fields_should_change_devices_fields_if_a
     assert executive_device.is_formula_used is is_formula_used
 
 
+def test__change_device_formula_related_fields_should_change_device_fields_when_positive_state_is_None(
+        create_executive_device, create_formula
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    formula = create_formula()
+
+    formula_name = formula.name
+    positive_state = None
+    negative_state = "Negative"
+    is_formula_used = False
+
+    with patch.object(
+            ExecutiveDeviceService,
+            '_state_in_range'
+    ) as _state_in_range_mock:
+        _state_in_range_mock.return_value = True
+        with patch.object(
+                FormulaRepository,
+                'get_formula_by_name_and_user_group_id'
+        ) as get_formula_by_name_and_user_group_id_mock:
+            get_formula_by_name_and_user_group_id_mock.return_value = formula
+
+            status, returned_formula, error_msg = \
+                executive_device_service_instance._change_device_formula_related_fields(
+                    executive_device,
+                    formula_name,
+                    positive_state,
+                    negative_state, is_formula_used,
+                    Mock(),
+                    Mock()
+                )
+    assert status is True
+    assert returned_formula is formula
+    assert error_msg is None
+
+    assert executive_device.formula_id == formula.id
+    assert executive_device.negative_state == negative_state
+    assert executive_device.positive_state == positive_state
+    assert executive_device.is_formula_used is is_formula_used
+
+
+@pytest.mark.parametrize('formula_name, positive_state, negative_state, is_formula_used',
+                         [
+                             (None, "positive", "negative", False),
+                             ("formula_name", None, "negative", False),
+                             ("formula_name", "positive", None, False),
+                         ])
+def test_change_device_formula_related_fields_should_change_device_fields_when_positive_state_is_None(
+        formula_name, positive_state, negative_state, is_formula_used,
+        create_executive_device, create_formula
+):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+
+    executive_device = create_executive_device()
+    executive_device.formula_id = None
+    formula = create_formula()
+
+    formula_name = formula_name
+    positive_state = positive_state
+    negative_state = negative_state
+    is_formula_used = is_formula_used
+
+    with patch.object(
+            ExecutiveDeviceService,
+            '_state_in_range'
+    ) as _state_in_range_mock:
+        _state_in_range_mock.return_value = True
+        with patch.object(
+                FormulaRepository,
+                'get_formula_by_name_and_user_group_id'
+        ) as get_formula_by_name_and_user_group_id_mock:
+            get_formula_by_name_and_user_group_id_mock.return_value = formula
+
+            status, returned_formula, error_msg = \
+                executive_device_service_instance._change_device_formula_related_fields(
+                    executive_device,
+                    formula_name,
+                    positive_state,
+                    negative_state, is_formula_used,
+                    Mock(),
+                    Mock()
+                )
+    assert status is True
+    assert error_msg is None
+    assert executive_device.negative_state == negative_state
+    assert executive_device.positive_state == positive_state
+    assert executive_device.is_formula_used is is_formula_used
+
+    if formula_name is not None:
+        assert returned_formula is formula
+        assert executive_device.formula_id == formula.id
+    else:
+        assert executive_device.formula_id is None
+        assert returned_formula is None
+
+
 @pytest.mark.parametrize('formula_name, positive_state, negative_state, is_formula_used',
                          [
                              (None, "positive", "negative", True),
@@ -1781,7 +1879,6 @@ def test__change_device_formula_related_fields_should_change_devices_fields_if_a
                              (None, "positive", None, None),
                              (None, None, "negative", None),
                              (None, None, None, True),
-
 
                          ])
 def test_change_device_formula_related_fields_should_return_error_message_when_wrong_combination_of_parameters(

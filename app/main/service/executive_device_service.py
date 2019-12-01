@@ -656,7 +656,7 @@ class ExecutiveDeviceService:
         if not is_bool(is_formula_used):
             return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
-        if is_formula_used is True and positive_state is None or negative_state is None or formula_name is None:
+        if is_formula_used is True and (positive_state is None or negative_state is None or formula_name is None):
             return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
         executive_device.is_formula_used = is_formula_used
