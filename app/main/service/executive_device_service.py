@@ -680,7 +680,6 @@ class ExecutiveDeviceService:
 
         elif positive_state is None and negative_state is None and not is_formula_used:
 
-            executive_device.formula_id = None
             executive_device.positive_state = None
             executive_device.negative_state = None
             executive_device.is_formula_used = False
