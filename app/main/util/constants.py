@@ -37,6 +37,7 @@ class Constants:
     RESPONSE_MESSAGE_LOGGER_LEVEL_OFF = 'Errors logging is disabled.'
     RESPONSE_MESSAGE_OK = 'OK'
     RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA = 'Hub send partially wrong data'
+    RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND = 'Partially wrong data'
     RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND = 'Product key was not found.'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_FOUND = 'Sensors readings not found'
     RESPONSE_MESSAGE_SENSORS_READINGS_NOT_LIST = 'Sensors readings must be a list of dictionaries'
