@@ -20,6 +20,7 @@ from app.main.repository.unconfigured_device_repository import UnconfiguredDevic
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
+from app.main.util.utils import is_bool
 
 
 class ExecutiveDeviceService:
@@ -650,10 +651,21 @@ class ExecutiveDeviceService:
             optional:new Formula
             optional: error message
         """
+        formula = None
+
+        if not is_bool(is_formula_used):
+            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+
+        if is_formula_used is True and positive_state is None or negative_state is None or formula_name is None:
+            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+
+        executive_device.is_formula_used = is_formula_used
 
         if formula_name is not None:
-            if user_group is None or is_formula_used is None:
+
+            if user_group is None:
                 return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+
             formula = self._formula_repository.get_formula_by_name_and_user_group_id(formula_name, user_group.id)
 
             if not formula:
@@ -661,30 +673,19 @@ class ExecutiveDeviceService:
 
             executive_device.formula_id = formula.id
 
-        if is_formula_used is True:
-            if positive_state is None or negative_state is None or executive_device.formula_id is None:
-                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
-
-            positive_state_in_range = self._state_in_range(positive_state, executive_type)
-            negative_state_in_range = self._state_in_range(negative_state, executive_type)
-
-            if positive_state_in_range and negative_state_in_range:
+        if positive_state is not None:
+            if self._state_in_range(positive_state, executive_type):
                 executive_device.positive_state = positive_state
-                executive_device.negative_state = negative_state
-                executive_device.is_formula_used = is_formula_used
-
-                return True, formula, None
-
             else:
                 return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
-        elif positive_state is None and negative_state is None and not is_formula_used:
+        if negative_state is not None:
+            if self._state_in_range(negative_state, executive_type):
+                executive_device.negative_state = negative_state
+            else:
+                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
-            executive_device.positive_state = None
-            executive_device.negative_state = None
-            executive_device.is_formula_used = False
-            return True, None, None
-
+            return True, formula, None
         else:
             return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
