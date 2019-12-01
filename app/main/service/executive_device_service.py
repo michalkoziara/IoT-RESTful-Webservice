@@ -20,7 +20,6 @@ from app.main.repository.unconfigured_device_repository import UnconfiguredDevic
 from app.main.repository.user_group_repository import UserGroupRepository
 from app.main.repository.user_repository import UserRepository
 from app.main.util.constants import Constants
-from app.main.util.utils import is_bool
 
 
 class ExecutiveDeviceService:
@@ -637,7 +636,7 @@ class ExecutiveDeviceService:
             executive_device.state = state_to_set
             return True, None
         else:
-            return False, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+            return False, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
     def _change_device_formula_related_fields(
             self, executive_device: ExecutiveDevice, formula_name: str,
@@ -653,23 +652,31 @@ class ExecutiveDeviceService:
         """
 
         if formula_name is not None:
-            if user_group is None or is_formula_used is None or positive_state is None or negative_state is None:
-                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
-
+            if user_group is None or is_formula_used is None:
+                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
             formula = self._formula_repository.get_formula_by_name_and_user_group_id(formula_name, user_group.id)
-            positive_state_in_range = self._state_in_range(positive_state, executive_type)
-            negative_state_in_range = self._state_in_range(negative_state, executive_type)
 
-            if formula is None or not (
-                    is_bool(is_formula_used) and positive_state_in_range and negative_state_in_range):
+            if not formula:
                 return False, None, Constants.RESPONSE_MESSAGE_FORMULA_NOT_FOUND
 
             executive_device.formula_id = formula.id
-            executive_device.positive_state = positive_state
-            executive_device.negative_state = negative_state
-            executive_device.is_formula_used = is_formula_used
 
-            return True, formula, None
+        if is_formula_used is True:
+            if positive_state is None or negative_state is None or executive_device.formula_id is None:
+                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+
+            positive_state_in_range = self._state_in_range(positive_state, executive_type)
+            negative_state_in_range = self._state_in_range(negative_state, executive_type)
+
+            if positive_state_in_range and negative_state_in_range:
+                executive_device.positive_state = positive_state
+                executive_device.negative_state = negative_state
+                executive_device.is_formula_used = is_formula_used
+
+                return True, formula, None
+
+            else:
+                return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
         elif positive_state is None and negative_state is None and not is_formula_used:
 
@@ -680,7 +687,7 @@ class ExecutiveDeviceService:
             return True, None, None
 
         else:
-            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
     def _state_in_range(self, state: float, executive_type: ExecutiveType) -> bool:
         if executive_type.state_type == 'Enum':
