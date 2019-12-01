@@ -687,7 +687,7 @@ def test_modify_sensor_should_modify_sensor_when_valid_request(
 
     new_name = "Changed"
 
-    response = client.post(
+    response = client.put(
         '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
         data=json.dumps(
             {
