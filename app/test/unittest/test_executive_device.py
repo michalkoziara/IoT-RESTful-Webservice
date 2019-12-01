@@ -1777,30 +1777,40 @@ def test__change_device_formula_related_fields_should_change_devices_fields_if_a
                              ("formula_name", "positive", None, True),
                              ("formula_name", "positive", "negative", None),
                              ("formula_name", None, None, None),
+                             ("formula_name", None, None, True),
                              (None, "positive", None, None),
                              (None, None, "negative", None),
                              (None, None, None, True),
 
+
                          ])
-def test__change_device_formula_related_fields_should_return_error_message_when_wrong_combination_of_parameters(
+def test_change_device_formula_related_fields_should_return_error_message_when_wrong_combination_of_parameters(
         formula_name, positive_state, negative_state, is_formula_used
 
 ):
     executive_device_service_instance = ExecutiveDeviceService.get_instance()
 
-    status, returned_formula, error_msg = \
-        executive_device_service_instance._change_device_formula_related_fields(
-            Mock,
-            formula_name,
-            positive_state,
-            negative_state, is_formula_used,
-            Mock(),
-            Mock()
-        )
+    executive_device_mock = Mock(spec=ExecutiveDevice)
+    executive_device_mock.formula_id = 1
+
+    with patch.object(
+            FormulaRepository,
+            'get_formula_by_name_and_user_group_id'
+    ) as get_formula_by_name_and_user_group_id_mock:
+        get_formula_by_name_and_user_group_id_mock.return_value = Mock()
+        status, returned_formula, error_msg = \
+            executive_device_service_instance._change_device_formula_related_fields(
+                executive_device_mock,
+                formula_name,
+                positive_state,
+                negative_state, is_formula_used,
+                Mock(),
+                Mock()
+            )
 
     assert status is False
     assert returned_formula is None
-    assert error_msg == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA
+    assert error_msg == Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
 
 def test__change_device_formula_related_fields_should_return_error_message_when_formula_not_found(
