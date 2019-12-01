@@ -685,9 +685,7 @@ class ExecutiveDeviceService:
             else:
                 return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
 
-            return True, formula, None
-        else:
-            return False, None, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+        return True, formula, None
 
     def _state_in_range(self, state: float, executive_type: ExecutiveType) -> bool:
         if executive_type.state_type == 'Enum':
