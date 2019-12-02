@@ -137,7 +137,8 @@ class ExecutiveTypeService:
 
         return Constants.RESPONSE_MESSAGE_CREATED
 
-    def get_executive_type_info(self, product_key: str, type_name: str, user_id: str) -> Tuple[str, Optional[dict]]:
+    def get_executive_type_info(self, product_key: str, type_name: str, user_id: str, is_admin: bool) -> Tuple[
+        str, Optional[dict]]:
 
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
@@ -153,13 +154,19 @@ class ExecutiveTypeService:
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        user = self._user_repository.get_user_by_id(user_id)
+        if not is_admin:
 
-        if not user:
-            return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+            user = self._user_repository.get_user_by_id(user_id)
 
-        if not is_user_in_one_of_user_groups_in_device_group(user, device_group):
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            if not user:
+                return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
+
+            if not is_user_in_one_of_user_groups_in_device_group(user, device_group):
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        else:
+
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_type = self._executive_type_repository.get_executive_type_by_device_group_id_and_name(
             device_group.id,
