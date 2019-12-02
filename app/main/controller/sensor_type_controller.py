@@ -67,7 +67,8 @@ def get_sensor_type(product_key: str, type_name: str):
         result, result_values = _sensor_type_service.get_sensor_type_info(
             product_key,
             type_name,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message
