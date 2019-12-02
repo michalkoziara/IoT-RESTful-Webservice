@@ -41,7 +41,8 @@ def create_executive_type(product_key: str):
                     state_range_max,
                     enumerator,
                     default_state,
-                    user_info['user_id'])
+                    user_info['user_id']
+                    )
             else:
                 result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
         else:
@@ -69,7 +70,8 @@ def get_executive_type(product_key: str, type_name: str):
         result, result_values = _executive_type_service.get_executive_type_info(
             product_key,
             type_name,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message

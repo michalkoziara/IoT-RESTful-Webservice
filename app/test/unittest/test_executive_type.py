@@ -79,7 +79,8 @@ def test_get_executive_type_info_should_return_executive_type_info_when_valid_re
                     result, result_values = executive_type_service_instance.get_executive_type_info(
                         device_group.product_key,
                         user_group.name,
-                        test_user_id
+                        test_user_id,
+                        False
                     )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -144,7 +145,8 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request_and_r
                 result, result_values = executive_type_service_instance.get_executive_type_info(
                     device_group.product_key,
                     user_group.name,
-                    test_user_id
+                    test_user_id,
+                    False
                 )
 
     assert result == Constants.RESPONSE_MESSAGE_OK
@@ -189,7 +191,8 @@ def test_get_sensor_type_info_should_return_error_message_when_sensor_type_not_i
                 result, result_values = executive_type_service_instance.get_executive_type_info(
                     device_group.product_key,
                     user_group.name,
-                    test_user_id
+                    test_user_id,
+                    False
                 )
 
     assert result == Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND
@@ -224,7 +227,8 @@ def test_get_sensor_type_info_should_return_error_message_when_user_not_in_any_u
             result, result_values = executive_type_service_instance.get_executive_type_info(
                 device_group.product_key,
                 user_group.name,
-                test_user_id
+                test_user_id,
+                False
             )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
@@ -253,7 +257,8 @@ def test_get_sensor_type_info_should_return_error_message_when_user_not_found(
             result, result_values = executive_type_service_instance.get_executive_type_info(
                 device_group.product_key,
                 'user_group_name',
-                test_user_id
+                test_user_id,
+                False
             )
 
     assert result == Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED
@@ -274,7 +279,8 @@ def test_get_sensor_type_info_should_return_error_message_when_device_group_not_
         result, result_values = executive_type_service_instance.get_executive_type_info(
             'device_group_product_key',
             'user_group_name',
-            test_user_id
+            test_user_id,
+            False
         )
 
     assert result == Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND
@@ -293,7 +299,8 @@ def test_get_sensor_type_info_should_return_error_message_when_one_of_parameters
     result, result_values = executive_type_service_instance.get_executive_type_info(
         product_key,
         type_name,
-        user_id
+        user_id,
+        False
     )
 
     assert result == expected_result
