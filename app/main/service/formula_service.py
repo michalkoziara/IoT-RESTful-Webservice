@@ -1,4 +1,5 @@
 # pylint: disable=no-self-use
+import datetime
 from json import dumps
 from json import loads
 from typing import Any
@@ -204,96 +205,109 @@ class FormulaService:
         if not user_group:
             return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND
 
-        if not is_dict_with_keys(formula_data, ['formulaName']) or not formula_data['formulaName']:
+        if not is_dict_with_keys(formula_data, ['name']) or not formula_data['name']:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST
 
         existing_formula = self._formula_repository_instance.get_formula_by_name_and_user_group_id(
-            formula_data['formulaName'],
+            formula_data['name'],
             user_group.id
         )
 
         if existing_formula:
             return Constants.RESPONSE_MESSAGE_DUPLICATE_FORMULA_NAME
 
-        sensor_data = self._get_sensor_data_from_formula_data(formula_data['rule'])
-        sensor_keys = sensor_data.keys()
+        if formula_data['rule']['sensorRule']:
+            sensor_data = self._get_sensor_data_from_formula_data(formula_data['rule']['sensorRule'])
+            sensor_keys = sensor_data.keys()
 
-        sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_and_user_group_id_and_device_keys(
-            user_group.id,
-            device_group.id,
-            sensor_keys
-        )
+            sensors = self._sensor_repository_instance.get_sensors_by_device_group_id_and_user_group_id_and_device_keys(
+                user_group.id,
+                device_group.id,
+                sensor_keys
+            )
 
-        if not sensor_keys or not sensors or len(set(sensor_keys)) != len(sensors):
-            return Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
+            if not sensor_keys or not sensors or len(set(sensor_keys)) != len(sensors):
+                return Constants.RESPONSE_MESSAGE_SENSOR_NOT_FOUND
 
-        sensor_type_ids = [sensor.sensor_type_id for sensor in sensors]
-        sensor_types = self._sensor_type_repository_instance.get_sensor_types_by_ids(sensor_type_ids)
+            sensor_type_ids = [sensor.sensor_type_id for sensor in sensors]
+            sensor_types = self._sensor_type_repository_instance.get_sensor_types_by_ids(sensor_type_ids)
 
-        sensor_type_by_sensor_key = {}
-        for sensor in sensors:
-            for sensor_type in sensor_types:
-                if sensor.sensor_type_id == sensor_type.id:
-                    sensor_type_by_sensor_key[sensor.device_key] = sensor_type
+            sensor_type_by_sensor_key = {}
+            for sensor in sensors:
+                for sensor_type in sensor_types:
+                    if sensor.sensor_type_id == sensor_type.id:
+                        sensor_type_by_sensor_key[sensor.device_key] = sensor_type
 
-        for sensor in sensors:
-            value = sensor_data.get(sensor.device_key)['value']
-            functor = sensor_data.get(sensor.device_key)['functor']
-            sensor_type = sensor_type_by_sensor_key[sensor.device_key]
+            for sensor in sensors:
+                value = sensor_data.get(sensor.device_key)['value']
+                functor = sensor_data.get(sensor.device_key)['functor']
+                sensor_type = sensor_type_by_sensor_key[sensor.device_key]
 
-            if ((sensor_type.reading_type == 'Decimal'
-                 and not self._sensor_service_instance.reading_in_range(
-                        value,
-                        sensor_type))
-                    or ((sensor_type.reading_type == 'Enum')
-                        and not self._sensor_service_instance.is_enum_reading_text_right(value, sensor_type.id))
-                    or (sensor_type.reading_type == 'Boolean'
-                        and not isinstance(value, bool))):
-                return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+                if ((sensor_type.reading_type == 'Decimal'
+                     and not self._sensor_service_instance.reading_in_range(
+                            value,
+                            sensor_type))
+                        or ((sensor_type.reading_type == 'Enum')
+                            and not self._sensor_service_instance.is_enum_reading_text_right(value, sensor_type.id))
+                        or (sensor_type.reading_type == 'Boolean'
+                            and not isinstance(value, bool))):
+                    return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
 
-            if not ((sensor_type.reading_type in ['Enum', 'Boolean'] and functor == '==')
-                    or (sensor_type.reading_type == 'Decimal' and functor in ['==', '<=', '=>'])):
-                return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+                if not ((sensor_type.reading_type in ['Enum', 'Boolean'] and functor == '==')
+                        or (sensor_type.reading_type == 'Decimal' and functor in ['==', '<=', '=>'])):
+                    return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
 
-        rule, lookup_table = self._create_expresion(formula_data['rule'])
-        for value in lookup_table.values():
-            reading_type = sensor_type_by_sensor_key[value['deviceKey']].reading_type
-            value['type'] = reading_type
+            rule, lookup_table = self._create_expresion(formula_data['rule']['sensorRule'])
+            for value in lookup_table.values():
+                reading_type = sensor_type_by_sensor_key[value['deviceKey']].reading_type
+                value['type'] = reading_type
 
-            if reading_type == 'Enum':
-                possible_readings = \
-                    self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
-                        sensor_type_by_sensor_key[value['deviceKey']].id
-                    )
-                value['number_of_reading_values'] = len(possible_readings)
+                if reading_type == 'Enum':
+                    possible_readings = \
+                        self._reading_enumerator_repository_instance.get_reading_enumerators_by_sensor_type_id(
+                            sensor_type_by_sensor_key[value['deviceKey']].id
+                        )
+                    value['number_of_reading_values'] = len(possible_readings)
 
-        try:
-            expression = expr(rule)
-            if expression.to_cnf().satisfy_one():
-                expression_dnf = expression.to_dnf()
+            try:
+                expression = expr(rule)
+                if expression.to_cnf().satisfy_one():
+                    expression_dnf = expression.to_dnf()
 
-                if isinstance(expression_dnf, OrOp):
+                    if isinstance(expression_dnf, OrOp):
 
-                    for or_inner_expression in expression_dnf._lits:
-                        if isinstance(or_inner_expression, AndOp):
-                            if not self._check_and_expression(or_inner_expression, lookup_table):
+                        for or_inner_expression in expression_dnf._lits:
+                            if isinstance(or_inner_expression, AndOp):
+                                if not self._check_and_expression(or_inner_expression, lookup_table):
+                                    return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+                            elif not self._check_literal_expression(or_inner_expression, lookup_table):
                                 return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
-                        elif not self._check_literal_expression(or_inner_expression, lookup_table):
-                            return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
 
-                elif isinstance(expression_dnf, AndOp):
-                    if not self._check_and_expression(expression_dnf, lookup_table):
-                        return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+                    elif isinstance(expression_dnf, AndOp):
+                        if not self._check_and_expression(expression_dnf, lookup_table):
+                            return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+                    else:
+                        if not self._check_literal_expression(expression_dnf, lookup_table):
+                            return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
                 else:
-                    if not self._check_literal_expression(expression_dnf, lookup_table):
-                        return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
-            else:
-                return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
-        except (Error, TypeError, ValueError):
+                    return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
+            except (Error, TypeError, ValueError):
+                return Constants.RESPONSE_MESSAGE_ERROR
+
+        if (formula_data['rule']['datetimeRule']['datetimeStart']
+                and formula_data['rule']['datetimeRule']['datetimeEnd']
+                and datetime.datetime.strptime(
+                    formula_data['rule']['datetimeRule']['datetimeStart'],
+                    '%Y-%m-%dT%H:%M:%S.%fZ') >= datetime.datetime.strptime(
+                    formula_data['rule']['datetimeRule']['datetimeEnd'],
+                    '%Y-%m-%dT%H:%M:%S.%fZ')):
+            return Constants.RESPONSE_MESSAGE_ERROR
+
+        if not formula_data['rule']['datetimeRule'] and not formula_data['rule']['sensorRule']:
             return Constants.RESPONSE_MESSAGE_ERROR
 
         formula = Formula(
-            name=formula_data['formulaName'],
+            name=formula_data['name'],
             rule=dumps(formula_data['rule']),
             user_group_id=user_group.id
         )
