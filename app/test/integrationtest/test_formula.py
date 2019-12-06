@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from app.main.model.formula import Formula
 from app.main.util.auth_utils import Auth
@@ -38,21 +39,28 @@ def test_create_formula_should_add_new_formula_to_use_group_when_valid_request(
         '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
-                "formulaName": formula_name,
+                "name": formula_name,
                 "rule": {
-                    "isNegated": False,
-                    "operator": "and",
-                    "complexRight": {
-                        "isNegated": True,
-                        "value": 15,
-                        "functor": "=>",
-                        "deviceKey": sensor.device_key
+                    "datetimeRule": {
+                        "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     },
-                    "complexLeft": {
+                    "operator": "or",
+                    "sensorRule": {
                         "isNegated": False,
-                        "value": 10,
-                        "functor": "=>",
-                        "deviceKey": sensor.device_key
+                        "operator": "and",
+                        "complexRight": {
+                            "isNegated": True,
+                            "value": 15,
+                            "functor": "=>",
+                            "deviceKey": sensor.device_key
+                        },
+                        "complexLeft": {
+                            "isNegated": False,
+                            "value": 10,
+                            "functor": "=>",
+                            "deviceKey": sensor.device_key
+                        }
                     }
                 }
             }
@@ -89,18 +97,25 @@ def test_create_formula_should_return_error_message_when_invalid_request(
         '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
-                "formulaName": 'test',
+                "name": 'test',
                 "rule": {
-                    "operator": "and",
-                    "complexRight": {
-                        "isNegated": True,
-                        "value": 15,
-                        "functor": "=>",
+                    "datetimeRule": {
+                        "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     },
-                    "complexLeft": {
-                        "isNegated": False,
-                        "value": 10,
-                        "functor": "=>",
+                    "operator": "or",
+                    "sensorRule": {
+                        "operator": "and",
+                        "complexRight": {
+                            "isNegated": True,
+                            "value": 15,
+                            "functor": "=>",
+                        },
+                        "complexLeft": {
+                            "isNegated": False,
+                            "value": 10,
+                            "functor": "=>",
+                        }
                     }
                 }
             }
@@ -153,21 +168,28 @@ def test_create_formula_should_return_invalid_formula_message_when_invalid_formu
         '/api/hubs/' + device_group.product_key + '/user-groups/' + user_group.name + '/formulas',
         data=json.dumps(
             {
-                "formulaName": formula_name,
+                "name": formula_name,
                 "rule": {
-                    "isNegated": False,
-                    "operator": "and",
-                    "complexRight": {
-                        "isNegated": False,
-                        "value": 15,
-                        "functor": "=>",
-                        "deviceKey": sensor.device_key
+                    "datetimeRule": {
+                        "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     },
-                    "complexLeft": {
+                    "operator": "or",
+                    "sensorRule": {
                         "isNegated": False,
-                        "value": 10,
-                        "functor": "<=",
-                        "deviceKey": sensor.device_key
+                        "operator": "and",
+                        "complexRight": {
+                            "isNegated": False,
+                            "value": 15,
+                            "functor": "=>",
+                            "deviceKey": sensor.device_key
+                        },
+                        "complexLeft": {
+                            "isNegated": False,
+                            "value": 10,
+                            "functor": "<=",
+                            "deviceKey": sensor.device_key
+                        }
                     }
                 }
             }

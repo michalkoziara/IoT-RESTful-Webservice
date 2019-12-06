@@ -136,10 +136,12 @@ def create_formula(product_key: str, user_group_name: str):
 
 
 def _check_formula_request_data(request_dict):
-    if not is_dict_with_keys(request_dict, ['formulaName', 'rule']):
+    if (not is_dict_with_keys(request_dict, ['name', 'rule']) or
+            not is_dict_with_keys(request_dict['rule'], ['sensorRule', 'datetimeRule', 'operator'])):
         return False
 
-    return _check_complex_formula_request_data(request_dict['rule'])
+    return (is_dict_with_keys(request_dict['rule']['datetimeRule'], ['datetimeStart', 'datetimeEnd']) and
+            _check_complex_formula_request_data(request_dict['rule']['sensorRule']))
 
 
 def _check_complex_formula_request_data(complex_request_dict):
