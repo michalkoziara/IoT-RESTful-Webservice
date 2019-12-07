@@ -102,8 +102,7 @@ def test_create_formula_should_return_error_message_when_invalid_request(
                 "rule": {
                     "datetimeRule": {
                         "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        "days": "1,2,3"
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     },
                     "operator": "or",
                     "sensorRule": {

@@ -140,7 +140,7 @@ def _check_formula_request_data(request_dict):
             not is_dict_with_keys(request_dict['rule'], ['sensorRule', 'datetimeRule', 'operator'])):
         return False
 
-    return (is_dict_with_keys(request_dict['rule']['datetimeRule'], ['datetimeStart', 'datetimeEnd', 'days']) and
+    return (is_dict_with_keys(request_dict['rule']['datetimeRule'], ['datetimeStart', 'datetimeEnd', 'days']) or
             _check_complex_formula_request_data(request_dict['rule']['sensorRule']))
 
 
