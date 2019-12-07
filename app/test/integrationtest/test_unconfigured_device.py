@@ -10,7 +10,7 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
         client,
         get_device_group_default_values,
         insert_device_group,
-        insert_user,
+        insert_admin,
         get_user_group_default_values,
         insert_user_group,
         get_unconfigured_device_default_values,
@@ -26,12 +26,11 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
 
     test_device_group = insert_device_group(device_group_values)
 
-    user = insert_user()
+    admin = insert_admin()
 
     user_group_values = get_user_group_default_values()
     user_group_values['name'] = 'Master'
     user_group_values['device_group_id'] = test_device_group.id
-    user_group_values['users'] = [user]
 
     insert_user_group(user_group_values)
 
@@ -43,10 +42,9 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
 
     response = client.get(
         '/api/hubs/' + product_key + '/non-configured-devices',
-        data=json.dumps({'userId': user.id}),
         content_type=content_type,
         headers={
-            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
         }
     )
 
@@ -57,6 +55,34 @@ def test_get_unconfigured_devices_should_return_device_keys_when_valid_request(
     response_data = json.loads(response.data.decode())
     assert len(response_data) == 1
     assert response_data[0] == device_key
+
+
+def test_get_unconfigured_devices_should_return_empty_list_when_no_unconfigured_devices_in_device_group(
+        client,
+        insert_device_group,
+        insert_admin,
+):
+    content_type = 'application/json'
+    device_group = insert_device_group()
+
+    admin = insert_admin()
+
+    assert device_group.admin_id == admin.id
+
+    response = client.get(
+        '/api/hubs/' + device_group.product_key + '/non-configured-devices',
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data == [];
 
 
 def test_get_unconfigured_devices_should_return_bad_request_message_when_invalid_request(

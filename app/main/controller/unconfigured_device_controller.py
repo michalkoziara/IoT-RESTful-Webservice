@@ -21,7 +21,8 @@ def get_unconfigured_devices(product_key):
     if error_message is None:
         result, result_values = _unconfigured_device_service_instance.get_unconfigured_device_keys_for_device_group(
             product_key,
-            user_info['user_id']
+            user_info['user_id'],
+            user_info['is_admin']
         )
     else:
         result = error_message
