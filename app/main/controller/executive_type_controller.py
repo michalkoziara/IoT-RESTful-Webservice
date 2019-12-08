@@ -20,12 +20,12 @@ def create_executive_type(product_key: str):
 
     response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
-        data_keys=['typeName', 'stateType', 'stateRangeMin', 'stateRangeMax', 'enumerator', 'defaultState']
+        data_keys=['name', 'stateType', 'stateRangeMin', 'stateRangeMax', 'enumerator', 'defaultState']
     )
 
     if error_message is None:
         if status is None:
-            type_name = request_dict['typeName']
+            type_name = request_dict['name']
             state_type = request_dict['stateType']
             state_range_min = request_dict['stateRangeMin']
             state_range_max = request_dict['stateRangeMax']

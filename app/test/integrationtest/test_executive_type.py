@@ -207,7 +207,7 @@ def test_create_executive_type_should_create_executive_type_in_device_group_when
         '/api/hubs/' + device_group.product_key + '/executive-types',
         data=json.dumps(
             {
-                "typeName": executive_type_name,
+                "name": executive_type_name,
                 "stateType": "Enum",
                 "stateRangeMin": 0,
                 "stateRangeMax": 1,
@@ -255,7 +255,7 @@ def test_create_executive_type_should_return_error_message_when_invalid_request(
         '/api/hubs/' + device_group.product_key + '/executive-types',
         data=json.dumps(
             {
-                "typeName": executive_type_name,
+                "name": executive_type_name,
                 "stateType": "Enum",
                 "stateRangeMin": 0,
                 "stateRangeMax": 0,
@@ -291,7 +291,7 @@ def test_create_executive_type_should_return_error_message_when_user_not_authori
         '/api/hubs/' + device_group.product_key + '/executive-types',
         data=json.dumps(
             {
-                "typeName": executive_type_name,
+                "name": executive_type_name,
                 "stateType": "Enum",
                 "stateRangeMin": 0,
                 "stateRangeMax": 1,
@@ -334,7 +334,7 @@ def test_create_executive_type_should_return_no_privileges_error_message_when_us
         '/api/hubs/' + device_group.product_key + '/executive-types',
         data=json.dumps(
             {
-                "typeName": executive_type_name,
+                "name": executive_type_name,
                 "stateType": "Enum",
                 "stateRangeMin": 0,
                 "stateRangeMax": 1,
