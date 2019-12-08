@@ -20,12 +20,12 @@ def create_sensor_type(product_key: str):
 
     response_message, status, request_dict = ResponseUtils.get_request_data(
         request=request,
-        data_keys=['typeName', 'readingType', 'rangeMin', 'rangeMax', 'enumerator']
+        data_keys=['name', 'readingType', 'rangeMin', 'rangeMax', 'enumerator']
     )
 
     if error_message is None:
         if status is None:
-            type_name = request_dict['typeName']
+            type_name = request_dict['name']
             reading_type = request_dict['readingType']
             range_min = request_dict['rangeMin']
             range_max = request_dict['rangeMax']
