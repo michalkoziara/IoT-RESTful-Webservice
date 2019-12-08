@@ -716,6 +716,86 @@ def test_modify_sensor_should_modify_sensor_when_valid_request(
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
+def test_modify_sensor_should_modify_sensor_when_valid_request_and_user_is_admin(
+        client,
+        insert_device_group,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group,
+        get_sensor_type_default_values,
+        insert_sensor_type,
+        get_sensor_default_values,
+        insert_sensor):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    old_user_group_values = get_user_group_default_values()
+    new_user_group_values = get_user_group_default_values()
+
+
+    old_user_group_values["name"] = "Master"
+    new_user_group_values["name"] = "new"
+
+    new_user_group_values["id"] += 1
+
+    old_user_group = insert_user_group(old_user_group_values)
+    new_user_group = insert_user_group(new_user_group_values)
+
+    old_sensor_type = insert_sensor_type()
+
+    new_sensor_type_values = get_sensor_type_default_values()
+
+    new_sensor_type_values['reading_type'] = 'Decimal'
+    new_sensor_type_values['name'] = 'New'
+    new_sensor_type_values['id'] += 1
+    new_sensor_type_values['range_min'] = 0.0
+    new_sensor_type_values['range_min'] = 1.0
+
+    new_sensor_type = insert_sensor_type(new_sensor_type_values)
+
+    sensor_values = get_sensor_default_values()
+    sensor_values['name'] = "to be changed"
+    sensor_values['state'] = 0.5
+    sensor_values['is_updated'] = False
+    sensor_values['is_formula_used'] = False
+    sensor_values['executive_type_id'] = old_sensor_type.id
+    sensor_values['user_group_id'] = old_user_group.id
+
+    sensor = insert_sensor()
+
+    new_name = "Changed"
+
+    response = client.put(
+        '/api/hubs/' + device_group.product_key + '/sensors/' + sensor.device_key,
+        data=json.dumps(
+            {
+                "name": new_name,
+                "typeName": new_sensor_type.name,
+                "userGroupName": new_user_group.name,
+                "isFormulaUsed": True
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data
+
+    assert response_data["changedName"] == new_name
+    assert response_data["changedType"] == new_sensor_type.name
+    assert response_data["changedUserGroupName"] == new_user_group.name
+
+
+
 def test_delete_sensor_should_delete_sensor_when_valid_request(
         client,
         insert_device_group,

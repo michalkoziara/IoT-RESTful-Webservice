@@ -413,23 +413,28 @@ class ExecutiveDeviceService:
         if user_id is None or is_admin is None:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        if is_admin:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
-
         if not name or not type_name or state is None:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
+
+        user = None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
-            user_id,
-            product_key)
+        if is_admin is not True:
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
 
-        if not users_device_group:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+
+            user = self._user_repository.get_user_by_id(user_id)
+        else:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         executive_device = \
             self._executive_device_repository_instance.get_executive_device_by_device_key_and_device_group_id(
@@ -437,8 +442,6 @@ class ExecutiveDeviceService:
 
         if not executive_device:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
-
-        user = self._user_repository.get_user_by_id(user_id)
 
         if user_group_name is not None:
             new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
@@ -457,7 +460,7 @@ class ExecutiveDeviceService:
 
         status, error_message = self._change_device_user_group(
             executive_device,
-            user, new_user_group)
+            user, is_admin, new_user_group)
 
         if not status:
             self._executive_device_repository_instance.rollback_session()
@@ -532,7 +535,8 @@ class ExecutiveDeviceService:
 
         return executive_device_info
 
-    def _change_device_user_group(self, executive_device: ExecutiveDevice, user: User, new_user_group: UserGroup
+    def _change_device_user_group(self, executive_device: ExecutiveDevice, user: User, is_admin: bool,
+                                  new_user_group: UserGroup
                                   ) -> (bool, Optional[UserGroup], Optional[str]):
         """
         Function returns:
@@ -541,22 +545,24 @@ class ExecutiveDeviceService:
         """
 
         error_message = None
+        if is_admin is not True:
+            if executive_device.user_group_id is not None:
+                old_user_group = self._user_group_repository.get_user_group_by_id(executive_device.user_group_id)
+                if old_user_group is not None and user not in old_user_group.users:
+                    error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
-        if executive_device.user_group_id is not None:
-            old_user_group = self._user_group_repository.get_user_group_by_id(executive_device.user_group_id)
-            if old_user_group is not None and user not in old_user_group.users:
+            if new_user_group is not None and user not in new_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
-
-        if new_user_group is not None and user not in new_user_group.users:
-            error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
         if error_message is not None:
             return False, error_message
         else:
             if new_user_group is not None:
                 executive_device.user_group_id = new_user_group.id
+                executive_device.is_assigned = True
             else:
                 executive_device.user_group_id = None
+                executive_device.is_assigned = False
             return True, None
 
     def _change_device_type(self, executive_device: ExecutiveDevice,

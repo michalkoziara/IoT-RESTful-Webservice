@@ -426,23 +426,28 @@ class SensorService:
         if user_id is None or is_admin is None:
             return Constants.RESPONSE_MESSAGE_USER_NOT_DEFINED, None
 
-        if is_admin:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
-
         if not name or not type_name:
             return Constants.RESPONSE_MESSAGE_BAD_REQUEST, None
+
+        user = None
 
         device_group = self._device_group_repository_instance.get_device_group_by_product_key(product_key)
 
         if not device_group:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
-        users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
-            user_id,
-            product_key)
+        if is_admin is not True:
 
-        if not users_device_group:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            users_device_group = self._device_group_repository_instance.get_device_group_by_user_id_and_product_key(
+                user_id,
+                product_key)
+
+            if not users_device_group:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+            user = self._user_repository.get_user_by_id(user_id)
+        else:
+            if device_group.admin_id != user_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         sensor = \
             self._sensor_repository_instance.get_sensor_by_device_key_and_device_group_id(
@@ -450,8 +455,6 @@ class SensorService:
 
         if not sensor:
             return Constants.RESPONSE_MESSAGE_DEVICE_KEY_NOT_FOUND, None
-
-        user = self._user_repository.get_user_by_id(user_id)
 
         if user_group_name is not None:
             new_user_group = self._user_group_repository.get_user_group_by_name_and_device_group_id(
@@ -470,7 +473,9 @@ class SensorService:
 
         status, error_message = self._change_sensor_user_group(
             sensor,
-            user, new_user_group)
+            user,
+            is_admin,
+            new_user_group)
 
         if not status:
             self._sensor_repository_instance.rollback_session()
@@ -528,7 +533,7 @@ class SensorService:
             sensor.name = name
             return True, None
 
-    def _change_sensor_user_group(self, sensor: Sensor, user: User, new_user_group: UserGroup
+    def _change_sensor_user_group(self, sensor: Sensor, user: User, is_admin: bool, new_user_group: UserGroup
                                   ) -> (bool, Optional[UserGroup], Optional[str]):
         """
         Function returns:
@@ -537,15 +542,14 @@ class SensorService:
         """
 
         error_message = None
+        if is_admin is not True:
+            if sensor.user_group_id is not None:
+                old_user_group = self._user_group_repository.get_user_group_by_id(sensor.user_group_id)
+                if old_user_group is not None and user not in old_user_group.users:
+                    error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
 
-        if sensor.user_group_id is not None:
-            old_user_group = self._user_group_repository.get_user_group_by_id(sensor.user_group_id)
-            if old_user_group is not None and user not in old_user_group.users:
+            if new_user_group is not None and user not in new_user_group.users:
                 error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
-
-        if new_user_group is not None and user not in new_user_group.users:
-            error_message = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
-
         if error_message is not None:
             return False, error_message
         else:

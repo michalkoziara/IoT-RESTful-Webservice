@@ -1561,6 +1561,35 @@ def test__change_device_user_group_should_change_devices_user_group_if_user_in_o
         status, error_msg = executive_device_service_instance._change_device_user_group(
             executive_device,
             user,
+            False,
+            new_user_group
+        )
+
+    assert status is True
+    assert error_msg is None
+    assert executive_device.user_group_id == new_user_group.id
+
+def test_change_device_user_group_should_change_devices_user_group_if_user_is_none_and_is_admin(
+        create_executive_device,
+        create_user_group):
+    executive_device_service_instance = ExecutiveDeviceService.get_instance()
+    executive_device = create_executive_device()
+
+    old_user_group = create_user_group()
+    assert executive_device.user_group_id == old_user_group.id
+
+    new_user_group = create_user_group()
+
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id'
+    ) as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = executive_device_service_instance._change_device_user_group(
+            executive_device,
+            None,
+            True,
             new_user_group
         )
 
@@ -1604,6 +1633,7 @@ def test__change_device_user_group_should_return_error_message_when_user_not_in_
         status, error_msg = executive_device_service_instance._change_device_user_group(
             executive_device,
             user,
+            False,
             new_user_group,
         )
 

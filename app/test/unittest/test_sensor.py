@@ -1668,7 +1668,30 @@ def test__change_sensor_user_group_should_change_sensors_user_group_if_user_is_i
             'get_user_group_by_id') as get_user_group_by_id_mock:
         get_user_group_by_id_mock.return_value = old_user_group
 
-        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, False, new_user_group)
+
+    assert status is True
+    assert error_msg is None
+
+    assert sensor.user_group_id == new_user_group.id
+
+
+def test__change_sensor_user_group_should_change_sensors_user_group_when_user_is_none_and_is_admin(
+        create_sensor,
+        create_user_group):
+    sensor_service_instance = SensorService.get_instance()
+
+    sensor = create_sensor()
+    old_user_group = create_user_group()
+    new_user_group = create_user_group()
+
+    new_user_group.id = 5
+    with patch.object(
+            UserGroupRepository,
+            'get_user_group_by_id') as get_user_group_by_id_mock:
+        get_user_group_by_id_mock.return_value = old_user_group
+
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, None, True, new_user_group)
 
     assert status is True
     assert error_msg is None
@@ -1707,7 +1730,7 @@ def test__change_sensor_user_group_should_return_error_message_when_user_not_in_
             'get_user_group_by_id') as get_user_group_by_id_mock:
         get_user_group_by_id_mock.return_value = old_user_group
 
-        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, new_user_group)
+        status, error_msg = sensor_service_instance._change_sensor_user_group(sensor, user, False, new_user_group)
 
     assert status is False
     assert error_msg == Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES

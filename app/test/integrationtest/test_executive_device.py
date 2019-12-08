@@ -62,6 +62,7 @@ def test_get_executive_device_info_should_return_device_info_when_valid_request(
     assert response_data['deviceUserGroup'] == user_group.name
     assert response_data['formulaName'] == formula.name
 
+
 def test_get_executive_device_info_should_return_device_info_when_valid_request_and_user_is_admin(
         client,
         insert_device_group,
@@ -679,6 +680,232 @@ def test_add_sensor_to_device_group_should_return_error_message_when_device_key_
 
     assert not_deleted_unconfigured_device is unconfigured_device
     assert device_group.executive_devices == [exec_device]
+
+
+def test_modify_executive_device_should_modify_exec_device_when_valid_request_user_is_admin(
+        client,
+        insert_device_group,
+        insert_admin,
+        get_user_group_default_values,
+        insert_user_group,
+        get_executive_type_default_values,
+        insert_executive_type,
+        get_state_enumerator_default_values,
+        insert_state_enumerator,
+        get_executive_device_default_values,
+        insert_executive_device,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    admin = insert_admin()
+    old_user_group_values = get_user_group_default_values()
+    new_user_group_values = get_user_group_default_values()
+
+    old_user_group_values["name"] = "Master"
+    new_user_group_values["name"] = "new"
+
+    new_user_group_values["id"] += 1
+
+    formula = insert_formula()
+    new_user_group_values["formulas"] = [formula]
+
+    old_user_group = insert_user_group(old_user_group_values)
+    new_user_group = insert_user_group(new_user_group_values)
+
+    old_executive_type = insert_executive_type()
+
+    new_executive_type_values = get_executive_type_default_values()
+
+    first_state_enumerator_values = get_state_enumerator_default_values()
+    first_state_enumerator_values["text"] = "first"
+
+    second_state_enumerator_values = get_state_enumerator_default_values()
+    second_state_enumerator_values["id"] += 1
+    second_state_enumerator_values["number"] += 1
+    second_state_enumerator_values["text"] = "second"
+
+    first_state_enumerator = insert_state_enumerator(first_state_enumerator_values)
+    second_state_enumerator = insert_state_enumerator(second_state_enumerator_values)
+
+    new_executive_type_values['state_type'] = 'Enum'
+    new_executive_type_values['name'] = 'New'
+    new_executive_type_values['id'] += 1
+    new_executive_type_values['state_range_min'] = 1
+    new_executive_type_values['state_range_max'] = 2
+    new_executive_type_values['state_range_max'] = 2
+    new_executive_type_values['default_state'] = 1
+    new_executive_type_values['state_enumerators'] = [first_state_enumerator, second_state_enumerator]
+
+    new_executive_type = insert_executive_type(new_executive_type_values)
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['name'] = "to be changed"
+    executive_device_values['state'] = 1
+    executive_device_values['is_updated'] = False
+    executive_device_values['is_formula_used'] = False
+    executive_device_values['positive_state'] = 1
+    executive_device_values['negative_state'] = 2
+    executive_device_values['executive_type_id'] = old_executive_type.id
+    executive_device_values['user_group_id'] = old_user_group.id
+
+    executive_device = insert_executive_device()
+
+    new_name = "Changed"
+    new_state = "second"
+    positive_state = "first"
+    negative_state = "second"
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
+        data=json.dumps(
+            {
+                "name": new_name,
+                "typeName": new_executive_type.name,
+                "state": new_state,
+                "positiveState": positive_state,
+                "negativeState": negative_state,
+                "formulaName": formula.name,
+                "userGroupName": new_user_group.name,
+                "isFormulaUsed": True
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(admin.id, True)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data
+
+    assert response_data["changedName"] == new_name
+    assert response_data["changedType"] == new_executive_type.name
+    assert response_data["isFormulaUsed"] is True
+    assert response_data["changedFormulaName"] == formula.name
+    assert response_data["changedPositiveState"] == positive_state
+    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["changedUserGroupName"] == new_user_group.name
+
+
+def test_modify_executive_device_should_modify_exec_device_when_valid_request_and_state_type_is_enum(
+        client,
+        insert_device_group,
+        insert_user,
+        get_user_group_default_values,
+        insert_user_group,
+        get_executive_type_default_values,
+        insert_executive_type,
+        get_state_enumerator_default_values,
+        insert_state_enumerator,
+        get_executive_device_default_values,
+        insert_executive_device,
+        get_formula_default_values,
+        insert_formula):
+    content_type = 'application/json'
+
+    device_group = insert_device_group()
+    user = insert_user()
+    old_user_group_values = get_user_group_default_values()
+    new_user_group_values = get_user_group_default_values()
+
+    old_user_group_values["users"] = [user]
+    new_user_group_values["users"] = [user]
+
+    old_user_group_values["name"] = "Master"
+    new_user_group_values["name"] = "new"
+
+    new_user_group_values["id"] += 1
+
+    formula = insert_formula()
+    new_user_group_values["formulas"] = [formula]
+
+    old_user_group = insert_user_group(old_user_group_values)
+    new_user_group = insert_user_group(new_user_group_values)
+
+    old_executive_type = insert_executive_type()
+
+    new_executive_type_values = get_executive_type_default_values()
+
+    first_state_enumerator_values = get_state_enumerator_default_values()
+    first_state_enumerator_values["text"] = "first"
+
+    second_state_enumerator_values = get_state_enumerator_default_values()
+    second_state_enumerator_values["id"] += 1
+    second_state_enumerator_values["number"] += 1
+    second_state_enumerator_values["text"] = "second"
+
+    first_state_enumerator = insert_state_enumerator(first_state_enumerator_values)
+    second_state_enumerator = insert_state_enumerator(second_state_enumerator_values)
+
+    new_executive_type_values['state_type'] = 'Enum'
+    new_executive_type_values['name'] = 'New'
+    new_executive_type_values['id'] += 1
+    new_executive_type_values['state_range_min'] = 1
+    new_executive_type_values['state_range_max'] = 2
+    new_executive_type_values['state_range_max'] = 2
+    new_executive_type_values['default_state'] = 1
+    new_executive_type_values['state_enumerators'] = [first_state_enumerator, second_state_enumerator]
+
+    new_executive_type = insert_executive_type(new_executive_type_values)
+
+    executive_device_values = get_executive_device_default_values()
+    executive_device_values['name'] = "to be changed"
+    executive_device_values['state'] = 1
+    executive_device_values['is_updated'] = False
+    executive_device_values['is_formula_used'] = False
+    executive_device_values['positive_state'] = 1
+    executive_device_values['negative_state'] = 2
+    executive_device_values['executive_type_id'] = old_executive_type.id
+    executive_device_values['user_group_id'] = old_user_group.id
+
+    executive_device = insert_executive_device()
+
+    new_name = "Changed"
+    new_state = "second"
+    positive_state = "first"
+    negative_state = "second"
+
+    response = client.post(
+        '/api/hubs/' + device_group.product_key + '/executive-devices/' + executive_device.device_key,
+        data=json.dumps(
+            {
+                "name": new_name,
+                "typeName": new_executive_type.name,
+                "state": new_state,
+                "positiveState": positive_state,
+                "negativeState": negative_state,
+                "formulaName": formula.name,
+                "userGroupName": new_user_group.name,
+                "isFormulaUsed": True
+            }
+        ),
+        content_type=content_type,
+        headers={
+            'Authorization': 'Bearer ' + Auth.encode_auth_token(user.id, False)
+        }
+    )
+
+    assert response is not None
+    assert response.status_code == 200
+    assert response.content_type == content_type
+
+    response_data = json.loads(response.data.decode())
+    assert response_data is not None
+    assert response_data
+
+    assert response_data["changedName"] == new_name
+    assert response_data["changedType"] == new_executive_type.name
+    assert response_data["isFormulaUsed"] is True
+    assert response_data["changedFormulaName"] == formula.name
+    assert response_data["changedPositiveState"] == positive_state
+    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["changedUserGroupName"] == new_user_group.name
 
 
 def test_modify_executive_device_should_modify_exec_device_when_valid_request_and_state_type_is_decimal(
