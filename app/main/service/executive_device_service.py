@@ -559,8 +559,10 @@ class ExecutiveDeviceService:
         else:
             if new_user_group is not None:
                 executive_device.user_group_id = new_user_group.id
+                executive_device.is_assigned = True
             else:
                 executive_device.user_group_id = None
+                executive_device.is_assigned = False
             return True, None
 
     def _change_device_type(self, executive_device: ExecutiveDevice,
