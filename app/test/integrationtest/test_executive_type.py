@@ -51,7 +51,7 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request(
                 'text': state_enumerator.text
             }
         ],
-        'defaultState': executive_type.default_state
+        'defaultState': 'reading enumerator '
     }
 
     assert response is not None
@@ -108,7 +108,7 @@ def test_get_executive_type_info_should_return_sensor_info_when_valid_request_an
                 'text': state_enumerator.text
             }
         ],
-        'defaultState': executive_type.default_state
+        'defaultState': 'reading enumerator '
     }
 
     assert response is not None

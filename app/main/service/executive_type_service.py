@@ -180,7 +180,7 @@ class ExecutiveTypeService:
         executive_type_info['stateType'] = executive_type.state_type
         executive_type_info['stateRangeMin'] = executive_type.state_range_min
         executive_type_info['stateRangeMax'] = executive_type.state_range_max
-        executive_type_info['defaultState'] = executive_type.default_state
+        executive_type_info['defaultState'] = self.get_default_state_value(executive_type, executive_type.default_state)
 
         if executive_type_info['stateType'] == 'Enum':
 
@@ -239,3 +239,26 @@ class ExecutiveTypeService:
         else:
             possible_numbers = [enum['number'] for enum in enumerator]
             return isinstance(state, (int, float)) and int(state) in possible_numbers
+
+    def get_default_state_value(self, executive_type: ExecutiveType, state: float):
+        if state is None:
+            return None
+
+        state_type = executive_type.state_type
+
+        state_value = None
+        if state_type == 'Enum':
+            state_enumerator = self._state_enumerator_repository.get_state_enumerator_by_executive_type_id_and_number(
+                executive_type.id,
+                int(state))
+            if state_enumerator is not None:
+                state_value = state_enumerator.text
+        elif state_type == 'Decimal':
+            state_value = float(state)
+        elif state_type == 'Boolean':
+            if int(state) == 1:
+                state_value = True
+            elif int(state) == 0:
+                state_value = False
+
+        return state_value
