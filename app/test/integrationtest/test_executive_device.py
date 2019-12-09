@@ -786,11 +786,11 @@ def test_modify_executive_device_should_modify_exec_device_when_valid_request_us
 
     assert response_data["changedName"] == new_name
     assert response_data["changedType"] == new_executive_type.name
-    assert response_data["isFormulaUsed"] is True
+    assert response_data["isFormulaUsed"] is False
     assert response_data["changedState"] == first_state_enumerator.text
-    assert response_data["changedFormulaName"] == formula.name
-    assert response_data["changedPositiveState"] == positive_state
-    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["changedFormulaName"] is None
+    assert response_data["changedPositiveState"] is None
+    assert response_data["changedNegativeState"] is None
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
@@ -903,10 +903,10 @@ def test_modify_executive_device_should_modify_exec_device_when_valid_request_an
     assert response_data["changedName"] == new_name
     assert response_data["changedType"] == new_executive_type.name
     assert response_data["changedState"] == first_state_enumerator.text
-    assert response_data["isFormulaUsed"] is True
-    assert response_data["changedFormulaName"] == formula.name
-    assert response_data["changedPositiveState"] == positive_state
-    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["isFormulaUsed"] is False
+    assert response_data["changedFormulaName"] is None
+    assert response_data["changedPositiveState"] is None
+    assert response_data["changedNegativeState"] is None
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
@@ -1003,10 +1003,10 @@ def test_modify_executive_device_should_modify_exec_device_when_valid_request_an
     assert response_data["changedName"] == new_name
     assert response_data["changedType"] == new_executive_type.name
     assert response_data["changedState"] == new_executive_type.default_state
-    assert response_data["isFormulaUsed"] == True
-    assert response_data["changedFormulaName"] == formula.name
-    assert response_data["changedPositiveState"] == positive_state
-    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["isFormulaUsed"] is False
+    assert response_data["changedFormulaName"] is None
+    assert response_data["changedPositiveState"] is None
+    assert response_data["changedNegativeState"] is None
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
@@ -1106,10 +1106,10 @@ def test_modify_executive_device_should_modify_exec_device_when_valid_request_an
     assert response_data["changedName"] == new_name
     assert response_data["changedType"] == new_executive_type.name
     assert response_data["changedState"] == new_executive_type.default_state
-    assert response_data["isFormulaUsed"] is True
-    assert response_data["changedFormulaName"] == formula.name
-    assert response_data["changedPositiveState"] == positive_state
-    assert response_data["changedNegativeState"] == negative_state
+    assert response_data["isFormulaUsed"] is False
+    assert response_data["changedFormulaName"] is None
+    assert response_data["changedPositiveState"] is None
+    assert response_data["changedNegativeState"] is None
     assert response_data["changedUserGroupName"] == new_user_group.name
 
 
