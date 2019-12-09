@@ -475,26 +475,26 @@ class ExecutiveDeviceService:
             self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
+        formula = None
+
         if is_type_changed is True:
-            positive_state = None
-            negative_state = None
-            is_formula_used = False
             state = self.get_executive_device_state_value(executive_device, new_executive_type.default_state)
+            self._change_device_formula_related_fields_after_type_change(executive_device)
+        else:
+            positive_state = self._get_device_state_to_set(positive_state, new_executive_type)
+            negative_state = self._get_device_state_to_set(negative_state, new_executive_type)
+
+            status, formula, error_message = self._change_device_formula_related_fields(
+                executive_device, formula_name,
+                positive_state, negative_state,
+                is_formula_used, new_executive_type,
+                new_user_group)
+
+            if not status:
+                self._executive_device_repository_instance.rollback_session()
+                return error_message, None
 
         status, error_message = self._change_device_state(executive_device, state, new_executive_type)
-
-        if not status:
-            self._executive_device_repository_instance.rollback_session()
-            return error_message, None
-
-        positive_state = self._get_device_state_to_set(positive_state, new_executive_type)
-        negative_state = self._get_device_state_to_set(negative_state, new_executive_type)
-
-        status, formula, error_message = self._change_device_formula_related_fields(
-            executive_device, formula_name,
-            positive_state, negative_state,
-            is_formula_used, new_executive_type,
-            new_user_group)
 
         if not status:
             self._executive_device_repository_instance.rollback_session()
@@ -653,6 +653,12 @@ class ExecutiveDeviceService:
             return True, None
         else:
             return False, Constants.RESPONSE_MESSAGE_PARTIALLY_WRONG_DATA_FROM_FRONTEND
+
+    def _change_device_formula_related_fields_after_type_change(self, executive_device: ExecutiveDevice):
+        executive_device.is_formula_used = False
+        executive_device.positive_state = None
+        executive_device.negative_state = None
+
 
     def _change_device_formula_related_fields(
             self, executive_device: ExecutiveDevice, formula_name: str,
