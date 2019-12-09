@@ -451,7 +451,8 @@ def test_get_formula_names_in_user_group_should_return_formula_names_when_valid_
             result, result_values = formula_service_instance.get_formula_names_in_user_group(
                 device_group.product_key,
                 user_group.name,
-                user.id
+                user.id,
+                False
             )
 
     assert result
@@ -488,7 +489,8 @@ def test_get_formula_names_in_user_group_should_return_no_privileges_message_whe
             result, result_values = formula_service_instance.get_formula_names_in_user_group(
                 device_group.product_key,
                 user_group.name,
-                user.id
+                user.id,
+                False
             )
 
     assert result
@@ -523,7 +525,8 @@ def test_get_formula_names_in_user_group_should_return_user_group_not_found_mess
             result, result_values = formula_service_instance.get_formula_names_in_user_group(
                 device_group.product_key,
                 user_group.name,
-                user.id
+                user.id,
+                False
             )
 
     assert result
@@ -552,7 +555,8 @@ def test_get_formula_names_in_user_group_should_return_product_key_not_found_mes
         result, result_values = formula_service_instance.get_formula_names_in_user_group(
             device_group.product_key,
             user_group.name,
-            user.id
+            user.id,
+            False
         )
 
     assert result
@@ -576,7 +580,8 @@ def test_get_formula_names_in_user_group_should_return_error_message_when_no_par
     result, result_values = formula_service_instance.get_formula_names_in_user_group(
         product_key,
         user_group_name,
-        user_id
+        user_id,
+        False
     )
 
     assert result

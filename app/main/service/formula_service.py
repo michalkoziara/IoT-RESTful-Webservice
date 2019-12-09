@@ -150,7 +150,8 @@ class FormulaService:
             self,
             product_key: str,
             user_group_name: str,
-            user_id: str) -> Tuple[str, Optional[dict]]:
+            user_id: str,
+            is_admin: bool) -> Tuple[str, Optional[dict]]:
         if not product_key:
             return Constants.RESPONSE_MESSAGE_PRODUCT_KEY_NOT_FOUND, None
 
@@ -173,8 +174,12 @@ class FormulaService:
         if not user_group:
             return Constants.RESPONSE_MESSAGE_USER_GROUP_NAME_NOT_FOUND, None
 
-        if user_id not in [user.id for user in user_group.users]:
-            return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        if is_admin is not True:
+            if user_id not in [user.id for user in user_group.users]:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
+        else:
+            if user_id != device_group.admin_id:
+                return Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES, None
 
         formula_names = [formula.name for formula in user_group.formulas]
         return Constants.RESPONSE_MESSAGE_OK, {'names': formula_names}
