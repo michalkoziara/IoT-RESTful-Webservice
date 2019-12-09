@@ -1664,7 +1664,7 @@ def test__change_device_type_should_change_device_type_if_device_type_in_device_
     ) as get_executive_type_by_device_group_id_and_name_mock:
         get_executive_type_by_device_group_id_and_name_mock.return_value = executive_type
 
-        status, returned_exec_type, error_msg = executive_device_service_instance._change_device_type(
+        status, returned_exec_type, error_msg, is_type_changed = executive_device_service_instance._change_device_type(
             executive_device,
             'device_group_id',
             executive_type.name
@@ -1674,6 +1674,7 @@ def test__change_device_type_should_change_device_type_if_device_type_in_device_
     assert returned_exec_type is executive_type
     assert error_msg is None
     assert executive_device.executive_type_id == executive_type.id
+    assert is_type_changed is True
 
 
 def test__change_device_type_should_return_error_message_when_exec_type_not_found(
@@ -1689,7 +1690,7 @@ def test__change_device_type_should_return_error_message_when_exec_type_not_foun
     ) as get_executive_type_by_device_group_id_and_name_mock:
         get_executive_type_by_device_group_id_and_name_mock.return_value = None
 
-        status, returned_exec_type, error_msg = executive_device_service_instance._change_device_type(
+        status, returned_exec_type, error_msg, is_type_changed = executive_device_service_instance._change_device_type(
             executive_device,
             'device_group_id',
             'executive_type_name'
@@ -1699,6 +1700,7 @@ def test__change_device_type_should_return_error_message_when_exec_type_not_foun
     assert returned_exec_type is None
     assert error_msg == Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND
     assert executive_device.executive_type_id == old_type_id
+    assert is_type_changed is False
 
 
 @pytest.mark.parametrize('user_group_is_none', [True, False])
