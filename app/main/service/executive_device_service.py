@@ -466,7 +466,7 @@ class ExecutiveDeviceService:
             self._executive_device_repository_instance.rollback_session()
             return error_message, None
 
-        status, new_executive_type, error_message = self._change_device_type(
+        status, new_executive_type, error_message, is_type_changed = self._change_device_type(
             executive_device,
             device_group.id,
             type_name)
@@ -474,6 +474,9 @@ class ExecutiveDeviceService:
         if not status:
             self._executive_device_repository_instance.rollback_session()
             return error_message, None
+
+        if is_type_changed is True:
+            state = self.get_executive_device_state_value(executive_device, new_executive_type.default_state)
 
         status, error_message = self._change_device_state(executive_device, state, new_executive_type)
 
@@ -574,14 +577,17 @@ class ExecutiveDeviceService:
             optional:new ExecutiveType
             optional: error message
         """
-
         new_executive_type = self._executive_type_repository_instance.get_executive_type_by_device_group_id_and_name(
             device_group_id, type_name)
         if new_executive_type is None:
-            return False, None, Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND
+            return False, None, Constants.RESPONSE_MESSAGE_EXECUTIVE_TYPE_NOT_FOUND, False
 
-        executive_device.executive_type_id = new_executive_type.id
-        return True, new_executive_type, None
+        is_type_changed = False
+
+        if executive_device.executive_type_id != new_executive_type.id:
+            executive_device.executive_type_id = new_executive_type.id
+            is_type_changed = True
+        return True, new_executive_type, None, is_type_changed
 
     def _change_device_name(self, executive_device: ExecutiveDevice, name: str, user_group: UserGroup
                             ) -> (bool, Optional[str]):

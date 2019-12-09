@@ -124,6 +124,9 @@ def test_get_sensor_type_info_should_return_sensor_info_when_valid_request_and_r
         'defaultState': executive_type.default_state
     }
 
+    if state_type == 'Boolean':
+        expected_returned_values['defaultState'] = False
+
     with patch.object(
             DeviceGroupRepository,
             'get_device_group_by_product_key'
