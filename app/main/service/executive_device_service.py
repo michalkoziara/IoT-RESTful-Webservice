@@ -476,6 +476,9 @@ class ExecutiveDeviceService:
             return error_message, None
 
         if is_type_changed is True:
+            positive_state = None
+            negative_state = None
+            is_formula_used = False
             state = self.get_executive_device_state_value(executive_device, new_executive_type.default_state)
 
         status, error_message = self._change_device_state(executive_device, state, new_executive_type)
