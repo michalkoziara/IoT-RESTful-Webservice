@@ -77,14 +77,12 @@ def get_formulas(product_key: str, user_group_name: str):
     result_values = None
 
     if error_message is None:
-        if not user_info['is_admin']:
             result, result_values = _formula_service_instance.get_formula_names_in_user_group(
                 product_key,
                 user_group_name,
-                user_info['user_id']
+                user_info['user_id'],
+                user_info['is_admin']
             )
-        else:
-            result = Constants.RESPONSE_MESSAGE_USER_DOES_NOT_HAVE_PRIVILEGES
     else:
         result = error_message
 
