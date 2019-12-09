@@ -43,7 +43,8 @@ def test_create_formula_should_add_new_formula_to_use_group_when_valid_request(
                 "rule": {
                     "datetimeRule": {
                         "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        "days": "1,2,3"
                     },
                     "operator": "or",
                     "sensorRule": {
@@ -172,7 +173,8 @@ def test_create_formula_should_return_invalid_formula_message_when_invalid_formu
                 "rule": {
                     "datetimeRule": {
                         "datetimeStart": datetime(2014, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                        "datetimeEnd": datetime(2015, 6, 5, 8, 10, 10, 10).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        "days": "1,2,3"
                     },
                     "operator": "or",
                     "sensorRule": {

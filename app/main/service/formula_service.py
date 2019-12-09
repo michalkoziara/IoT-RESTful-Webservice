@@ -299,15 +299,6 @@ class FormulaService:
             except (Error, TypeError, ValueError):
                 return Constants.RESPONSE_MESSAGE_ERROR
 
-        if (formula_data['rule']['datetimeRule']['datetimeStart']
-                and formula_data['rule']['datetimeRule']['datetimeEnd']
-                and datetime.datetime.strptime(
-                    formula_data['rule']['datetimeRule']['datetimeStart'],
-                    '%Y-%m-%dT%H:%M:%S.%fZ') >= datetime.datetime.strptime(
-                    formula_data['rule']['datetimeRule']['datetimeEnd'],
-                    '%Y-%m-%dT%H:%M:%S.%fZ')):
-            return Constants.RESPONSE_MESSAGE_ERROR
-
         if not formula_data['rule']['datetimeRule'] and not formula_data['rule']['sensorRule']:
             return Constants.RESPONSE_MESSAGE_ERROR
 

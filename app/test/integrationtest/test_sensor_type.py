@@ -200,7 +200,7 @@ def test_create_sensor_type_should_create_sensor_type_in_device_group_when_valid
         '/api/hubs/' + device_group.product_key + '/sensor-types',
         data=json.dumps(
             {
-                "typeName": sensor_type_name,
+                "name": sensor_type_name,
                 "readingType": "Enum",
                 "rangeMin": 0,
                 "rangeMax": 1,
@@ -247,7 +247,7 @@ def test_create_sensor_type_should_return_error_message_when_invalid_request(
         '/api/hubs/' + device_group.product_key + '/sensor-types',
         data=json.dumps(
             {
-                "typeName": sensor_type_name,
+                "name": sensor_type_name,
                 "readingType": "Enum",
                 "rangeMin": 0,
                 "rangeMax": 0,
@@ -283,7 +283,7 @@ def test_create_sensor_type_should_return_error_message_when_user_not_authorized
         '/api/hubs/' + device_group.product_key + '/sensor-types',
         data=json.dumps(
             {
-                "typeName": sensor_type_name,
+                "name": sensor_type_name,
                 "readingType": "Enum",
                 "rangeMin": 0,
                 "rangeMax": 1,
@@ -326,7 +326,7 @@ def test_create_sensor_type_should_return_no_privileges_error_message_when_user_
         '/api/hubs/' + device_group.product_key + '/sensor-types',
         data=json.dumps(
             {
-                "typeName": sensor_type_name,
+                "name": sensor_type_name,
                 "readingType": "Enum",
                 "rangeMin": 0,
                 "rangeMax": 1,
