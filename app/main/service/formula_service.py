@@ -258,8 +258,8 @@ class FormulaService:
                             and not isinstance(value, bool))):
                     return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
 
-                if not ((sensor_type.reading_type in ['Enum', 'Boolean'] and functor == '==')
-                        or (sensor_type.reading_type == 'Decimal' and functor in ['==', '<=', '=>'])):
+                if not ((sensor_type.reading_type in ['Enum', 'Boolean'] and functor in ['==', '!='])
+                        or (sensor_type.reading_type == 'Decimal' and functor in ['==', '!=', '<=', '=>'])):
                     return Constants.RESPONSE_MESSAGE_INVALID_FORMULA
 
             rule, lookup_table = self._create_expresion(formula_data['rule']['sensorRule'])
@@ -372,8 +372,29 @@ class FormulaService:
                         if values[and_inner_expression_text]['functor'] == '<=' and functor_range['valueMax'] > value:
                             functor_range['valueMax'] = value
 
+                        if (values[and_inner_expression_text]['functor'] == '=='
+                                and 'valueMin' not in functor_range
+                                and 'valueMax' not in functor_range):
+                            functor_range['valueMin'] = value
+                            functor_range['valueMax'] = value
+
+                        if (values[and_inner_expression_text]['functor'] == '=='
+                                and 'valueMin' in functor_range
+                                and 'valueMax' not in functor_range
+                                and functor_range['valueMin'] <= value):
+                            functor_range['valueMin'] = value
+                            functor_range['valueMax'] = value
+
+                        if (values[and_inner_expression_text]['functor'] == '=='
+                                and 'valueMax' in functor_range
+                                and 'valueMin' not in functor_range
+                                and value <= functor_range['valueMax']):
+                            functor_range['valueMin'] = value
+                            functor_range['valueMax'] = value
+
                         if values[and_inner_expression_text]['functor'] == '==':
-                            if functor_range['valueMin'] <= value <= functor_range['valueMax']:
+                            if ('valueMin' in functor_range and 'valueMax' in functor_range
+                                    and functor_range['valueMin'] <= value <= functor_range['valueMax']):
                                 functor_range['valueMin'] = value
                                 functor_range['valueMax'] = value
                             else:
